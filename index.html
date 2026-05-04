@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rotina // SYSTEM</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b0f1a">
+    <!-- Fontes Y2K -->
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- ══════════════════════════════════════
+         TELA DE LOGIN / CADASTRO
+    ══════════════════════════════════════ -->
+    <div id="auth-container" class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <i class="fas fa-robot"></i>
+                <span>ROTINA<strong>OS</strong></span>
+            </div>
+            <h3 id="auth-title">// ENTRAR NO SISTEMA</h3>
+            <form id="form-auth">
+                <div class="form-group">
+                    <label>E-MAIL</label>
+                    <input type="email" id="auth-email" required placeholder="seu@email.com">
+                </div>
+                <div class="form-group">
+                    <label>SENHA</label>
+                    <input type="password" id="auth-password" required minlength="6" placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary" id="btn-auth-submit">ENTRAR</button>
+                <p class="auth-switch">Sem conta? <a href="#" id="link-toggle-auth">Cadastre-se</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         APP PRINCIPAL (oculto até login)
+    ══════════════════════════════════════ -->
+    <div id="app" class="hidden">
+
+        <!-- ÁREA PRINCIPAL -->
+        <div id="main-content-area">
+
+            <!-- Header -->
+            <header id="main-header">
+                <div class="header-accent"></div>
+                <h1 id="current-date-title"><i class="far fa-calendar-alt"></i> Hoje</h1>
+                <div class="header-controls">
+                    <!-- Engrenagem de Estilos -->
+                    <div id="style-menu-wrapper">
+                        <button id="btn-style-menu" class="btn-icon" title="Estilos do App">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <div id="style-menu" class="style-menu hidden">
+                            <div class="style-menu-title">// ESTILO</div>
+                            <button class="style-option active" data-theme="y2k">
+                                <i class="fas fa-gamepad"></i> SA2 Y2K
+                            </button>
+                            <button class="style-option" data-theme="minimal" disabled title="Em breve">
+                                <i class="fas fa-minus"></i> Minimal <span class="badge-soon">em breve</span>
+                            </button>
+                            <button class="style-option" data-theme="nature" disabled title="Em breve">
+                                <i class="fas fa-leaf"></i> Nature <span class="badge-soon">em breve</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Abre Sidebar -->
+                    <button id="toggle-sidebar" class="btn-icon" title="Abrir Hub">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Agenda -->
+            <main id="agenda-container">
+                <div id="time-grid-labels"></div>
+                <div id="agenda-grid">
+                    <div id="current-time-indicator"></div>
+                </div>
+            </main>
+        </div>
+
+        <!-- ══════════════════════════════════════
+             SIDEBAR / HUB DE ATIVIDADES
+        ══════════════════════════════════════ -->
+        <aside id="sidebar" class="hidden">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-layer-group"></i> HUB DE ATIVIDADES</h2>
+                <button id="close-sidebar" class="btn-icon"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="sidebar-search">
+                <div class="tab-row">
+                    <button id="tab-pending" class="tab-btn tab-active">Pendentes</button>
+                    <button id="tab-all" class="tab-btn">Todas</button>
+                </div>
+                <input type="text" id="search-activity" placeholder="// buscar atividade...">
+                <select id="filter-category">
+                    <option value="">▸ Todas as categorias</option>
+                </select>
+            </div>
+
+            <div class="sidebar-content">
+                <div id="pending-activities-list"></div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button id="btn-new-activity" class="btn-primary">
+                    <i class="fas fa-plus"></i> NOVA ATIVIDADE
+                </button>
+                <button id="btn-logout" class="btn-ghost">
+                    <i class="fas fa-sign-out-alt"></i> Sair da Conta
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         MODAL 1: NOVA ATIVIDADE
+    ══════════════════════════════════════ -->
+    <div id="modal-activity" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header-slant">
+                <h2 id="modal-activity-title"><i class="fas fa-pen-nib"></i> Nova Atividade</h2>
+            </div>
+            <form id="form-activity">
+
+                <!-- ▸ GRUPO 1: O QUE É? -->
+                <details class="form-section" open>
+                    <summary class="form-section-label">▸ O QUE É?</summary>
+                    <div class="form-section-body">
+                        <div class="form-group">
+                            <label>Nome da Atividade</label>
+                            <input type="text" id="act-title" required placeholder="Ex: Estudar para prova...">
+                        </div>
+                        <div class="form-group">
+                            <label>Categoria</label>
+                            <input type="text" id="act-category" list="category-list" required placeholder="Ex: Estudo, Trabalho...">
+                            <datalist id="category-list"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-group-header">
+                                <label>Detalhes / Etapas</label>
+                                <button type="button" id="act-toggle-mode" class="btn-mode-toggle" title="Alternar entre texto e checklist">
+                                    <i class="fas fa-list-check"></i> Lista
+                                </button>
+                            </div>
+                            <textarea id="act-details" rows="3" placeholder="Descreva o que precisa ser feito..."></textarea>
+                            <div id="act-checklist-editor" class="checklist-editor hidden">
+                                <div id="checklist-items-list" class="checklist-items-list"></div>
+                                <button type="button" id="act-add-checklist-item" class="btn-add-checklist">
+                                    <i class="fas fa-plus"></i> Adicionar item
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Links Relacionados (até 3)</label>
+                            <input type="url" id="act-link-1" class="link-input" placeholder="Link 1 · https://...">
+                            <input type="url" id="act-link-2" class="link-input" placeholder="Link 2 · https://...">
+                            <input type="url" id="act-link-3" class="link-input" placeholder="Link 3 · https://...">
+                        </div>
+                    </div>
+                </details>
+
+                <!-- ▸ GRUPO 2: QUANDO E COM QUE FREQUÊNCIA? -->
+                <details class="form-section" open>
+                    <summary class="form-section-label">▸ QUANDO?</summary>
+                    <div class="form-section-body">
+                        <div class="form-group">
+                            <label>Recorrência</label>
+                            <select id="act-recurrence">
+                                <option value="single">Única (Conclusão única)</option>
+                                <option value="daily">Diária (Todos os dias)</option>
+                                <option value="weekly">Semanal (Dias fixos)</option>
+                                <option value="monthly">Mensal (Dias do mês)</option>
+                            </select>
+                        </div>
+                        <div class="form-group hidden" id="group-fixed-days">
+                            <label>Dias da Semana</label>
+                            <div id="act-fixed-days" class="checkbox-day-row">
+                                <label class="day-check"><input type="checkbox" value="0"><span>Dom</span></label>
+                                <label class="day-check"><input type="checkbox" value="1"><span>Seg</span></label>
+                                <label class="day-check"><input type="checkbox" value="2"><span>Ter</span></label>
+                                <label class="day-check"><input type="checkbox" value="3"><span>Qua</span></label>
+                                <label class="day-check"><input type="checkbox" value="4"><span>Qui</span></label>
+                                <label class="day-check"><input type="checkbox" value="5"><span>Sex</span></label>
+                                <label class="day-check"><input type="checkbox" value="6"><span>Sáb</span></label>
+                            </div>
+                        </div>
+                        <div class="form-group hidden" id="group-monthly-days">
+                            <label>Dias do Mês (ex: 5, 10, 20)</label>
+                            <input type="text" id="act-monthly-days" placeholder="Ex: 1, 15, 30">
+                        </div>
+                        <div class="form-group row">
+                            <div class="col">
+                                <label>Início Fixo (Opcional)</label>
+                                <input type="time" id="act-time">
+                            </div>
+                            <div class="col">
+                                <label>Término Fixo (Opcional)</label>
+                                <input type="time" id="act-time-end">
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- ▸ GRUPO 3: PRAZOS E IMPORTÂNCIA -->
+                <details class="form-section">
+                    <summary class="form-section-label">▸ PRIORIDADE</summary>
+                    <div class="form-section-body">
+                        <div class="form-group row">
+                            <div class="col">
+                                <label>Prioridade</label>
+                                <select id="act-priority">
+                                    <option value="0">— Não definida</option>
+                                    <option value="1">↓ Baixa</option>
+                                    <option value="2">→ Média</option>
+                                    <option value="3">↑ Alta</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label>Data Limite</label>
+                                <input type="date" id="act-deadline">
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary close-modal">Cancelar</button>
+                    <button type="submit" class="btn-primary">SALVAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         MODAL 2: AGENDAR HORÁRIO
+    ══════════════════════════════════════ -->
+    <div id="modal-schedule" class="modal hidden">
+        <div class="modal-content modal-small">
+            <div class="modal-header-slant">
+                <h2><i class="fas fa-clock"></i> Agendar Horário</h2>
+            </div>
+            <p class="modal-subtitle">Defina o horário em que esta atividade acontecerá hoje.</p>
+            <div class="form-group row">
+                <div class="col">
+                    <label>Início</label>
+                    <input type="time" id="sched-start" required>
+                </div>
+                <div class="col">
+                    <label>Término</label>
+                    <input type="time" id="sched-end" required>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary close-modal">Cancelar</button>
+                <button type="button" class="btn-ghost" id="btn-edit-activity" title="Editar informações desta atividade">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+                <button type="button" class="btn-primary" id="btn-confirm-schedule">CONFIRMAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         MODAL 3: CONCLUSÃO
+    ══════════════════════════════════════ -->
+    <div id="modal-completion" class="modal hidden">
+        <div class="modal-content modal-small">
+            <div class="modal-header-slant">
+                <h2><i class="fas fa-check-double"></i> Concluir</h2>
+            </div>
+            <div class="completion-options">
+                <button type="button" class="btn-primary" id="btn-complete-full">
+                    <i class="fas fa-trophy"></i> Totalmente concluída
+                </button>
+                <button type="button" class="btn-secondary" id="btn-complete-partial">
+                    <i class="fas fa-battery-half"></i> Fiz o que deu hoje
+                </button>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-ghost close-modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SISTEMA: ALERTA -->
+    <div id="modal-alert" class="modal hidden">
+        <div class="modal-content modal-small">
+            <div class="modal-header-slant">
+                <h2 id="modal-alert-title"><i class="fas fa-exclamation-triangle"></i> Aviso</h2>
+            </div>
+            <p class="modal-sys-body" id="modal-alert-msg"></p>
+            <div class="modal-actions">
+                <button type="button" class="btn-primary" id="modal-alert-ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SISTEMA: CONFIRMAÇÃO -->
+    <div id="modal-confirm" class="modal hidden">
+        <div class="modal-content modal-small">
+            <div class="modal-header-slant">
+                <h2 id="modal-confirm-title"><i class="fas fa-question-circle"></i> Confirmar</h2>
+            </div>
+            <p class="modal-sys-body" id="modal-confirm-msg"></p>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" id="modal-confirm-cancel">CANCELAR</button>
+                <button type="button" class="btn-primary" id="modal-confirm-ok">CONFIRMAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

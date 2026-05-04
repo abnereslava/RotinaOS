@@ -1,0 +1,5 @@
+4.5 Adicionar informações ao menu das atividades no banco de espera
+
+5. Botão de "esconder/revelar" tempo livre
+6. Por padrão, sempre que abrir o site, levar a visualização principal  até a barra horizontal do horário (com ela centralizada, um pouco acima)
+6. Menu de temas

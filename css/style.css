@@ -1,0 +1,1434 @@
+/* ====================================================
+   ROTINA OS — Estética SA2 / Y2K
+   Dark mode azul-marinho confortável
+==================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Paleta Y2K Confortável — Azul Marinho Escuro */
+    --bg-color:         #0b0f1a;
+    --bg-surface:       #111827;
+    --bg-surface-2:     #1a2235;
+    --bg-surface-hover: #1e2d45;
+
+    --text-primary:   #d6e4f7;
+    --text-secondary: #6b8cad;
+    --text-accent:    #93c5fd;
+
+    /* Cores de ação — pastéis/foscos estilo SA2 */
+    --primary-color:  #3b6fd4;   /* azul royal fosco */
+    --primary-hover:  #2a57b0;
+    --primary-light:  rgba(59, 111, 212, 0.18);
+
+    --accent-color:   #d97b3a;   /* âmbar/laranja fosco */
+    --accent-light:   rgba(217, 123, 58, 0.18);
+
+    --success-color:  #2e9e6b;
+    --success-light:  rgba(46, 158, 107, 0.18);
+
+    --warning-color:  #c9a227;
+    --danger-color:   #c0392b;
+
+    --border-color:   #1e3050;
+    --border-bright:  #2d4a72;
+
+    /* Grid */
+    --grid-hour-height: 120px;
+    --sidebar-width:    320px;
+
+    /* Sombras duras estilo Y2K */
+    --shadow-hard:   4px 4px 0px rgba(0, 0, 0, 0.6);
+    --shadow-card:   3px 3px 0px rgba(0, 0, 0, 0.5);
+    --shadow-inset:  inset 2px 2px 0px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Reset ─────────────────────────────────────── */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    overflow: hidden;
+    letter-spacing: 0.02em;
+}
+
+/* ====================================================
+   TELA DE LOGIN — Y2K Terminal
+==================================================== */
+.auth-wrapper {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-color);
+    background-image:
+        linear-gradient(rgba(59,111,212,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,111,212,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 50;
+}
+
+.auth-wrapper.hidden { display: none; }
+
+.auth-card {
+    background-color: var(--bg-surface);
+    padding: 40px 36px;
+    width: 90%;
+    max-width: 400px;
+    border: 2px solid var(--border-bright);
+    box-shadow: var(--shadow-hard), inset 0 0 40px rgba(59,111,212,0.05);
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+    animation: slideUpFade 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    color: var(--text-accent);
+    font-family: 'Chakra Petch', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    text-shadow: 2px 2px 0px rgba(0,0,0,0.5), 0 0 20px rgba(59,111,212,0.4);
+}
+
+.auth-logo i { color: var(--primary-color); }
+.auth-logo strong { color: var(--accent-color); }
+
+.auth-card h3 {
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: 28px;
+    letter-spacing: 0.1em;
+}
+
+.auth-switch {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.auth-switch a {
+    color: var(--text-accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-switch a:hover { text-decoration: underline; }
+
+/* ====================================================
+   APP PRINCIPAL
+==================================================== */
+#app {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+}
+
+#app.hidden { display: none !important; }
+
+#main-content-area {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ── HEADER ─────────────────────────────────────── */
+#main-header {
+    display: flex;
+    align-items: center;
+    padding: 0 12px 0 20px;
+    height: 56px;
+    background-color: var(--bg-surface);
+    border-bottom: 2px solid var(--border-bright);
+    box-shadow: 0 4px 0px rgba(0,0,0,0.4);
+    z-index: 10;
+    position: relative;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+    gap: 8px;
+}
+
+/* Acento diagonal à esquerda */
+.header-accent {
+    width: 4px;
+    height: 36px;
+    background: linear-gradient(to bottom, var(--accent-color), var(--primary-color));
+    margin-right: 8px;
+    clip-path: polygon(0 0, 100% 8px, 100% 100%, 0 calc(100% - 8px));
+    flex-shrink: 0;
+}
+
+#current-date-title {
+    flex: 1;
+    text-align: center;
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-accent);
+    text-shadow: 1px 1px 0px rgba(0,0,0,0.6), 0 0 12px rgba(59,111,212,0.3);
+    letter-spacing: 0.03em;
+    /* Permite quebrar em duas linhas em telas estreitas */
+    white-space: normal;
+    line-height: 1.25;
+    overflow: hidden;
+    min-width: 0;
+    font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+}
+
+#current-date-title i {
+    color: var(--accent-color);
+    margin-right: 6px;
+}
+
+/* Grupo de botões no canto direito do header */
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+/* ── MENU DE ESTILO (engrenagem) ─────────────── */
+#style-menu-wrapper {
+    position: relative;
+}
+
+#btn-style-menu {
+    transition: color 0.2s;
+}
+
+#btn-style-menu:hover i,
+#btn-style-menu.active i {
+    animation: gearSpin 0.5s linear;
+    color: var(--accent-color);
+}
+
+.style-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 180px;
+    background-color: var(--bg-surface-2);
+    border: 2px solid var(--border-bright);
+    box-shadow: var(--shadow-hard);
+    z-index: 100;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+    animation: menuDropIn 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    overflow: hidden;
+}
+
+.style-menu.hidden { display: none; }
+
+.style-menu-title {
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+    padding: 10px 12px 6px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.style-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 12px;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, color 0.15s;
+}
+
+.style-option:last-child { border-bottom: none; }
+
+.style-option:hover:not(:disabled) {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-accent);
+}
+
+.style-option.active {
+    color: var(--text-accent);
+    background-color: var(--primary-light);
+}
+
+.style-option:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.badge-soon {
+    margin-left: auto;
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.6rem;
+    background-color: var(--border-bright);
+    color: var(--text-secondary);
+    padding: 2px 5px;
+    letter-spacing: 0.05em;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 6px 8px;
+    transition: color 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-icon:hover { color: var(--text-accent); }
+
+
+/* ====================================================
+   AGENDA GRID (15 em 15 MINUTOS)
+==================================================== */
+#agenda-container {
+    display: flex;
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    padding-top: 15px;
+    padding-bottom: 50px;
+}
+
+/* scrollbar estilizada */
+#agenda-container::-webkit-scrollbar { width: 4px; }
+#agenda-container::-webkit-scrollbar-track { background: var(--bg-color); }
+#agenda-container::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+
+#time-grid-labels {
+    width: 58px;
+    background-color: var(--bg-color);
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+}
+
+.time-label {
+    height: var(--grid-hour-height);
+    flex-shrink: 0;
+    text-align: right;
+    padding-right: 8px;
+    font-size: 0.7rem;
+    font-family: 'Chakra Petch', monospace;
+    color: var(--text-secondary);
+    position: relative;
+}
+
+.time-label span {
+    position: relative;
+    top: -10px;
+}
+
+#agenda-grid {
+    flex: 1;
+    position: relative;
+    background-color: var(--bg-color);
+    min-height: calc(24 * var(--grid-hour-height));
+    border-left: 2px solid var(--border-bright);
+
+    /* Grade: 1h clara + 15min sutil — paleta Y2K */
+    background-size: 100% 120px, 100% 30px;
+    background-image:
+        linear-gradient(to bottom, rgba(45, 74, 114, 0.45) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30, 48, 80, 0.25) 1px, transparent 1px);
+
+    border-top: 1px solid rgba(45, 74, 114, 0.45);
+}
+
+/* Linha de Tempo Real */
+#current-time-indicator {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--accent-color);
+    z-index: 10;
+    pointer-events: none;
+    box-shadow: 0 0 8px rgba(217,123,58,0.5);
+}
+
+#current-time-indicator::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: -4px;
+    width: 10px;
+    height: 10px;
+    background-color: var(--accent-color);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    animation: pulseDot 2s ease-in-out infinite;
+}
+
+/* ── BLOCOS DE ATIVIDADE ──────────────────────── */
+.activity-block {
+    position: absolute;
+    background-color: var(--bg-surface-2);
+    padding: 7px 9px;
+    font-size: 0.82rem;
+    overflow: hidden;
+    cursor: pointer;
+    z-index: 5;
+
+    /* Bordas Y2K: grossa + sombra dura */
+    border: 2px solid var(--primary-color);
+    border-left: 4px solid var(--primary-color);
+    box-shadow: var(--shadow-card);
+
+    /* Leve corte na ponta inferior direita */
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+
+    animation: blockSlideIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.activity-block:hover {
+    border-color: var(--text-accent);
+    box-shadow: 5px 5px 0px rgba(0,0,0,0.7);
+}
+
+.activity-block.partial {
+    opacity: 0.45;
+    border-color: var(--text-secondary);
+}
+
+.activity-block.completed {
+    background-color: var(--success-light);
+    border-color: var(--success-color);
+    border-left-color: var(--success-color);
+}
+
+/* Cores de prioridade nos blocos da agenda */
+.activity-block.priority-0 {
+    border-color: var(--border-bright);
+    border-left-color: var(--border-bright);
+}
+
+.activity-block.priority-1 {
+    /* Verde desbotado — baixa */
+    border-color: #285e45;
+    border-left-color: #2e9e6b;
+}
+
+.activity-block.priority-2 {
+    /* Âmbar escuro — média */
+    border-color: #6b4e10;
+    border-left-color: var(--warning-color);
+}
+
+.activity-block.priority-3 {
+    /* Vermelho escuro — alta */
+    border-color: #6b1f1f;
+    border-left-color: #c0392b;
+}
+
+/* completed e partial sobrepõem prioridade */
+.activity-block.completed {
+    border-color: var(--success-color) !important;
+    border-left-color: var(--success-color) !important;
+}
+
+.activity-block .block-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-primary);
+    padding-right: 24px; /* espaço pro toggle-btn */
+}
+
+.activity-block .block-time {
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.activity-block .toggle-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border-bright);
+    width: 20px;
+    height: 20px;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    /* Quadrado Y2K (sem border-radius) */
+}
+
+.activity-block.completed .toggle-btn::after {
+    content: '✓';
+    font-size: 11px;
+    color: var(--success-color);
+}
+
+/* Parcial: âmbar sutil + til no botão */
+.activity-block.partial {
+    background-color: rgba(107, 78, 16, 0.2);
+    border-color: var(--warning-color) !important;
+    border-left-color: var(--warning-color) !important;
+    opacity: 1 !important;
+}
+
+.activity-block.partial .toggle-btn::after {
+    content: '∼';
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--warning-color);
+    line-height: 1;
+}
+
+.activity-block .warning-icon {
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    color: var(--warning-color);
+    font-weight: 700;
+    font-size: 13px;
+    font-family: 'Chakra Petch', monospace;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+}
+
+/* ====================================================
+   SIDEBAR (HUB) — Painel Y2K
+==================================================== */
+#sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--bg-surface);
+    border-left: 2px solid var(--border-bright);
+    box-shadow: -6px 0 0 rgba(0,0,0,0.5);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.25s ease;
+}
+
+#sidebar.hidden { transform: translateX(100%); }
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    height: 56px;
+    background-color: var(--bg-surface-2);
+    border-bottom: 2px solid var(--border-bright);
+    /* Corte diagonal no canto inferior esquerdo */
+    clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%, 0 14px);
+}
+
+.sidebar-header h2 {
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-accent);
+    text-shadow: 1px 1px 0px rgba(0,0,0,0.6);
+    letter-spacing: 0.06em;
+}
+
+.sidebar-header h2 i {
+    color: var(--accent-color);
+    margin-right: 8px;
+}
+
+/* ── Tabs ─────────────────── */
+.sidebar-search {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tab-row {
+    display: flex;
+    gap: 0;
+    border: 2px solid var(--border-bright);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 7px 6px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background 0.15s, color 0.15s;
+}
+
+.tab-btn:first-child { border-right: 1px solid var(--border-bright); }
+
+.tab-active {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.sidebar-search input,
+.sidebar-search select {
+    width: 100%;
+    padding: 9px 10px;
+    border: 2px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+}
+
+.sidebar-search input:focus,
+.sidebar-search select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* ── Lista de atividades ─── */
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 14px;
+}
+
+.sidebar-content::-webkit-scrollbar { width: 3px; }
+.sidebar-content::-webkit-scrollbar-thumb { background: var(--border-bright); }
+
+.pending-item {
+    background-color: var(--bg-color);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    border: 2px solid var(--border-color);
+    border-left: 4px solid var(--border-bright);
+    box-shadow: var(--shadow-card);
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%);
+    animation: itemFadeIn 0.3s ease both;
+}
+
+.pending-item:hover {
+    border-color: var(--primary-color);
+    border-left-color: var(--accent-color);
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.6);
+    transform: translateX(-2px);
+}
+
+.pending-item h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+    color: var(--text-primary);
+}
+
+.pending-item span {
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.03em;
+}
+
+/* ── Footer ─────────────── */
+.sidebar-footer {
+    padding: 14px 16px;
+    border-top: 2px solid var(--border-bright);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: var(--bg-surface-2);
+}
+
+/* ====================================================
+   BOTÕES GERAIS
+==================================================== */
+.btn-primary {
+    width: 100%;
+    padding: 11px 16px;
+    background-color: var(--primary-color);
+    color: #fff;
+    border: 2px solid var(--primary-hover);
+    font-family: 'Chakra Petch', monospace;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.07em;
+    cursor: pointer;
+    box-shadow: var(--shadow-card);
+    transition: background-color 0.15s, box-shadow 0.15s, transform 0.1s;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 5px 5px 0px rgba(0,0,0,0.7);
+}
+
+.btn-primary:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.7);
+}
+
+.btn-secondary {
+    width: 100%;
+    padding: 11px 16px;
+    background-color: var(--bg-surface-2);
+    color: var(--text-primary);
+    border: 2px solid var(--border-bright);
+    font-family: 'Chakra Petch', monospace;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.07em;
+    cursor: pointer;
+    box-shadow: var(--shadow-card);
+    transition: background-color 0.15s, transform 0.1s, box-shadow 0.1s;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+
+.btn-secondary:hover { background-color: var(--bg-surface-hover); }
+
+.btn-secondary:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.7);
+}
+
+.btn-ghost {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 8px;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.btn-ghost:hover { color: var(--accent-color); }
+
+/* ====================================================
+   MODALS
+==================================================== */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 30;
+    backdrop-filter: blur(3px);
+    animation: modalOverlayIn 0.2s ease both;
+}
+
+.modal.hidden { display: none; }
+
+.modal-content {
+    background-color: var(--bg-surface);
+    width: 92%;
+    max-width: 420px;
+    border: 2px solid var(--border-bright);
+    box-shadow: var(--shadow-hard);
+    max-height: 92vh;
+    overflow-y: auto;
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+    animation: modalSlideIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.modal-content::-webkit-scrollbar { width: 3px; }
+.modal-content::-webkit-scrollbar-thumb { background: var(--border-bright); }
+
+/* Cabeçalho do modal com corte angular */
+.modal-header-slant {
+    background-color: var(--bg-surface-2);
+    padding: 16px 24px;
+    border-bottom: 2px solid var(--border-bright);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+    margin-bottom: 20px;
+}
+
+.modal-header-slant h2 {
+    font-family: 'Chakra Petch', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-accent);
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.6), 0 0 10px rgba(59,111,212,0.3);
+    letter-spacing: 0.06em;
+}
+
+.modal-header-slant h2 i {
+    color: var(--accent-color);
+    margin-right: 8px;
+}
+
+.modal-small .modal-header-slant { text-align: center; }
+
+.modal-subtitle {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin: -10px 24px 16px;
+}
+
+/* ── SEÇÕES DO FORMULÁRIO (collapsible) ─────── */
+form#form-activity {
+    padding: 0 24px 20px;
+}
+
+.form-section {
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--primary-color);
+    background-color: var(--bg-color);
+    box-shadow: var(--shadow-inset);
+}
+
+/* Esconde a seta nativa do browser */
+.form-section > summary { list-style: none; }
+.form-section > summary::-webkit-details-marker { display: none; }
+
+/* Summary vira botão de toggle */
+.form-section-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s, background 0.15s;
+}
+
+.form-section-label:hover {
+    color: var(--text-accent);
+    background: rgba(59,111,212,0.07);
+}
+
+/* Seta Y2K rotaciona ao abrir */
+.form-section-label::after {
+    content: '▶';
+    font-size: 0.6rem;
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+    opacity: 0.6;
+}
+
+details.form-section[open] > summary.form-section-label::after {
+    transform: rotate(90deg);
+}
+
+/* Corpo com padding e animação de abertura */
+.form-section-body {
+    padding: 10px 14px 14px;
+    border-top: 1px solid var(--border-color);
+    animation: sectionOpen 0.2s ease both;
+}
+
+/* ── CAMPOS DE FORMULÁRIO ────────────────── */
+.form-group {
+    margin-bottom: 14px;
+    text-align: left;
+}
+
+.form-group:last-child { margin-bottom: 0; }
+
+.form-group.row {
+    display: flex;
+    gap: 12px;
+}
+
+.form-group.row .col { flex: 1; }
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 9px 10px;
+    border: 2px solid var(--border-color);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 2px 2px 0 var(--primary-color);
+}
+
+textarea { resize: vertical; min-height: 70px; }
+
+/* Checkboxes de dia da semana */
+.checkbox-day-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.day-check {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.day-check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+    padding: 0;
+}
+
+.day-check span {
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+/* Ações dos modais */
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 0 24px 20px;
+}
+
+.modal-small .modal-actions {
+    justify-content: center;
+    padding: 0 20px 20px; /* garante margem simétrica nos modais pequenos */
+}
+
+/* Padding horizontal para o conteúdo direto em modal-small (sem form wrapper) */
+.modal-small > .form-group,
+.modal-small > .form-group.row {
+    padding: 0 20px;
+}
+
+.modal-small > .modal-subtitle {
+    padding: 0 20px;
+    margin: -10px 0 16px;
+}
+
+.completion-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 4px 20px 0;
+}
+
+/* Corpo do modal de detalhes da atividade */
+.modal-detail-body {
+    white-space: pre-wrap;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    padding: 0 20px 4px;
+    text-align: left;
+}
+
+/* Linha de ações do modal de detalhes (3 botões) */
+.detail-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Botões de conclusão inline no modal de detalhes */
+.btn-detail-action {
+    flex: 1;
+    min-width: 120px;
+    padding: 9px 12px;
+    border: 2px solid var(--border-bright);
+    font-family: 'Chakra Petch', monospace;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    box-shadow: var(--shadow-card);
+    transition: background 0.15s, transform 0.1s, box-shadow 0.1s;
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+}
+
+.btn-action-full {
+    background-color: rgba(30, 90, 55, 0.4);
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
+
+.btn-action-full:hover {
+    background-color: rgba(30, 90, 55, 0.7);
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.6);
+}
+
+.btn-action-partial {
+    background-color: rgba(107, 78, 16, 0.3);
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+}
+
+.btn-action-partial:hover {
+    background-color: rgba(107, 78, 16, 0.6);
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.6);
+}
+
+.btn-detail-action:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 rgba(0,0,0,0.6);
+}
+
+/* ── Linha de gerenciamento do modal de detalhes ── */
+.detail-mgmt-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 0 20px;
+}
+
+.detail-mgmt-actions {
+    padding: 10px 20px 14px;
+    gap: 6px;
+    margin-top: 0 !important;
+}
+
+/* Base dos botões de gerenciamento */
+.btn-detail-mgmt {
+    flex: 1;
+    padding: 7px 8px;
+    border: 1px solid var(--border-color);
+    font-family: 'Chakra Petch', monospace;
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s, border-color 0.15s;
+    clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px));
+}
+
+.btn-mgmt-return {
+    background-color: var(--bg-surface-2);
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+}
+.btn-mgmt-return:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--border-bright);
+}
+
+.btn-mgmt-edit {
+    background-color: rgba(30, 60, 120, 0.3);
+    color: var(--text-accent);
+    border-color: var(--primary-color);
+}
+.btn-mgmt-edit:hover {
+    background-color: rgba(30, 60, 120, 0.55);
+    border-color: var(--primary-hover);
+}
+
+.btn-mgmt-delete {
+    background-color: rgba(120, 30, 30, 0.25);
+    color: #e55;
+    border-color: #7a2020;
+}
+.btn-mgmt-delete:hover {
+    background-color: rgba(120, 30, 30, 0.5);
+    border-color: #c0392b;
+    color: #ff6b6b;
+}
+
+.btn-detail-mgmt:active {
+    transform: translate(1px, 1px);
+}
+
+/* Grid de informações do modal de detalhes */
+.modal-detail-meta {
+    padding: 0 20px 6px;
+}
+
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.meta-row:last-child { border-bottom: none; }
+
+.meta-label {
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-right: 12px;
+}
+
+.meta-value {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    text-align: right;
+}
+
+/* Badge de prioridade no modal */
+.priority-badge {
+    padding: 2px 8px;
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.priority-badge.prio-0 { color: var(--text-secondary); }
+.priority-badge.prio-1 { color: #2e9e6b; }
+.priority-badge.prio-2 { color: var(--warning-color); }
+.priority-badge.prio-3 { color: #c0392b; }
+
+.meta-divider {
+    height: 1px;
+    background: var(--border-bright);
+    margin: 10px 0 6px;
+}
+
+/* Dot de prioridade nos itens da sidebar */
+.pending-item-inner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pending-priority-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 0; /* quadrado Y2K */
+    flex-shrink: 0;
+    transform: rotate(45deg); /* losango */
+}
+
+.prio-dot-0 { background-color: var(--border-bright); }
+.prio-dot-1 { background-color: #2e9e6b; }
+.prio-dot-2 { background-color: var(--warning-color); }
+.prio-dot-3 { background-color: #c0392b; }
+
+/* ── Helpers ─────────────────────────────── */
+.hidden { display: none !important; }
+
+/* ====================================================
+   ANIMAÇÕES
+==================================================== */
+
+/* Auth card e itens gerais subindo */
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Overlay do modal: fade simples */
+@keyframes modalOverlayIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Modal-content: sobe levemente e escala de 96% -> 100% */
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(14px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Blocos de atividade: deslizam da esquerda */
+@keyframes blockSlideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Itens pendentes: fade puro (stagger via JS se desejar) */
+@keyframes itemFadeIn {
+    from { opacity: 0; transform: translateX(8px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Losango do indicador de tempo: pulso sutil */
+@keyframes pulseDot {
+    0%, 100% { opacity: 1;   transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.7); }
+}
+
+/* Abertura das seções do formulário */
+@keyframes sectionOpen {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Engrenagem: rotacão de 90° ao hover */
+@keyframes gearSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(90deg); }
+}
+
+/* Menu de estilo: cai do topo com leve scale */
+@keyframes menuDropIn {
+    from { opacity: 0; transform: translateY(-8px) scaleY(0.9); transform-origin: top; }
+    to   { opacity: 1; transform: translateY(0) scaleY(1); }
+}
+
+/* ====================================================
+   RESPONSIVIDADE (Desktop)
+==================================================== */
+@media (min-width: 768px) {
+    #sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: var(--sidebar-width);
+        transform: translateX(0);
+        transition: transform 0.25s ease;
+    }
+
+    #sidebar.hidden {
+        transform: translateX(100%);
+    }
+
+    #toggle-sidebar, #close-sidebar {
+        display: flex;
+    }
+
+    #app.sidebar-open #main-content-area {
+        margin-right: var(--sidebar-width);
+        transition: margin-right 0.25s ease;
+    }
+}
+
+/* ====================================================
+   CHECKLIST & LINKS — Formul\u00e1rio de Atividade
+==================================================== */
+
+/* Header do form-group com toggle na direita */
+.form-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.form-group-header label { margin-bottom: 0; }
+
+/* Bot\u00e3o de alternancia texto/lista */
+.btn-mode-toggle {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px));
+}
+.btn-mode-toggle:hover,
+.btn-mode-toggle.active {
+    background: rgba(59,111,212,0.2);
+    border-color: var(--primary-color);
+    color: var(--text-accent);
+}
+
+/* Container do editor de checklist no formul\u00e1rio */
+.checklist-editor {
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    padding: 8px;
+}
+
+.checklist-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 6px;
+}
+
+/* Cada linha do editor */
+.checklist-editor-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.checklist-editor-row input[type="text"] {
+    flex: 1;
+    padding: 6px 8px;
+    font-size: 0.88rem;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+}
+
+.checklist-item-remove {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 4px;
+    transition: color 0.15s;
+    flex-shrink: 0;
+}
+.checklist-item-remove:hover { color: #c0392b; }
+
+/* Bot\u00e3o adicionar item */
+.btn-add-checklist {
+    background: none;
+    border: 1px dashed var(--border-bright);
+    color: var(--text-secondary);
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.15s, color 0.15s;
+}
+.btn-add-checklist:hover {
+    background: rgba(59,111,212,0.1);
+    color: var(--text-accent);
+    border-style: solid;
+}
+
+/* Inputs de link no formul\u00e1rio */
+.link-input {
+    margin-bottom: 6px !important;
+}
+.link-input:last-child { margin-bottom: 0 !important; }
+
+/* ── Checklist interativo no modal de detalhes ── */
+.detail-checklist {
+    padding: 4px 0 8px;
+}
+
+.detail-checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+}
+.detail-checklist-item:last-child { border-bottom: none; }
+
+/* Checkbox quadrado Y2K */
+.detail-checklist-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    accent-color: var(--success-color);
+    cursor: pointer;
+}
+
+.detail-checklist-item span {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    flex: 1;
+    transition: color 0.15s, text-decoration 0.15s;
+}
+.detail-checklist-item.done span {
+    color: var(--text-secondary);
+    text-decoration: line-through;
+}
+
+/* ── Links clic\u00e1veis no modal de detalhes ── */
+.detail-links-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    padding: 8px 0 4px;
+}
+
+.detail-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(59,111,212,0.15);
+    border: 1px solid var(--primary-color);
+    color: var(--text-accent);
+    font-family: 'Chakra Petch', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 4px 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s;
+    clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px));
+}
+.detail-link-btn:hover {
+    background: rgba(59,111,212,0.35);
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+}
+.detail-link-btn i { font-size: 0.75rem; }
+
+/* ── Corpo dos modais de sistema (alert / confirm) ── */
+.modal-sys-body {
+    padding: 12px 20px 16px;
+    color: var(--text-secondary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    text-align: center;
+}
