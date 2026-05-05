@@ -1,10 +1,13 @@
-const CACHE_NAME = 'planner-cache-v2';
+const CACHE_NAME = 'planner-cache-v3';
 const urlsToCache = [
   './',
   './index.html',
   './css/style.css',
   './js/app.js',
-  './manifest.json'
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
+  './favicon.png'
 ];
 
 // Instala e cacheia os arquivos; skipWaiting força ativação imediata
