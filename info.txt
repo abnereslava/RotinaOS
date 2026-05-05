@@ -1,4 +1,2 @@
 1. Criar o menu de temas
 2. Criar temas e arrumar os existentes (Persona 5, Medieval...)
-3. Favicon
-4. Mudar nome lá em cima pra "RotinaOS"
