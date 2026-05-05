@@ -328,10 +328,12 @@ function isActivityActiveToday(a) {
   const [y, m, d] = todayString.split('-');
   const currentDayDate = new Date(y, m - 1, d);
 
+  // 1. NÃO SUMIR DE IMEDIATO: Se foi concluída em um dia anterior, não exibe na agenda de hoje.
+  // Se foi concluída HOJE, ela passa por essa verificação e continua sendo exibida.
+  if (a.status === 'completed' && a.completionDate && a.completionDate !== todayString) return false;
+
   // Atividade agendada especificamente para hoje
   if (a.scheduledDate === todayString && a.scheduledTime) {
-    // Se for recorrente e já concluída, não mostra (já que o usuário quer que suma até o próximo ciclo)
-    if (a.recurrence !== 'single' && a.status === 'completed') return false;
     return true;
   }
 
@@ -339,23 +341,20 @@ function isActivityActiveToday(a) {
   if (a.recurrence === 'single' && a.status === 'partial' && a.scheduledTime) return true;
 
   if (a.recurrence === 'daily' && a.scheduledTime) {
-    if (a.status === 'completed') return false;
     return true;
   }
 
   // MÚLTIPLOS DIAS FIXOS (Semanal)
   if (a.recurrence === 'weekly' && a.fixedDays && a.fixedDays.length > 0 && a.scheduledTime) {
-    if (a.status === 'completed') return false; // Some se já concluída na semana
     const currentDay = currentDayDate.getDay();
-    if (a.fixedDays.some(d => d <= currentDay)) return true; // Aparece no dia ou fica rolando pros dias seguintes se não feita
+    if (a.fixedDays.some(d => d <= currentDay)) return true; 
   }
 
   // DIAS DO MÊS (Mensal)
   if (a.recurrence === 'monthly' && a.monthlyDays && a.scheduledTime) {
-    if (a.status === 'completed') return false; // Some se já concluída no mês
     const dayOfMonth = currentDayDate.getDate();
     const daysArr = a.monthlyDays.split(',').map(d => parseInt(d.trim()));
-    if (daysArr.some(d => d <= dayOfMonth)) return true; // Aparece no dia ou rola pros dias seguintes
+    if (daysArr.some(d => d <= dayOfMonth)) return true; 
   }
   return false;
 }
@@ -469,9 +468,23 @@ function renderAgenda() {
 
       const showWarning = act.recurrence === 'weekly' && !wasCompletedThisWeek(act);
 
+      // INDICADORES DOS CARDS: Frequência, Categoria, Prioridade e Horário Fixo[cite: 2]
+      const recurLabels = { single: 'Única', daily: 'Diária', weekly: 'Semanal', monthly: 'Mensal' };
+      const prioIcons = { 0: '—', 1: '↓ Baixa', 2: '→ Média', 3: '↑ Alta' };
+      const recurText = recurLabels[act.recurrence] || '—';
+      const catText = act.category || 'Geral';
+      const prioText = prioIcons[prio];
+      // Exibe a tachinha caso o horário exista na base
+      const isFixedTime = act.scheduledTime ? '<i class="fas fa-thumbtack" title="Horário Fixado" style="color: var(--accent-color); margin-right: 5px;"></i>' : '';
+
       block.innerHTML = `
-                <div class="block-title" title="${act.title}">${act.title}</div>
+                <div class="block-title" title="${act.title}">${isFixedTime}${act.title}</div>
                 <div class="block-time">${act.scheduledTime} (${duration}m)</div>
+                <div class="block-meta" style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; font-family: 'Chakra Petch', monospace; font-size: 0.65rem; color: var(--text-primary);">
+                    <span style="background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 2px;">${recurText}</span>
+                    <span style="background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 2px;">${catText}</span>
+                    ${prio > 0 ? `<span style="background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 2px;">Prio ${prioText}</span>` : ''}
+                </div>
                 <button class="toggle-btn"></button>
                 ${showWarning ? '<div class="warning-icon" title="Atividade semanal pendente">!</div>' : ''}
             `;
@@ -897,42 +910,85 @@ document.getElementById('tab-all')?.addEventListener('click', () => {
 function renderPendingList() {
   pendingList.innerHTML = '';
   const searchTerm = document.getElementById('search-activity').value.toLowerCase();
+  
+  // Apenas a Categoria atua como filtro de exclusão
   const selectedCategory = document.getElementById('filter-category').value;
+  // A Ordenação atua na reestruturação da lista
+  const sortMode = document.getElementById('sort-activities').value;
 
   const [y, m, d] = todayString.split('-');
   const currentDayDate = new Date(y, m - 1, d);
 
-  const filteredActivities = activities.filter(a => {
+  // 1. ETAPA DE FILTRAGEM (Oculta atividades da lista)
+  let filteredActivities = activities.filter(a => {
     const matchSearch = a.title.toLowerCase().includes(searchTerm);
     const matchCat = selectedCategory === '' || a.category === selectedCategory;
+
     if (!matchSearch || !matchCat) return false;
 
-    if (currentTab === 'pending') {
-      if (a.status === 'completed' && a.recurrence === 'single') return false; // Únicas completas não aparecem (serão deletadas no reset)
-      if (a.recurrence !== 'single' && a.status === 'completed') return false; // Recorrentes completas vão para Programadas
+    // VERIFICADOR DE FUTURO
+    let isFutureWeekly = false;
+    let isFutureMonthly = false;
 
-      // Se tem horário marcado para HOJE, some do banco
+    if (a.recurrence === 'weekly' && a.fixedDays && a.fixedDays.length > 0) {
+      if (Math.min(...a.fixedDays) > currentDayDate.getDay()) isFutureWeekly = true;
+    }
+    if (a.recurrence === 'monthly' && a.monthlyDays) {
+      const daysArr = a.monthlyDays.split(',').map(d => parseInt(d.trim()));
+      if (daysArr.length > 0 && Math.min(...daysArr) > currentDayDate.getDate()) isFutureMonthly = true;
+    }
+    const isFuture = isFutureWeekly || isFutureMonthly || (a.recurrence === 'single' && a.scheduledDate && a.scheduledDate > todayString);
+
+    if (currentTab === 'pending') {
+      if (isFuture) return false;
+      if (a.status === 'completed') return false; 
       if (a.scheduledDate === todayString && a.scheduledTime) return false;
       if (a.recurrence === 'daily' && a.scheduledTime) return false;
-
+      
       if (a.recurrence === 'weekly' && a.fixedDays && a.scheduledTime) {
         const currentDay = currentDayDate.getDay();
-        if (a.fixedDays.some(d => d <= currentDay)) return false; // Já está na agenda
+        if (a.fixedDays.some(d => d <= currentDay)) return false; 
       }
       if (a.recurrence === 'monthly' && a.monthlyDays && a.scheduledTime) {
         const dayOfMonth = currentDayDate.getDate();
         const daysArr = a.monthlyDays.split(',').map(d => parseInt(d.trim()));
-        if (daysArr.some(d => d <= dayOfMonth)) return false; // Já está na agenda
+        if (daysArr.some(d => d <= dayOfMonth)) return false; 
       }
     } else if (currentTab === 'scheduled') {
-      // Apenas atividades concluídas esperando o próximo ciclo
-      if (a.recurrence === 'single') return false;
-      if (a.status !== 'completed') return false;
+      if (!isFuture) return false;
     }
 
     return true;
   });
 
+  // 2. ETAPA DE ORDENAÇÃO (Classifica o array filtrado)
+  filteredActivities.sort((a, b) => {
+    if (sortMode === 'prio-desc') {
+      return (parseInt(b.priority) || 0) - (parseInt(a.priority) || 0);
+    } 
+    else if (sortMode === 'prio-asc') {
+      return (parseInt(a.priority) || 0) - (parseInt(b.priority) || 0);
+    } 
+    else if (sortMode === 'date-asc' || sortMode === 'date-desc') {
+      // Atividades sem data limite vão sempre para o final da lista para não poluir
+      if (!a.deadline && b.deadline) return 1;
+      if (a.deadline && !b.deadline) return -1;
+      if (!a.deadline && !b.deadline) return 0;
+
+      const dateA = new Date(a.deadline);
+      const dateB = new Date(b.deadline);
+      
+      return sortMode === 'date-asc' ? dateA - dateB : dateB - dateA;
+    }
+    else if (sortMode === 'fixed-first') {
+      const aFixed = a.scheduledTime ? 1 : 0;
+      const bFixed = b.scheduledTime ? 1 : 0;
+      return bFixed - aFixed; // Quem for 1 (tem horário) sobe
+    }
+    return 0; // "none" (mantém ordem natural)
+  });
+
+  // 3. ETAPA DE RENDERIZAÇÃO
   filteredActivities.forEach(act => {
     const div = document.createElement('div');
     const prio = parseInt(act.priority) || 0;
@@ -947,18 +1003,47 @@ function renderPendingList() {
     const scheduledBadge = isActive && currentTab === 'all' ?
       `<span style="margin-left: 6px; font-size: 0.65rem; background: var(--primary-color); color: #fff; padding: 2px 6px; border-radius: 4px; font-family: 'Chakra Petch', monospace;">AGENDADA</span>` : '';
 
+    const pinIcon = act.scheduledTime ? `<i class="fas fa-thumbtack" style="color: var(--accent-color); margin-right: 5px;" title="Horário Fixado: ${act.scheduledTime}"></i>` : '';
+
+    // Mostra data limite no card se estiver ordenada por ela (feedback visual útil)
+    let deadlineBadge = '';
+    if (act.deadline && (sortMode === 'date-asc' || sortMode === 'date-desc')) {
+      const [y, m, d] = act.deadline.split('-');
+      deadlineBadge = `<span style="margin-left: 6px; font-size: 0.65rem; border: 1px solid var(--border-bright); padding: 1px 4px; border-radius: 2px;">Limite: ${d}/${m}</span>`;
+    }
+
+    let scheduleInfoHtml = '';
+    if (currentTab === 'scheduled' || currentTab === 'all') {
+        let progText = '';
+        if (act.recurrence === 'weekly' && act.fixedDays && act.fixedDays.length > 0) {
+            const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            const daysStr = act.fixedDays.map(d => dayNames[d]).join(', ');
+            progText = `Dias: ${daysStr}`;
+        } else if (act.recurrence === 'monthly' && act.monthlyDays) {
+            progText = `Dias do mês: ${act.monthlyDays}`;
+        } else if (act.recurrence === 'single' && act.scheduledDate) {
+            const [y, m, d] = act.scheduledDate.split('-');
+            progText = `Data: ${d}/${m}/${y}`;
+        }
+        
+        if (progText) {
+            scheduleInfoHtml = `<div style="font-size: 0.72rem; color: var(--accent-color); margin-top: 4px; font-family: 'Chakra Petch', monospace;">▶ Prog: ${progText}</div>`;
+        }
+    }
+
     div.innerHTML = `
-            <div class="pending-item-inner">
-                <div class="pending-priority-dot prio-dot-${prio}"></div>
-                <div style="flex: 1; min-width: 0;">
-                    <h3>${warningIcon}${act.title}${scheduledBadge}</h3>
-                    <span>${act.category || 'Sem categoria'}</span>
-                </div>
-                <button class="btn-delete" style="background:none; border:none; color:#ef4444; font-size:1.1rem; cursor:pointer; padding: 5px; flex-shrink:0;">
-                    <i class="fas fa-trash"></i>
-                </button>
+        <div class="pending-item-inner">
+            <div class="pending-priority-dot prio-dot-${prio}"></div>
+            <div style="flex: 1; min-width: 0;">
+                <h3>${warningIcon}${pinIcon}${act.title}${deadlineBadge}${scheduledBadge}</h3>
+                <span>${act.category || 'Sem categoria'}</span>
+                ${scheduleInfoHtml}
             </div>
-        `;
+            <button class="btn-delete" style="background:none; border:none; color:#ef4444; font-size:1.1rem; cursor:pointer; padding: 5px; flex-shrink:0;">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
 
     div.querySelector('.btn-delete').addEventListener('click', async (e) => {
       e.stopPropagation();
@@ -966,7 +1051,6 @@ function renderPendingList() {
       if (ok) await deleteDoc(doc(db, "activities", act.id));
     });
 
-    // Agendar Atividade (modo detail estendido)
     div.addEventListener('click', () => {
       showDetailModal(act, true);
     });
@@ -976,6 +1060,7 @@ function renderPendingList() {
 
 document.getElementById('search-activity').addEventListener('input', renderPendingList);
 document.getElementById('filter-category').addEventListener('change', renderPendingList);
+document.getElementById('sort-activities').addEventListener('change', renderPendingList);
 
 // ============================================================================
 // MENU DE ESTILO (Engrenagem)

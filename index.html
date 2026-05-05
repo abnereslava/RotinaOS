@@ -107,15 +107,30 @@
             </div>
 
             <div class="sidebar-search">
-                <div class="tab-row">
+                <div class="tab-row" style="margin-bottom: 8px;">
                     <button id="tab-pending" class="tab-btn tab-active">Pendentes</button>
                     <button id="tab-scheduled" class="tab-btn">Programadas</button>
                     <button id="tab-all" class="tab-btn">Todas</button>
                 </div>
-                <input type="text" id="search-activity" placeholder="// buscar atividade...">
-                <select id="filter-category">
-                    <option value="">▸ Todas as categorias</option>
-                </select>
+                
+                <input type="text" id="search-activity" placeholder="// buscar nome..." style="margin-bottom: 8px;">
+                
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <!-- FILTRO (Oculta o que não for igual) -->
+                    <select id="filter-category" style="flex: 1; padding: 6px 8px; font-size: 0.85rem;">
+                        <option value="">▸ Categorias (Todas)</option>
+                    </select>
+                    
+                    <!-- ORDENAÇÃO (Reorganiza a lista) -->
+                    <select id="sort-activities" style="flex: 1; padding: 6px 8px; font-size: 0.85rem;">
+                        <option value="none">▸ Ordenar por...</option>
+                        <option value="prio-desc">Prioridade: Alta ➔ Baixa</option>
+                        <option value="prio-asc">Prioridade: Baixa ➔ Alta</option>
+                        <option value="date-asc">Data Limite: Mais Próximas</option>
+                        <option value="date-desc">Data Limite: Mais Distantes</option>
+                        <option value="fixed-first">Fixadas (📌) Primeiro</option>
+                    </select>
+                </div>
             </div>
 
             <div class="sidebar-content">
