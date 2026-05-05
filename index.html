@@ -56,27 +56,37 @@
                         <button id="btn-style-menu" class="btn-icon" title="Estilos do App">
                             <i class="fas fa-cog"></i>
                         </button>
-                        <div id="style-menu" class="style-menu hidden">
-                            <div class="style-menu-title">// ESTILO</div>
-                            <button class="style-option active" data-theme="y2k">
-                                <i class="fas fa-gamepad"></i> SA2 Y2K
-                            </button>
-                            <button class="style-option" data-theme="minimal" disabled title="Em breve">
-                                <i class="fas fa-minus"></i> Minimal <span class="badge-soon">em breve</span>
-                            </button>
-                            <button class="style-option" data-theme="nature" disabled title="Em breve">
-                                <i class="fas fa-leaf"></i> Nature <span class="badge-soon">em breve</span>
-                            </button>
-                        </div>
                     </div>
+                    <!-- Toggle Compact Mode -->
+                    <button id="btn-toggle-view" class="btn-icon" title="Alternar Visualização">
+                        <i class="fas fa-compress-arrows-alt"></i>
+                    </button>
                     <!-- Abre Sidebar -->
                     <button id="toggle-sidebar" class="btn-icon" title="Abrir Hub">
                         <i class="fas fa-bars"></i>
                     </button>
                 </div>
             </header>
-
-            <!-- Agenda -->
+            
+            <!-- Modal de temas (engrenagem) -->
+            <div id="modal-style" class="modal hidden">
+                <div class="modal-content modal-small">
+                    <div class="modal-header-slant">
+                        <h2><i class="fas fa-palette"></i> Temas</h2>
+                    </div>
+                    <div class="modal-body" style="padding:12px;">
+                        <select id="theme-select" class="btn-primary">
+                            <option value="y2k">Y2K (Original)</option>
+                            <option value="persona5">Persona 5</option>
+                            <option value="medieval">Medieval</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-ghost close-modal" id="btn-close-style">Fechar</button>
+                    </div>
+                </div>
+            </div>
+            
             <main id="agenda-container">
                 <div id="time-grid-labels"></div>
                 <div id="agenda-grid">
@@ -97,6 +107,7 @@
             <div class="sidebar-search">
                 <div class="tab-row">
                     <button id="tab-pending" class="tab-btn tab-active">Pendentes</button>
+                    <button id="tab-scheduled" class="tab-btn">Programadas</button>
                     <button id="tab-all" class="tab-btn">Todas</button>
                 </div>
                 <input type="text" id="search-activity" placeholder="// buscar atividade...">
@@ -283,6 +294,9 @@
                 </button>
                 <button type="button" class="btn-secondary" id="btn-complete-partial">
                     <i class="fas fa-battery-half"></i> Fiz o que deu hoje
+                </button>
+                <button type="button" class="btn-ghost" id="btn-complete-reset" style="display: none; border: 2px solid var(--border-color); margin-top: 5px;">
+                    <i class="fas fa-undo"></i> Resetar progresso
                 </button>
             </div>
             <div class="modal-actions">

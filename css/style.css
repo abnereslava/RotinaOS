@@ -43,6 +43,38 @@
     --shadow-inset:  inset 2px 2px 0px rgba(0, 0, 0, 0.4);
 }
 
+/* ── Tema Persona 5 ── */
+body[data-theme="persona5"] {
+    --bg-color:         #000000;
+    --bg-surface:       #1a1a1a;
+    --bg-surface-2:     #2a2a2a;
+    --bg-surface-hover: #3a3a3a;
+    --text-primary:     #ffffff;
+    --text-secondary:   #b3b3b3;
+    --text-accent:      #ff0000;
+    --primary-color:    #d32f2f;
+    --primary-hover:    #b71c1c;
+    --accent-color:     #ffeb3b;
+    --border-color:     #333333;
+    --border-bright:    #444444;
+}
+
+/* ── Tema Medieval ── */
+body[data-theme="medieval"] {
+    --bg-color:         #f4ecd8; /* Pergaminho */
+    --bg-surface:       #e8dfc5;
+    --bg-surface-2:     #dbd1b2;
+    --bg-surface-hover: #cfc3a0;
+    --text-primary:     #4a3728; /* Marrom escuro */
+    --text-secondary:   #7d5c41;
+    --text-accent:      #8b0000; /* Vermelho sangue */
+    --primary-color:    #8b0000;
+    --primary-hover:    #5e0000;
+    --accent-color:     #b8860b; /* Ouro velho */
+    --border-color:     #a67c52;
+    --border-bright:    #8b5a2b;
+}
+
 /* ── Reset ─────────────────────────────────────── */
 * {
     box-sizing: border-box;
@@ -360,6 +392,28 @@ body {
     border-top: 1px solid rgba(45, 74, 114, 0.45);
 }
 
+/* ── MODO COMPACTO ─────────────────────────────────────── */
+#agenda-container.compact-mode #time-grid-labels {
+    display: none;
+}
+
+#agenda-container.compact-mode #agenda-grid {
+    background-image: none;
+    border-left: none;
+    border-top: none;
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 10px;
+}
+
+#agenda-container.compact-mode .activity-group {
+    background-color: rgba(30, 48, 80, 0.1);
+    border-radius: 8px;
+    border: 1px dashed var(--border-color);
+}
+
 /* Linha de Tempo Real */
 #current-time-indicator {
     position: absolute;
@@ -596,7 +650,7 @@ body {
     transition: background 0.15s, color 0.15s;
 }
 
-.tab-btn:first-child { border-right: 1px solid var(--border-bright); }
+.tab-btn:not(:last-child) { border-right: 1px solid var(--border-bright); }
 
 .tab-active {
     background-color: var(--primary-color);
