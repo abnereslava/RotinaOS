@@ -28,8 +28,29 @@ let isCompactMode = false;
 // Registro do Service Worker para PWA
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
-    .then(reg => console.log('SW registered!'))
+    .then(reg => {
+      console.log('SW registered!');
+      
+      // Se houver uma atualização esperando, avisa ou tenta atualizar
+      reg.onupdatefound = () => {
+        const newWorker = reg.installing;
+        newWorker.onstatechange = () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            console.log('Nova versão disponível! O SW será atualizado.');
+          }
+        };
+      };
+    })
     .catch(err => console.error('Error registering SW', err));
+
+  // Recarrega a página quando um novo Service Worker assume o controle
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      window.location.reload();
+      refreshing = true;
+    }
+  });
 }
 
 // Elementos de Interface

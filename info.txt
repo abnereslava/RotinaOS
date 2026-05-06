@@ -1,2 +1,3 @@
-1. Criar o menu de temas
-2. Criar temas e arrumar os existentes (Persona 5, Medieval...)
+1. Rebrand total (ocorrências no código, ícones, nome público no Firebase) para "To-doOS"
+2. Criar o menu de temas
+3. Criar temas e arrumar os existentes (Persona 5, Medieval...)
