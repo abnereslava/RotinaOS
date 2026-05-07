@@ -720,6 +720,17 @@ body {
     letter-spacing: 0.03em;
 }
 
+/* ── Estilo para tarefas concluídas no dia (Banco) ── */
+.pending-item-inner.completed-today {
+    opacity: 0.6;
+    filter: grayscale(0.3);
+}
+
+.pending-item-inner.completed-today h3 {
+    text-decoration: line-through;
+    color: var(--success-color);
+}
+
 /* ── Footer ─────────────── */
 .sidebar-footer {
     padding: 14px 16px;

@@ -176,8 +176,15 @@ document.querySelectorAll('.close-modal').forEach(btn => {
 // ============================================================================
 // LÓGICA DE DATAS E FUSO HORÁRIO (Forçando GMT-3: America/Sao_Paulo)
 // ============================================================================
-const optionsDateStr = { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' };
-const todayString = new Intl.DateTimeFormat('en-CA', optionsDateStr).format(new Date());
+function getTodayString() {
+  const options = { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' };
+  const parts = new Intl.DateTimeFormat('pt-BR', options).formatToParts(new Date());
+  const d = parts.find(p => p.type === 'day').value;
+  const m = parts.find(p => p.type === 'month').value;
+  const y = parts.find(p => p.type === 'year').value;
+  return `${y}-${m}-${d}`;
+}
+let todayString = getTodayString();
 
 const dateTitle = document.getElementById('current-date-title');
 const now = new Date();
@@ -254,6 +261,7 @@ function loadActivities() {
   const q = query(collection(db, "activities"), where("userId", "==", currentUser.uid));
 
   onSnapshot(q, async (snapshot) => {
+    todayString = getTodayString(); // Atualiza a data a cada snapshot para evitar stale date
     let loadedActivities = [];
     snapshot.forEach((doc) => {
       loadedActivities.push({ id: doc.id, ...doc.data() });
@@ -962,7 +970,11 @@ function renderPendingList() {
 
     if (currentTab === 'pending') {
       if (isFuture) return false;
-      if (a.status === 'completed') return false; 
+      
+      // Não esconde tarefas recorrentes (diárias/semanais/mensais) mesmo que concluídas hoje,
+      // para que o usuário veja que elas voltaram/estão no banco.
+      if (a.status === 'completed' && a.recurrence === 'single') return false;
+      
       if (a.scheduledDate === todayString && a.scheduledTime) return false;
       if (a.recurrence === 'daily' && a.scheduledTime) return false;
       
@@ -1021,8 +1033,11 @@ function renderPendingList() {
     }
 
     const isActive = isActivityActiveToday(act);
-    const scheduledBadge = isActive && currentTab === 'all' ?
-      `<span style="margin-left: 6px; font-size: 0.65rem; background: var(--primary-color); color: #fff; padding: 2px 6px; border-radius: 4px; font-family: 'Chakra Petch', monospace;">AGENDADA</span>` : '';
+    const isCompletedToday = act.status === 'completed' && act.completionDate === todayString;
+    
+    const statusBadge = isCompletedToday ? 
+      `<span style="margin-left: 6px; font-size: 0.65rem; background: var(--success-color, #10b981); color: #fff; padding: 2px 6px; border-radius: 4px; font-family: 'Chakra Petch', monospace;">CONCLUÍDA</span>` :
+      (isActive && currentTab === 'all' ? `<span style="margin-left: 6px; font-size: 0.65rem; background: var(--primary-color); color: #fff; padding: 2px 6px; border-radius: 4px; font-family: 'Chakra Petch', monospace;">AGENDADA</span>` : '');
 
     const pinIcon = act.scheduledTime ? `<i class="fas fa-thumbtack" style="color: var(--accent-color); margin-right: 5px;" title="Horário Fixado: ${act.scheduledTime}"></i>` : '';
 
@@ -1053,10 +1068,10 @@ function renderPendingList() {
     }
 
     div.innerHTML = `
-        <div class="pending-item-inner">
+        <div class="pending-item-inner ${isCompletedToday ? 'completed-today' : ''}">
             <div class="pending-priority-dot prio-dot-${prio}"></div>
             <div style="flex: 1; min-width: 0;">
-                <h3>${warningIcon}${pinIcon}${act.title}${deadlineBadge}${scheduledBadge}</h3>
+                <h3>${warningIcon}${pinIcon}${act.title}${deadlineBadge}${statusBadge}</h3>
                 <span>${act.category || 'Sem categoria'}</span>
                 ${scheduleInfoHtml}
             </div>
