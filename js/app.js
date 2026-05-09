@@ -30,6 +30,11 @@ let sidebarFilterCategory = localStorage.getItem('sidebarFilterCategory') || '';
 let sidebarSortMode = localStorage.getItem('sidebarSortMode') || 'none';
 let fullViewSortMode = localStorage.getItem('fullViewSortMode') || 'none';
 let fullViewHideScheduled = localStorage.getItem('fullViewHideScheduled') === 'true';
+let mainViewFilterMode = parseInt(localStorage.getItem('mainViewFilterMode') || '0');
+const collapsedCategories = new Set(JSON.parse(localStorage.getItem('collapsedCategories') || '[]'));
+let notificationsEnabled = localStorage.getItem('notificationsEnabled') === 'true';
+let notificationLeadTime = parseInt(localStorage.getItem('notificationLeadTime') || '15');
+let notifiedToday = new Set(); // IDs de atividades já alertadas hoje
 
 // Modo Demonstração
 let isDemoMode = false;
@@ -493,13 +498,80 @@ function applyViewMode() {
 }
 
 // Inicializa o modo de visualização no carregamento
-setTimeout(applyViewMode, 100);
+setTimeout(() => {
+    applyViewMode();
+    applyMainFilter();
+}, 100);
+
+// --- FILTRO DE ATIVIDADES (AGENDA) ---
+document.getElementById('btn-main-filter')?.addEventListener('click', () => {
+    mainViewFilterMode = (mainViewFilterMode + 1) % 3;
+    localStorage.setItem('mainViewFilterMode', mainViewFilterMode);
+    applyMainFilter();
+});
+
+function applyMainFilter() {
+    const btn = document.getElementById('btn-main-filter');
+    if (!btn) return;
+    
+    if (mainViewFilterMode < 0 || mainViewFilterMode > 2 || isNaN(mainViewFilterMode)) {
+        mainViewFilterMode = 0;
+    }
+    
+    const tooltips = [
+        "Filtro: Todas as atividades",
+        "Filtro: Ocultar concluídas",
+        "Filtro: Ocultar concluídas e parciais"
+    ];
+    
+    btn.title = tooltips[mainViewFilterMode];
+    
+    // Usa uma estrutura com wrapper para evitar conflito com o ::before do FontAwesome
+    btn.innerHTML = `<span class="filter-icon-wrapper"><i class="fa-solid fa-eye"></i></span>`;
+    
+    btn.classList.remove('mode-1', 'mode-2');
+    if (mainViewFilterMode > 0) {
+        btn.classList.add(`mode-${mainViewFilterMode}`);
+        btn.style.color = 'var(--accent-color)';
+        btn.style.opacity = '1';
+    } else {
+        btn.style.color = 'var(--text-primary)';
+        btn.style.opacity = '0.7';
+    }
+    
+    renderAgenda();
+}
 
 function renderAgenda() {
   document.querySelectorAll('.activity-block, .activity-group-wrapper, .compact-time-indicator').forEach(b => b.remove());
 
-  const todaysActivities = activities.filter(a => isActivityActiveToday(a));
+  const todaysActivities = activities.filter(a => {
+    if (!isActivityActiveToday(a)) return false;
+    
+    // Filtro de Visualização Principal
+    const isCompleted = a.status === 'completed' && a.completionDate === todayString;
+    const isPartial = a.status === 'partial' && a.completionDate === todayString;
+    
+    if (mainViewFilterMode === 1 && isCompleted) return false;
+    if (mainViewFilterMode === 2 && (isCompleted || isPartial)) return false;
+    
+    return true;
+  });
   const groups = buildOverlapGroups(todaysActivities);
+  
+  // Cálculo de sobreposição máxima para ajuste de scroll horizontal
+  const maxOverlap = Math.min(Math.max(...groups.map(g => g.length), 1), 10);
+  const MIN_COL_WIDTH = 200; 
+  const gridEl = document.getElementById('agenda-grid');
+  
+  if (gridEl) {
+    if (!isCompactMode) {
+        // Define a largura mínima baseada na quantidade de colunas necessárias
+        gridEl.style.minWidth = (maxOverlap * MIN_COL_WIDTH) + 'px';
+    } else {
+        gridEl.style.minWidth = '0';
+    }
+  }
 
   const parts = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', hour: 'numeric', minute: 'numeric' }).formatToParts(new Date());
   let hour = 0, minute = 0;
@@ -508,7 +580,7 @@ function renderAgenda() {
   let indicatorPlaced = false;
 
   groups.forEach(group => {
-    const cols = group.length;
+    const cols = Math.min(group.length, 10);
     let groupContainer = document.getElementById('agenda-grid');
     let minStart = 0;
     let maxEnd = 0;
@@ -576,13 +648,19 @@ function renderAgenda() {
 
       const [hh, mm] = act.scheduledTime.split(':').map(Number);
       const topMinutes = (hh * 60 + mm) - minStart;
-      const duration = act.duration || 60;
+      const duration = act.duration;
 
       block.style.top = `${topMinutes * 2}px`;
-      block.style.height = `${duration * 2}px`;
+      if (duration !== null && duration !== undefined) {
+        block.style.height = `${duration * 2}px`;
+      } else {
+        // Agora qualquer atividade sem duração definida vira um Card Aberto
+        block.classList.add('open-card');
+        block.style.height = 'auto';
+      }
 
       const widthPercent = 100 / cols;
-      block.style.width = `calc(${widthPercent}% - 4px)`;
+      block.style.width = `calc(${widthPercent}% - 6px)`;
       block.style.left = `${idx * widthPercent}%`;
 
       const showWarning = act.recurrence === 'weekly' && !wasCompletedThisWeek(act);
@@ -598,7 +676,7 @@ function renderAgenda() {
 
       block.innerHTML = `
                 <div class="block-title" title="${act.title}">${isFixedTime}${act.title}</div>
-                <div class="block-time">${act.scheduledTime} (${duration}m)</div>
+                <div class="block-time">${act.scheduledTime} ${duration ? `(${duration}m)` : '(aberto)'}</div>
                 <div class="block-meta" style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; font-family: 'Chakra Petch', monospace; font-size: 0.65rem; color: var(--text-primary);">
                     <span style="background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 2px;">${recurText}</span>
                     <span style="background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 2px;">${catText}</span>
@@ -1260,17 +1338,31 @@ function renderFullView() {
 
   sortedCategories.forEach(catName => {
     const column = document.createElement('div');
-    column.className = 'category-column';
+    column.className = `category-column ${collapsedCategories.has(catName) ? 'collapsed' : ''}`;
     
     const acts = categoriesMap[catName];
     
     column.innerHTML = `
       <div class="category-column-header">
         <h3>${catName}</h3>
-        <span style="font-size: 0.7rem; color: var(--text-secondary);">${acts.length}</span>
+        <div class="category-header-info">
+          <span class="btn-cat-collapse"><i class="fas fa-chevron-left"></i></span>
+          <span class="cat-count">${acts.length}</span>
+        </div>
       </div>
       <div class="category-column-items"></div>
     `;
+
+    // Toggle Collapse
+    column.querySelector('.category-column-header').addEventListener('click', () => {
+        const isCollapsed = column.classList.toggle('collapsed');
+        if (isCollapsed) {
+            collapsedCategories.add(catName);
+        } else {
+            collapsedCategories.delete(catName);
+        }
+        localStorage.setItem('collapsedCategories', JSON.stringify([...collapsedCategories]));
+    });
 
     const itemsContainer = column.querySelector('.category-column-items');
 
@@ -1552,21 +1644,42 @@ formActivity.addEventListener('submit', async (e) => {
 
   const fixedTime = document.getElementById('act-time').value;
   const fixedTimeEnd = document.getElementById('act-time-end').value;
+
+  // --- VALIDAÇÕES DE DATA E HORA ---
+  if (newAct.recurrence === 'single') {
+      const deadline = document.getElementById('act-deadline').value;
+      const scheduled = document.getElementById('act-date').value;
+      if (deadline && deadline < todayString) {
+          await showAlert('A Data Limite não pode ser anterior a hoje.', 'Data Inválida');
+          return;
+      }
+      if (scheduled && scheduled < todayString) {
+          await showAlert('A Data de Agendamento não pode ser anterior a hoje.', 'Data Inválida');
+          return;
+      }
+  }
+
   if (fixedTime) {
     newAct.scheduledTime = fixedTime;
     if (fixedTimeEnd) {
       const [hs, ms] = fixedTime.split(':').map(Number);
       const [he, me] = fixedTimeEnd.split(':').map(Number);
       const dur = (he * 60 + me) - (hs * 60 + ms);
+      
+      if (dur < 0) {
+          await showAlert('O horário de término deve ser posterior ao horário de início.', 'Horário Inválido');
+          return;
+      }
       newAct.duration = dur > 0 ? dur : 60;
     } else {
-      newAct.duration = 60;
+      // CARD ABERTO: Salva sem duração (null)
+      newAct.duration = null;
     }
     // Se não for única (recorrente), e não tem dias fixos mas tem horário, assume que é para hoje
     if (newAct.recurrence !== 'single' && fixedDays.length === 0 && newAct.recurrence !== 'daily' && newAct.recurrence !== 'monthly') {
       newAct.scheduledDate = todayString;
     }
-    const hasConflict = activities.some(a => a.scheduledDate === todayString && a.scheduledTime === fixedTime
+    const hasConflict = activities.some(a => a.scheduledDate === (newAct.scheduledDate || todayString) && a.scheduledTime === fixedTime
       && a.id !== editingActivityId);
     if (hasConflict) {
       const ok = await showConfirm('Já existe uma atividade neste horário. Deseja adicionar mesmo assim?', 'Conflito de Horário');
@@ -1625,18 +1738,21 @@ document.getElementById('btn-confirm-schedule').addEventListener('click', async 
   const startTime = document.getElementById('sched-start').value;
   const endTime = document.getElementById('sched-end').value;
 
-  if (!startTime || !endTime) {
-    await showAlert('Por favor, preencha os horários de início e término.', 'Campos Obrigatórios');
+  if (!startTime) {
+    await showAlert('Por favor, preencha pelo menos o horário de início.', 'Campo Obrigatório');
     return;
   }
 
-  const [hStart, mStart] = startTime.split(':').map(Number);
-  const [hEnd, mEnd] = endTime.split(':').map(Number);
-  const duration = (hEnd * 60 + mEnd) - (hStart * 60 + mStart);
+  let duration = null;
+  if (endTime) {
+    const [hStart, mStart] = startTime.split(':').map(Number);
+    const [hEnd, mEnd] = endTime.split(':').map(Number);
+    duration = (hEnd * 60 + mEnd) - (hStart * 60 + mStart);
 
-  if (duration <= 0) {
-    await showAlert('O horário de término deve ser posterior ao horário de início.', 'Horário Inválido');
-    return;
+    if (duration < 0) {
+      await showAlert('O horário de término deve ser posterior ao horário de início.', 'Horário Inválido');
+      return;
+    }
   }
 
   if (pendingActivityToSchedule) {
@@ -1703,4 +1819,118 @@ document.getElementById('btn-complete-reset')?.addEventListener('click', async (
     modalCompletion.classList.add('hidden');
     currentSelectedBlock = null;
   }
+});
+
+// ============================================================================
+// SISTEMA DE ALERTAS E NOTIFICAÇÕES (DESKTOP & PWA)
+// ============================================================================
+
+function initNotifications() {
+  const toggle = document.getElementById('notification-toggle');
+  const slider = document.getElementById('notification-lead-time');
+  const label = document.getElementById('notification-lead-label');
+  const settingsArea = document.getElementById('notification-settings');
+
+  if (!toggle || !slider || !label) return;
+
+  // Carrega estado inicial
+  toggle.checked = notificationsEnabled;
+  slider.value = notificationLeadTime;
+  label.textContent = `${notificationLeadTime} min`;
+  if (notificationsEnabled) settingsArea.classList.remove('hidden');
+
+  toggle.addEventListener('change', async () => {
+    notificationsEnabled = toggle.checked;
+    localStorage.setItem('notificationsEnabled', notificationsEnabled);
+    
+    if (notificationsEnabled) {
+      settingsArea.classList.remove('hidden');
+      if (Notification.permission === 'default') {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          await showAlert('As notificações foram bloqueadas. Autorize nas configurações do seu navegador para receber alertas.', 'Permissão Negada');
+          toggle.checked = false;
+          notificationsEnabled = false;
+          localStorage.setItem('notificationsEnabled', false);
+          settingsArea.classList.add('hidden');
+        }
+      } else if (Notification.permission === 'denied') {
+          await showAlert('As notificações estão bloqueadas nas configurações do seu navegador.', 'Aviso');
+      }
+    } else {
+      settingsArea.classList.add('hidden');
+    }
+  });
+
+  slider.addEventListener('input', () => {
+    notificationLeadTime = parseInt(slider.value);
+    label.textContent = `${notificationLeadTime} min`;
+    localStorage.setItem('notificationLeadTime', notificationLeadTime);
+  });
+}
+
+function checkActivityAlerts() {
+  if (!notificationsEnabled || Notification.permission !== 'granted') return;
+
+  // Reset diário do cache
+  const lastDate = localStorage.getItem('lastNotificationResetDate');
+  if (lastDate !== todayString) {
+      notifiedToday.clear();
+      localStorage.setItem('lastNotificationResetDate', todayString);
+  }
+
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  activities.forEach(act => {
+    // Só alerta se estiver pendente, tiver horário fixo e estiver ativa hoje
+    if (act.status === 'pending' && act.scheduledTime && isActivityActiveToday(act)) {
+      if (notifiedToday.has(act.id)) return;
+
+      const [h, m] = act.scheduledTime.split(':').map(Number);
+      const actMinutes = h * 60 + m;
+      const diff = actMinutes - currentMinutes;
+
+      // Alerta se estiver dentro da janela de antecedência (ex: 15 min antes)
+      if (diff <= notificationLeadTime && diff >= 0) {
+        sendNotification(act, diff);
+        notifiedToday.add(act.id);
+      }
+    }
+  });
+}
+
+function sendNotification(act, diff) {
+  const title = `Agenda: ${act.title}`;
+  const timeStr = diff === 0 ? "Começa agora!" : `Começa em ${diff} minutos.`;
+  const options = {
+    body: `${act.scheduledTime} - ${timeStr}\nCategoria: ${act.category || 'Geral'}`,
+    icon: '/favicon.ico',
+    badge: '/favicon.ico',
+    vibrate: [200, 100, 200],
+    tag: act.id,
+    renotify: true,
+    data: { url: window.location.href }
+  };
+
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification(title, options);
+    });
+  } else {
+    try {
+      new Notification(title, options);
+    } catch(e) {
+      console.warn("Notification fallback failed", e);
+    }
+  }
+}
+
+// Inicia o loop (a cada 60 segundos)
+setInterval(checkActivityAlerts, 60000);
+
+// Chamar init na carga
+window.addEventListener('DOMContentLoaded', () => {
+    initNotifications();
+    checkActivityAlerts(); // Primeira checagem imediata
 });

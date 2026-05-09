@@ -54,43 +54,83 @@
                 <div class="header-accent"></div>
                 <h1 id="current-date-title"><i class="far fa-calendar-alt"></i> Hoje</h1>
                 <div class="header-controls">
-                    <!-- Engrenagem de Estilos -->
-                    <div id="style-menu-wrapper">
-                        <button id="btn-style-menu" class="btn-icon" title="Estilos do App">
-                            <i class="fas fa-cog"></i>
-                        </button>
-                    </div>
+                    <!-- Filtro de Atividades na Agenda -->
+                    <button id="btn-main-filter" class="btn-icon" title="Filtro: Todas as atividades">
+                        <i class="fas fa-filter"></i>
+                    </button>
                     <!-- Toggle Compact Mode -->
                     <button id="btn-toggle-view" class="btn-icon" title="Alternar Visualização">
                         <i class="fas fa-compress-arrows-alt"></i>
                     </button>
-                    <!-- Botão Visão Geral (Todas as Categorias) -->
-                    <button id="btn-full-view" class="btn-icon" title="Visão Geral por Categorias">
+                    <!-- Banco de atividades -->
+                    <button id="btn-full-view" class="btn-icon" title="Banco de atividades">
                         <i class="fas fa-layer-group"></i>
                     </button>
-                    <!-- Abre Sidebar -->
-                    <button id="toggle-sidebar" class="btn-icon" title="Abrir Hub">
+                    <!-- Abre Sidebar (Oculto) -->
+                    <button id="toggle-sidebar" class="btn-icon hidden" title="Abrir Hub">
                         <i class="fas fa-bars"></i>
                     </button>
+                    <!-- Configurações -->
+                    <div id="style-menu-wrapper">
+                        <button id="btn-style-menu" class="btn-icon" title="Configurações">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
                 </div>
             </header>
             
             
-            <!-- Modal de temas (engrenagem) -->
+            <!-- Modal de Configurações (engrenagem) -->
             <div id="modal-style" class="modal hidden">
                 <div class="modal-content modal-small">
                     <div class="modal-header-slant">
-                        <h2><i class="fas fa-palette"></i> Temas</h2>
+                        <h2><i class="fas fa-cog"></i> Configurações</h2>
                     </div>
-                    <div class="modal-body" style="padding:12px;">
-                        <select id="theme-select" class="btn-primary">
-                            <option value="y2k">Y2K (Original)</option>
-                            <option value="medieval">Medieval</option>
-                            <option value="zelda">Boy Without a Fairy</option>
-                        </select>
+                    <div class="modal-body" style="padding:16px;">
+                        <!-- Seção Aparência -->
+                        <div class="settings-section">
+                            <label class="settings-label"><i class="fas fa-palette"></i> Aparência</label>
+                            <select id="theme-select" class="btn-primary" style="width: 100%;">
+                                <option value="y2k">Y2K (Original)</option>
+                                <option value="medieval">Medieval</option>
+                                <option value="zelda">Boy Without a Fairy</option>
+                            </select>
+                        </div>
+                        
+                        <div class="modal-divider"></div>
+
+                        <!-- Seção Alertas -->
+                        <div class="settings-section">
+                            <label class="settings-label"><i class="fas fa-bell"></i> Alertas</label>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+                                <span style="font-size: 0.85rem; color: var(--text-primary);">Ativar Notificações</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="notification-toggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            
+                            <div id="notification-settings" class="hidden" style="margin-top: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Antecedência:</span>
+                                    <span id="notification-lead-label" style="font-size: 0.85rem; color: var(--accent-color); font-weight: bold; font-family: 'Chakra Petch', monospace;">15 min</span>
+                                </div>
+                                <input type="range" id="notification-lead-time" min="0" max="180" step="5" value="15" style="width: 100%; height: 6px; border-radius: 3px; accent-color: var(--accent-color);">
+                            </div>
+                        </div>
+
+                        <div class="modal-divider"></div>
+
+                        <!-- Seção Conta -->
+                        <div class="settings-section">
+                            <label class="settings-label"><i class="fas fa-user-circle"></i> Conta</label>
+                            <button id="btn-logout" class="btn-secondary" style="width: 100%; display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 8px;">
+                                <i class="fas fa-sign-out-alt"></i> Sair da Conta
+                            </button>
+                        </div>
                     </div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn-ghost close-modal" id="btn-close-style">Fechar</button>
+                    <div class="modal-actions" style="padding: 0 16px 16px;">
+                        <button type="button" class="btn-primary close-modal" id="btn-close-style" style="width: 100%;">FECHAR</button>
                     </div>
                 </div>
             </div>
@@ -105,6 +145,10 @@
 
         <!-- ══════════════════════════════════════
              SIDEBAR / HUB DE ATIVIDADES
+             [OBSOLETO/OBSOLETE] 
+             Este menu lateral foi substituído pelo "Banco de Atividades" (Full View).
+             NÃO MODIFICAR OU REATIVAR SEM SOLICITAÇÃO EXPLÍCITA.
+             Mantido apenas para compatibilidade de estrutura interna.
         ══════════════════════════════════════ -->
         <aside id="sidebar" class="hidden">
             <div class="sidebar-header">
@@ -146,9 +190,6 @@
             <div class="sidebar-footer">
                 <button id="btn-new-activity" class="btn-primary">
                     <i class="fas fa-plus"></i> NOVA ATIVIDADE
-                </button>
-                <button id="btn-logout" class="btn-ghost">
-                    <i class="fas fa-sign-out-alt"></i> Sair da Conta
                 </button>
             </div>
         </aside>
@@ -294,7 +335,7 @@
                 </div>
                 <div class="col">
                     <label>Término</label>
-                    <input type="time" id="sched-end" required>
+                    <input type="time" id="sched-end">
                 </div>
             </div>
             <div class="modal-actions">
@@ -383,7 +424,7 @@
         <div class="modal-content modal-full">
             <div class="modal-header-slant">
                     <div class="full-view-header-content">
-                        <h2><i class="fas fa-layer-group"></i> VISÃO GERAL DO BANCO</h2>
+                        <h2><i class="fas fa-layer-group"></i> BANCO DE ATIVIDADES</h2>
                         
                         <div class="full-view-controls">
                             <button class="btn-primary btn-new-activity-trigger desktop-only" style="padding: 6px 12px; font-size: 0.72rem; width: auto; margin-bottom: 0;">

@@ -518,10 +518,8 @@ body[data-theme="medieval"] .category-column-header h3 {
 
 /* ── Medieval: modo compacto ── */
 body[data-theme="medieval"] #agenda-container.compact-mode .activity-group {
-    border-radius: 3px;
-    background-color: rgba(74, 44, 16, 0.1);
-    border: 1px solid var(--border-color);
-    border-style: solid;
+    background-color: transparent;
+    border: none;
 }
 
 /* ── Medieval: badge, prioridade ── */
@@ -921,10 +919,8 @@ body[data-theme="zelda"] .category-column-header h3 {
 
 /* ── Zelda: modo compacto ── */
 body[data-theme="zelda"] #agenda-container.compact-mode .activity-group {
-    border: 1px solid var(--border-color);
-    background-color: rgba(40, 96, 64, 0.06);
-    border-radius: 6px;
-    clip-path: none !important;
+    background-color: transparent;
+    border: none;
 }
 
 /* ── Zelda: badges e prioridade ── */
@@ -1190,14 +1186,57 @@ body {
     background: none;
     border: none;
     color: var(--text-primary);
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     cursor: pointer;
-    padding: 6px 8px;
-    transition: color 0.2s;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s, background-color 0.2s, transform 0.2s;
     flex-shrink: 0;
+    border-radius: 4px;
 }
 
 .btn-icon:hover { color: var(--text-accent); }
+
+/* Estados do Filtro da Agenda (Olho com riscos) */
+.filter-icon-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#btn-main-filter.mode-1 .filter-icon-wrapper::after,
+#btn-main-filter.mode-2 .filter-icon-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -10%;
+    width: 120%;
+    height: 2px;
+    background-color: currentColor;
+    transform: translateY(-50%) rotate(-45deg);
+    box-shadow: 0 0 2px rgba(0,0,0,0.5);
+    border-radius: 1px;
+    z-index: 2;
+}
+
+#btn-main-filter.mode-2 .filter-icon-wrapper::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -10%;
+    width: 120%;
+    height: 2px;
+    background-color: currentColor;
+    transform: translateY(-50%) rotate(45deg);
+    box-shadow: 0 0 2px rgba(0,0,0,0.5);
+    border-radius: 1px;
+    z-index: 2;
+}
 
 
 /* ====================================================
@@ -1207,6 +1246,7 @@ body {
     display: flex;
     flex: 1;
     overflow-y: auto;
+    overflow-x: auto;
     position: relative;
     padding-top: 15px;
     padding-bottom: 50px;
@@ -1274,9 +1314,9 @@ body {
 }
 
 #agenda-container.compact-mode .activity-group {
-    background-color: rgba(30, 48, 80, 0.1);
-    border-radius: 8px;
-    border: 1px dashed var(--border-color);
+    background-color: transparent;
+    border-radius: 0;
+    border: none;
 }
 
 /* Linha de Tempo Real */
@@ -1333,6 +1373,30 @@ body {
 .activity-block.partial {
     opacity: 0.45;
     border-color: var(--text-secondary);
+}
+
+/* Cards Abertos (Sem horário de término) */
+.activity-block.open-card {
+    height: auto !important;
+    min-height: 55px;
+    padding-bottom: 15px;
+    overflow: visible;
+    /* Efeito de card "aberto" na parte inferior */
+    clip-path: none !important;
+    border-bottom: 2px dashed var(--border-bright) !important;
+    background-image: linear-gradient(to bottom, var(--bg-surface-2) 75%, transparent 100%) !important;
+    box-shadow: none !important;
+}
+
+.activity-block.open-card .block-title {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    line-height: 1.3;
+}
+
+.activity-block.open-card .block-meta {
+    margin-bottom: 5px;
 }
 
 .activity-block.completed {
@@ -2563,6 +2627,74 @@ textarea { resize: vertical; min-height: 70px; }
     display: flex;
     align-items: center;
     justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.category-column-header:hover {
+    background-color: var(--bg-surface-hover);
+}
+
+.category-header-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-cat-collapse {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    transition: transform 0.3s ease;
+}
+
+.category-column.collapsed .btn-cat-collapse {
+    transform: rotate(180deg);
+}
+
+.category-column {
+    flex: 0 0 350px;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-surface-2);
+    border: 2px solid var(--border-bright);
+    box-shadow: var(--shadow-card);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+    max-height: 100%;
+    transition: flex 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-column.collapsed {
+    flex: 0 0 50px !important;
+    width: 50px !important;
+    min-width: 50px !important;
+}
+
+.category-column.collapsed .category-column-items {
+    display: none;
+}
+
+.category-column.collapsed .category-column-header {
+    height: 100%;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    padding: 20px 0;
+    gap: 30px;
+    border-bottom: none;
+}
+
+.category-column.collapsed .category-column-header h3 {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    margin: 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+}
+
+.category-column.collapsed .category-header-info {
+    flex-direction: column-reverse;
+    gap: 15px;
 }
 
 .category-column-header h3 {
@@ -2572,6 +2704,13 @@ textarea { resize: vertical; min-height: 70px; }
     color: var(--text-accent);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+
+.cat-count {
+    font-size: 0.72rem;
+    color: var(--accent-color);
+    font-weight: 700;
+    font-family: 'Chakra Petch', monospace;
 }
 
 .category-column-items {
@@ -2714,4 +2853,96 @@ textarea { resize: vertical; min-height: 70px; }
     flex: 1;
     height: 1px;
     background: var(--border-color);
+}
+
+/* ── Seções de Configurações no Modal ── */
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.settings-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'Chakra Petch', monospace;
+    font-weight: 700;
+}
+
+.modal-divider {
+    margin: 20px 0;
+    height: 1px;
+    background: var(--border-color);
+    opacity: 0.5;
+}
+
+/* ── Switch Toggle (Cyberpunk/iOS Hybrid) ── */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 22px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(255,255,255,0.08);
+    transition: .3s;
+    border: 1px solid var(--border-bright);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--text-secondary);
+    transition: .3s;
+}
+
+input:checked + .slider {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(20px);
+    background-color: #000;
+}
+
+/* Sliders de Range customizados */
+input[type=range] {
+    -webkit-appearance: none;
+    background: transparent;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    margin-top: -5px;
+    box-shadow: 0 0 10px var(--accent-light);
+    border: 2px solid #fff;
 }
