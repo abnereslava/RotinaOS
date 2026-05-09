@@ -5,5 +5,5 @@
     d. GLaDOS
 
 2. Futuramente:
-    a. Banco de atividades e visualização principal com rolagem no desktop (drag n' drop (similar ao mobile)); opção de desativar nas configurações
+    a. Banco de atividades e visualização principal com rolagem no desktop (drag (similar ao mobile)); opção de desativar nas configurações
     b. Visualização de calendário (?)
