@@ -1,12 +1,12 @@
-﻿/* ====================================================
-   ROTINA OS â€” EstÃ©tica SA2 / Y2K
-   Dark mode azul-marinho confortÃ¡vel
+/* ====================================================
+   ROTINA OS — Estética SA2 / Y2K
+   Dark mode azul-marinho confortável
 ==================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
 
 :root {
-    /* Paleta Y2K ConfortÃ¡vel â€” Azul Marinho Escuro */
+    /* Paleta Y2K Confortável — Azul Marinho Escuro */
     --bg-color:         #0b0f1a;
     --bg-surface:       #111827;
     --bg-surface-2:     #1a2235;
@@ -16,12 +16,12 @@
     --text-secondary: #6b8cad;
     --text-accent:    #93c5fd;
 
-    /* Cores de aÃ§Ã£o â€” pastÃ©is/foscos estilo SA2 */
+    /* Cores de ação — pastéis/foscos estilo SA2 */
     --primary-color:  #3b6fd4;   /* azul royal fosco */
     --primary-hover:  #2a57b0;
     --primary-light:  rgba(59, 111, 212, 0.18);
 
-    --accent-color:   #d97b3a;   /* Ã¢mbar/laranja fosco */
+    --accent-color:   #d97b3a;   /* âmbar/laranja fosco */
     --accent-light:   rgba(217, 123, 58, 0.18);
 
     --success-color:  #2e9e6b;
@@ -43,7 +43,7 @@
     --shadow-inset:  inset 2px 2px 0px rgba(0, 0, 0, 0.4);
 }
 
-/* â”€â”€ Tema Medieval â”€â”€ */
+/* ── Tema Medieval ── */
 body[data-theme="medieval"] {
     /* Paleta: couro escuro, pergaminho, ouro velho, escarlate */
     --bg-color:         #120a04;
@@ -71,7 +71,7 @@ body[data-theme="medieval"] {
     --border-color:     #4a2c10;
     --border-bright:    #7a4c20;
 
-    /* Sombras: luz de vela â€” difusas, sem pixel duro */
+    /* Sombras: luz de vela — difusas, sem pixel duro */
     --shadow-hard:      0 6px 24px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.6);
     --shadow-card:      0 3px 12px rgba(0,0,0,0.6);
     --shadow-inset:     inset 0 2px 8px rgba(0,0,0,0.5);
@@ -81,7 +81,7 @@ body[data-theme="medieval"] {
     letter-spacing: 0.015em;
 }
 
-/* â”€â”€ Medieval: fundo com textura de couro/madeira escura â”€â”€ */
+/* ── Medieval: fundo com textura de couro/madeira escura ── */
 body[data-theme="medieval"],
 body[data-theme="medieval"] .auth-wrapper {
     background-image:
@@ -96,7 +96,7 @@ body[data-theme="medieval"] .auth-wrapper {
         );
 }
 
-/* â”€â”€ Medieval: tela de login â€” pergaminho iluminado â”€â”€ */
+/* ── Medieval: tela de login — pergaminho iluminado ── */
 body[data-theme="medieval"] .auth-wrapper {
     background-color: var(--bg-color);
     background-size: auto;
@@ -121,7 +121,7 @@ body[data-theme="medieval"] .auth-card {
 
 body[data-theme="medieval"] .auth-card::before,
 body[data-theme="medieval"] .auth-card::after {
-    content: 'âœ¦';
+    content: '✦';
     position: absolute;
     top: -14px;
     font-size: 1.2rem;
@@ -147,7 +147,7 @@ body[data-theme="medieval"] .auth-card h3 {
     letter-spacing: 0.05em;
 }
 
-/* â”€â”€ Medieval: header sem corte diagonal â”€â”€ */
+/* ── Medieval: header sem corte diagonal ── */
 body[data-theme="medieval"] #main-header {
     clip-path: none;
     border-bottom: 3px solid var(--border-bright);
@@ -174,14 +174,13 @@ body[data-theme="medieval"] #current-date-title {
     text-shadow: 0 1px 4px rgba(0,0,0,0.8), 0 0 12px rgba(196,144,32,0.25);
     letter-spacing: 0.05em;
     color: var(--text-primary);
-    font-size: 1.2rem;
-    line-height: 1;
+    font-size: 1.5rem;
 }
 body[data-theme="medieval"] #current-date-title i {
     color: var(--text-primary);
 }
 
-/* â”€â”€ Medieval: sidebar sem corte diagonal â”€â”€ */
+/* ── Medieval: sidebar sem corte diagonal ── */
 body[data-theme="medieval"] #sidebar {
     border-left: 3px solid var(--border-bright);
     border-left-color: var(--accent-color);
@@ -212,7 +211,7 @@ body[data-theme="medieval"] .sidebar-footer {
     background-image: linear-gradient(to top, rgba(196,144,32,0.05) 0%, transparent 100%);
 }
 
-/* â”€â”€ Medieval: abas da sidebar â”€â”€ */
+/* ── Medieval: abas da sidebar ── */
 body[data-theme="medieval"] .tab-row {
     border: 2px solid var(--border-bright);
     border-radius: 0;
@@ -228,7 +227,7 @@ body[data-theme="medieval"] .tab-active {
     background-color: var(--primary-color);
 }
 
-/* â”€â”€ Medieval: botÃµes sem clip-path angular â”€â”€ */
+/* ── Medieval: botões sem clip-path angular ── */
 body[data-theme="medieval"] .btn-primary {
     clip-path: none;
     border-radius: 2px;
@@ -271,7 +270,7 @@ body[data-theme="medieval"] .btn-ghost {
     letter-spacing: 0.05em;
 }
 
-/* â”€â”€ Medieval: menu de estilos â”€â”€ */
+/* ── Medieval: menu de estilos ── */
 body[data-theme="medieval"] .style-menu {
     clip-path: none;
     border-radius: 2px;
@@ -292,7 +291,7 @@ body[data-theme="medieval"] .style-option {
     letter-spacing: 0.03em;
 }
 
-/* â”€â”€ Medieval: grade de agenda â”€â”€ */
+/* ── Medieval: grade de agenda ── */
 body[data-theme="medieval"] #agenda-grid {
     border-left: 3px solid var(--border-bright);
     background-image:
@@ -309,7 +308,7 @@ body[data-theme="medieval"] .time-label {
     text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
 }
 
-/* â”€â”€ Medieval: indicador de tempo â”€â”€ */
+/* ── Medieval: indicador de tempo ── */
 body[data-theme="medieval"] #current-time-indicator {
     background-color: var(--accent-color);
     box-shadow: 0 0 10px rgba(196,144,32,0.7), 0 0 3px rgba(196,144,32,1);
@@ -326,7 +325,7 @@ body[data-theme="medieval"] #current-time-indicator::before {
     box-shadow: 0 0 6px rgba(196,144,32,0.9);
 }
 
-/* â”€â”€ Medieval: blocos de atividade sem clip-path â”€â”€ */
+/* ── Medieval: blocos de atividade sem clip-path ── */
 body[data-theme="medieval"] .activity-block {
     clip-path: none;
     border-radius: 2px;
@@ -367,7 +366,7 @@ body[data-theme="medieval"] .activity-block .toggle-btn {
     border-color: var(--border-bright);
 }
 
-/* â”€â”€ Medieval: itens pendentes na sidebar â”€â”€ */
+/* ── Medieval: itens pendentes na sidebar ── */
 body[data-theme="medieval"] .pending-item {
     clip-path: none;
     border-radius: 2px;
@@ -403,7 +402,7 @@ body[data-theme="medieval"] .pending-priority-dot {
     transform: none;
 }
 
-/* â”€â”€ Medieval: modais â”€â”€ */
+/* ── Medieval: modais ── */
 body[data-theme="medieval"] .modal-content {
     clip-path: none;
     border-radius: 2px;
@@ -497,7 +496,7 @@ body[data-theme="medieval"] .detail-link-btn {
     letter-spacing: 0.06em;
 }
 
-/* â”€â”€ Medieval: colunas da visÃ£o geral â”€â”€ */
+/* ── Medieval: colunas da visão geral ── */
 body[data-theme="medieval"] .category-column {
     clip-path: none;
     border-radius: 2px;
@@ -518,13 +517,13 @@ body[data-theme="medieval"] .category-column-header h3 {
     color: var(--text-primary);
 }
 
-/* â”€â”€ Medieval: modo compacto â”€â”€ */
+/* ── Medieval: modo compacto ── */
 body[data-theme="medieval"] #agenda-container.compact-mode .activity-group {
     background-color: transparent;
     border: none;
 }
 
-/* â”€â”€ Medieval: badge, prioridade â”€â”€ */
+/* ── Medieval: badge, prioridade ── */
 body[data-theme="medieval"] .priority-badge {
     font-family: 'Crimson Text', Georgia, serif;
     font-size: 0.8rem;
@@ -538,7 +537,7 @@ body[data-theme="medieval"] .badge-soon {
     text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
 }
 
-/* â”€â”€ Tema Boy Without a Fairy (Zelda: Ocarina of Time) â”€â”€ */
+/* ── Tema Boy Without a Fairy (Zelda: Ocarina of Time) ── */
 body[data-theme="zelda"] {
     /* Paleta: floresta noturna de Kokiri, Triforce dourada, verde Hyrule */
     --bg-color:         #05100a;
@@ -572,7 +571,7 @@ body[data-theme="zelda"] {
     --shadow-inset:     inset 2px 2px 0px rgba(0, 0, 0, 0.5);
 }
 
-/* â”€â”€ Zelda: Elementos Base â”€â”€ */
+/* ── Zelda: Elementos Base ── */
 body[data-theme="zelda"] input,
 body[data-theme="zelda"] select,
 body[data-theme="zelda"] textarea {
@@ -580,7 +579,7 @@ body[data-theme="zelda"] textarea {
     clip-path: none !important;
 }
 
-/* â”€â”€ Zelda: tela de login â€” painel de pedra gravada â”€â”€ */
+/* ── Zelda: tela de login — painel de pedra gravada ── */
 body[data-theme="zelda"] .auth-wrapper {
     background-color: var(--bg-color);
     background-image:
@@ -621,7 +620,7 @@ body[data-theme="zelda"] .auth-card h3 {
     color: var(--text-secondary);
 }
 
-/* â”€â”€ Zelda: header com corte reduzido (pedra talhada) â”€â”€ */
+/* ── Zelda: header com corte reduzido (pedra talhada) ── */
 body[data-theme="zelda"] #main-header {
     border-radius: 0 0 12px 12px;
     clip-path: none !important;
@@ -640,11 +639,10 @@ body[data-theme="zelda"] #current-date-title {
     font-family: 'Cinzel', serif;
     text-shadow: 0 1px 4px rgba(0,0,0,0.8), 0 0 10px rgba(200,152,32,0.2);
     letter-spacing: 0.04em;
-    font-size: 1.15rem;
-    line-height: 1;
+    font-size: 1.4rem;
 }
 
-/* â”€â”€ Zelda: sidebar â”€â”€ */
+/* ── Zelda: sidebar ── */
 body[data-theme="zelda"] #sidebar {
     border-left: 2px solid var(--accent-color);
     box-shadow: -6px 0 20px rgba(0,0,0,0.7);
@@ -665,7 +663,7 @@ body[data-theme="zelda"] .sidebar-header h2 {
     letter-spacing: 0.07em;
 }
 
-/* â”€â”€ Zelda: abas â”€â”€ */
+/* ── Zelda: abas ── */
 body[data-theme="zelda"] .tab-btn {
     font-family: 'Cinzel', serif;
     font-size: 0.66rem;
@@ -673,7 +671,7 @@ body[data-theme="zelda"] .tab-btn {
     clip-path: none !important;
 }
 
-/* â”€â”€ Zelda: botÃµes com cantos arredondados â”€â”€ */
+/* ── Zelda: botões com cantos arredondados ── */
 body[data-theme="zelda"] .btn-primary {
     border-radius: 8px;
     clip-path: none !important;
@@ -700,7 +698,7 @@ body[data-theme="zelda"] .btn-ghost {
     clip-path: none !important;
 }
 
-/* â”€â”€ Zelda: menu de estilos â”€â”€ */
+/* ── Zelda: menu de estilos ── */
 body[data-theme="zelda"] .style-menu {
     border-radius: 10px;
     clip-path: none !important;
@@ -721,7 +719,7 @@ body[data-theme="zelda"] .style-option {
     clip-path: none !important;
 }
 
-/* â”€â”€ Zelda: grade de agenda â€” tons de floresta â”€â”€ */
+/* ── Zelda: grade de agenda — tons de floresta ── */
 body[data-theme="zelda"] #agenda-grid {
     border-left: 2px solid var(--border-bright);
     background-image:
@@ -738,7 +736,7 @@ body[data-theme="zelda"] .time-label {
     text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
 }
 
-/* â”€â”€ Zelda: indicador de tempo â€” ouro Triforce â”€â”€ */
+/* ── Zelda: indicador de tempo — ouro Triforce ── */
 body[data-theme="zelda"] #current-time-indicator {
     background-color: var(--accent-color);
     box-shadow: 0 0 8px rgba(200,152,32,0.6), 0 0 2px rgba(200,152,32,1);
@@ -751,7 +749,7 @@ body[data-theme="zelda"] #current-time-indicator::before {
     clip-path: none !important;
 }
 
-/* â”€â”€ Zelda: blocos de atividade â”€â”€ */
+/* ── Zelda: blocos de atividade ── */
 body[data-theme="zelda"] .activity-block {
     border-radius: 8px;
     clip-path: none !important;
@@ -784,7 +782,7 @@ body[data-theme="zelda"] .activity-block .block-time {
     text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
 }
 
-/* â”€â”€ Zelda: itens pendentes na sidebar â”€â”€ */
+/* ── Zelda: itens pendentes na sidebar ── */
 body[data-theme="zelda"] .pending-item {
     border-radius: 8px;
     clip-path: none !important;
@@ -812,7 +810,7 @@ body[data-theme="zelda"] .pending-item span {
     letter-spacing: 0.03em;
 }
 
-/* â”€â”€ Zelda: modais â”€â”€ */
+/* ── Zelda: modais ── */
 body[data-theme="zelda"] .modal-content {
     border-radius: 12px;
     clip-path: none !important;
@@ -901,7 +899,7 @@ body[data-theme="zelda"] .detail-link-btn:hover {
     box-shadow: 2px 2px 0 rgba(0,0,0,0.5);
 }
 
-/* â”€â”€ Zelda: colunas da visÃ£o geral â”€â”€ */
+/* ── Zelda: colunas da visão geral ── */
 body[data-theme="zelda"] .category-column {
     border-radius: 12px;
     clip-path: none !important;
@@ -920,13 +918,13 @@ body[data-theme="zelda"] .category-column-header h3 {
     letter-spacing: 0.06em;
 }
 
-/* â”€â”€ Zelda: modo compacto â”€â”€ */
+/* ── Zelda: modo compacto ── */
 body[data-theme="zelda"] #agenda-container.compact-mode .activity-group {
     background-color: transparent;
     border: none;
 }
 
-/* â”€â”€ Zelda: badges e prioridade â”€â”€ */
+/* ── Zelda: badges e prioridade ── */
 body[data-theme="zelda"] .priority-badge {
     font-family: 'Cinzel', serif;
     font-size: 0.66rem;
@@ -939,7 +937,7 @@ body[data-theme="zelda"] .badge-soon {
     clip-path: none !important;
 }
 
-/* â”€â”€ Reset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Reset ─────────────────────────────────────── */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -955,7 +953,7 @@ body {
 }
 
 /* ====================================================
-   TELA DE LOGIN â€” Y2K Terminal
+   TELA DE LOGIN — Y2K Terminal
 ==================================================== */
 .auth-wrapper {
     position: fixed;
@@ -1044,7 +1042,7 @@ body {
     overflow: hidden;
 }
 
-/* â”€â”€ HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── HEADER ─────────────────────────────────────── */
 #main-header {
     display: flex;
     align-items: center;
@@ -1062,7 +1060,7 @@ body {
     padding-bottom: 8px;
 }
 
-/* Acento diagonal Ã  esquerda */
+/* Acento diagonal à esquerda */
 .header-accent {
     width: 4px;
     height: 36px;
@@ -1082,10 +1080,10 @@ body {
     letter-spacing: 0.01em;
     /* Permite quebrar em duas linhas em telas estreitas */
     white-space: normal;
-    line-height: 1;
+    line-height: 1.1;
     overflow: visible;
     min-width: 0;
-    font-size: 1.15rem;
+    font-size: 1.4rem;
     text-transform: uppercase;
 }
 
@@ -1094,7 +1092,7 @@ body {
     margin-right: 6px;
 }
 
-/* Grupo de botÃµes no canto direito do header */
+/* Grupo de botões no canto direito do header */
 .header-controls {
     display: flex;
     align-items: center;
@@ -1102,7 +1100,7 @@ body {
     flex-shrink: 0;
 }
 
-/* â”€â”€ MENU DE ESTILO (engrenagem) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── MENU DE ESTILO (engrenagem) ─────────────── */
 #style-menu-wrapper {
     position: relative;
 }
@@ -1294,7 +1292,7 @@ body {
     min-height: calc(24 * var(--grid-hour-height));
     border-left: 2px solid var(--border-bright);
 
-    /* Grade: 1h clara + 15min sutil â€” paleta Y2K */
+    /* Grade: 1h clara + 15min sutil — paleta Y2K */
     background-size: 100% 120px, 100% 30px;
     background-image:
         linear-gradient(to bottom, rgba(45, 74, 114, 0.45) 1px, transparent 1px),
@@ -1303,7 +1301,7 @@ body {
     border-top: 1px solid rgba(45, 74, 114, 0.45);
 }
 
-/* â”€â”€ MODO COMPACTO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── MODO COMPACTO ─────────────────────────────────────── */
 #agenda-container.compact-mode #time-grid-labels {
     display: none;
 }
@@ -1349,7 +1347,7 @@ body {
     animation: pulseDot 2s ease-in-out infinite;
 }
 
-/* â”€â”€ BLOCOS DE ATIVIDADE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── BLOCOS DE ATIVIDADE ──────────────────────── */
 .activity-block {
     position: absolute;
     background-color: var(--bg-surface-2);
@@ -1381,7 +1379,7 @@ body {
     border-color: var(--text-secondary);
 }
 
-/* Cards Abertos (Sem horÃ¡rio de tÃ©rmino) */
+/* Cards Abertos (Sem horário de término) */
 .activity-block.open-card {
     height: auto !important;
     min-height: 55px;
@@ -1418,24 +1416,24 @@ body {
 }
 
 .activity-block.priority-1 {
-    /* Verde desbotado â€” baixa */
+    /* Verde desbotado — baixa */
     border-color: #285e45;
     border-left-color: #2e9e6b;
 }
 
 .activity-block.priority-2 {
-    /* Ã‚mbar escuro â€” mÃ©dia */
+    /* Âmbar escuro — média */
     border-color: #6b4e10;
     border-left-color: var(--warning-color);
 }
 
 .activity-block.priority-3 {
-    /* Vermelho escuro â€” alta */
+    /* Vermelho escuro — alta */
     border-color: #6b1f1f;
     border-left-color: #c0392b;
 }
 
-/* completed e partial sobrepÃµem prioridade */
+/* completed e partial sobrepõem prioridade */
 .activity-block.completed {
     border-color: var(--success-color) !important;
     border-left-color: var(--success-color) !important;
@@ -1449,7 +1447,7 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--text-primary);
-    padding-right: 24px; /* espaÃ§o pro toggle-btn */
+    padding-right: 24px; /* espaço pro toggle-btn */
 }
 
 .activity-block .block-time {
@@ -1477,12 +1475,12 @@ body {
 }
 
 .activity-block.completed .toggle-btn::after {
-    content: 'âœ“';
+    content: '✓';
     font-size: 11px;
     color: var(--success-color);
 }
 
-/* Parcial: Ã¢mbar sutil + til no botÃ£o */
+/* Parcial: âmbar sutil + til no botão */
 .activity-block.partial {
     background-color: rgba(107, 78, 16, 0.2);
     border-color: var(--warning-color) !important;
@@ -1491,7 +1489,7 @@ body {
 }
 
 .activity-block.partial .toggle-btn::after {
-    content: 'âˆ¼';
+    content: '∼';
     font-size: 14px;
     font-weight: 700;
     color: var(--warning-color);
@@ -1510,7 +1508,7 @@ body {
 }
 
 /* ====================================================
-   SIDEBAR (HUB) â€” Painel Y2K
+   SIDEBAR (HUB) — Painel Y2K
 ==================================================== */
 #sidebar {
     position: fixed;
@@ -1556,7 +1554,7 @@ body {
     margin-right: 8px;
 }
 
-/* â”€â”€ Tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Tabs ─────────────────── */
 .sidebar-search {
     padding: 14px 16px;
     display: flex;
@@ -1610,7 +1608,7 @@ body {
     border-color: var(--primary-color);
 }
 
-/* â”€â”€ Lista de atividades â”€â”€â”€ */
+/* ── Lista de atividades ─── */
 .sidebar-content {
     flex: 1;
     overflow-y: auto;
@@ -1655,7 +1653,7 @@ body {
     letter-spacing: 0.03em;
 }
 
-/* â”€â”€ Estilo para tarefas concluÃ­das no dia (Banco) â”€â”€ */
+/* ── Estilo para tarefas concluídas no dia (Banco) ── */
 .pending-item-inner.completed-today {
     opacity: 0.6;
     filter: grayscale(0.3);
@@ -1666,7 +1664,7 @@ body {
     color: var(--success-color);
 }
 
-/* â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Footer ─────────────── */
 .sidebar-footer {
     padding: 14px 16px;
     border-top: 2px solid var(--border-bright);
@@ -1677,7 +1675,7 @@ body {
 }
 
 /* ====================================================
-   BOTÃ•ES GERAIS
+   BOTÕES GERAIS
 ==================================================== */
 .btn-primary {
     width: 100%;
@@ -1774,7 +1772,7 @@ body {
 .modal-content::-webkit-scrollbar { width: 3px; }
 .modal-content::-webkit-scrollbar-thumb { background: var(--border-bright); }
 
-/* CabeÃ§alho do modal com corte angular */
+/* Cabeçalho do modal com corte angular */
 .modal-header-slant {
     background-color: var(--bg-surface-2);
     padding: 16px 24px;
@@ -1805,7 +1803,7 @@ body {
     margin: -10px 24px 16px;
 }
 
-/* â”€â”€ SEÃ‡Ã•ES DO FORMULÃRIO (collapsible) â”€â”€â”€â”€â”€â”€â”€ */
+/* ── SEÇÕES DO FORMULÁRIO (collapsible) ─────── */
 form#form-activity {
     padding: 0 24px 20px;
 }
@@ -1822,7 +1820,7 @@ form#form-activity {
 .form-section > summary { list-style: none; }
 .form-section > summary::-webkit-details-marker { display: none; }
 
-/* Summary vira botÃ£o de toggle */
+/* Summary vira botão de toggle */
 .form-section-label {
     display: flex;
     align-items: center;
@@ -1845,7 +1843,7 @@ form#form-activity {
 
 /* Seta Y2K rotaciona ao abrir */
 .form-section-label::after {
-    content: 'â–¶';
+    content: '▶';
     font-size: 0.6rem;
     transition: transform 0.25s ease;
     flex-shrink: 0;
@@ -1856,14 +1854,14 @@ details.form-section[open] > summary.form-section-label::after {
     transform: rotate(90deg);
 }
 
-/* Corpo com padding e animaÃ§Ã£o de abertura */
+/* Corpo com padding e animação de abertura */
 .form-section-body {
     padding: 10px 14px 14px;
     border-top: 1px solid var(--border-color);
     animation: sectionOpen 0.2s ease both;
 }
 
-/* â”€â”€ CAMPOS DE FORMULÃRIO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── CAMPOS DE FORMULÁRIO ────────────────── */
 .form-group {
     margin-bottom: 14px;
     text-align: left;
@@ -1940,7 +1938,7 @@ textarea { resize: vertical; min-height: 70px; }
     text-transform: none;
 }
 
-/* AÃ§Ãµes dos modais */
+/* Ações dos modais */
 .modal-actions {
     display: flex;
     gap: 10px;
@@ -1950,10 +1948,10 @@ textarea { resize: vertical; min-height: 70px; }
 
 .modal-small .modal-actions {
     justify-content: center;
-    padding: 0 20px 20px; /* garante margem simÃ©trica nos modais pequenos */
+    padding: 0 20px 20px; /* garante margem simétrica nos modais pequenos */
 }
 
-/* Padding horizontal para o conteÃºdo direto em modal-small (sem form wrapper) */
+/* Padding horizontal para o conteúdo direto em modal-small (sem form wrapper) */
 .modal-small > .form-group,
 .modal-small > .form-group.row {
     padding: 0 20px;
@@ -1981,14 +1979,14 @@ textarea { resize: vertical; min-height: 70px; }
     text-align: left;
 }
 
-/* Linha de aÃ§Ãµes do modal de detalhes (3 botÃµes) */
+/* Linha de ações do modal de detalhes (3 botões) */
 .detail-actions {
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 4px !important; /* Reduz o espaÃ§o entre as linhas de botÃµes */
+    margin-top: 4px !important; /* Reduz o espaço entre as linhas de botões */
 }
 
-/* BotÃµes de conclusÃ£o inline no modal de detalhes */
+/* Botões de conclusão inline no modal de detalhes */
 .btn-detail-action {
     flex: 1;
     min-width: 120px;
@@ -2031,20 +2029,20 @@ textarea { resize: vertical; min-height: 70px; }
     box-shadow: 1px 1px 0 rgba(0,0,0,0.6);
 }
 
-/* â”€â”€ Linha de gerenciamento do modal de detalhes â”€â”€ */
+/* ── Linha de gerenciamento do modal de detalhes ── */
 .detail-mgmt-divider {
     height: 1px;
     background: var(--border-color);
-    margin: 15px 20px 0; /* EspaÃ§o maior acima */
+    margin: 15px 20px 0; /* Espaço maior acima */
 }
 
 .detail-mgmt-actions {
-    padding: 10px 20px 6px; /* EspaÃ§o menor abaixo */
+    padding: 10px 20px 6px; /* Espaço menor abaixo */
     gap: 6px;
     margin-top: 0 !important;
 }
 
-/* Base dos botÃµes de gerenciamento */
+/* Base dos botões de gerenciamento */
 .btn-detail-mgmt {
     flex: 1;
     padding: 7px 8px;
@@ -2094,7 +2092,7 @@ textarea { resize: vertical; min-height: 70px; }
     transform: translate(1px, 1px);
 }
 
-/* Grid de informaÃ§Ãµes do modal de detalhes */
+/* Grid de informações do modal de detalhes */
 .modal-detail-meta {
     padding: 0 20px 6px;
 }
@@ -2166,7 +2164,7 @@ textarea { resize: vertical; min-height: 70px; }
 .prio-dot-2 { background-color: var(--warning-color); }
 .prio-dot-3 { background-color: #c0392b; }
 
-/* â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Helpers ─────────────────────────────── */
 .hidden { display: none !important; }
 
 .desktop-only { display: flex !important; }
@@ -2182,7 +2180,6 @@ textarea { resize: vertical; min-height: 70px; }
         min-height: 68px;
         padding: 8px 10px 8px 12px;
         gap: 6px;
-   
     }
     .header-accent {
         height: 48px;
@@ -2193,7 +2190,6 @@ textarea { resize: vertical; min-height: 70px; }
         height: 32px;
         font-size: 1.05rem;
     }
-
     /* Força especificidade para todos os temas */
     body #current-date-title,
     body[data-theme="medieval"] #current-date-title,
@@ -2212,6 +2208,7 @@ textarea { resize: vertical; min-height: 70px; }
    ANIMAÇÕES
 ==================================================== */
 
+/* Auth card e itens gerais subindo */
 @keyframes slideUpFade {
     from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -2247,13 +2244,13 @@ textarea { resize: vertical; min-height: 70px; }
     50%       { opacity: 0.5; transform: scale(0.7); }
 }
 
-/* Abertura das seÃ§Ãµes do formulÃ¡rio */
+/* Abertura das seções do formulário */
 @keyframes sectionOpen {
     from { opacity: 0; transform: translateY(-6px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Engrenagem: rotacÃ£o de 90Â° ao hover */
+/* Engrenagem: rotacão de 90° ao hover */
 @keyframes gearSpin {
     from { transform: rotate(0deg); }
     to   { transform: rotate(90deg); }
@@ -2291,7 +2288,7 @@ textarea { resize: vertical; min-height: 70px; }
         transition: margin-right 0.25s ease;
     }
 
-    /* VisÃ£o Geral Truly Fullscreen */
+    /* Visão Geral Truly Fullscreen */
     #modal-full-view .modal-content {
         max-width: none !important;
         width: 100vw !important;
@@ -2315,7 +2312,7 @@ textarea { resize: vertical; min-height: 70px; }
     }
 }
 
-/* VisÃ£o Geral em Mobile */
+/* Visão Geral em Mobile */
 @media (max-width: 767px) {
     #modal-full-view .modal-content {
         display: flex;
@@ -2349,7 +2346,7 @@ textarea { resize: vertical; min-height: 70px; }
 }
 
 /* ====================================================
-   CHECKLIST & LINKS â€” Formul\u00e1rio de Atividade
+   CHECKLIST & LINKS — Formul\u00e1rio de Atividade
 ==================================================== */
 
 /* Header do form-group com toggle na direita */
@@ -2451,7 +2448,7 @@ textarea { resize: vertical; min-height: 70px; }
 }
 .link-input:last-child { margin-bottom: 0 !important; }
 
-/* â”€â”€ Checklist interativo no modal de detalhes â”€â”€ */
+/* ── Checklist interativo no modal de detalhes ── */
 .detail-checklist {
     padding: 4px 0 8px;
 }
@@ -2487,7 +2484,7 @@ textarea { resize: vertical; min-height: 70px; }
     text-decoration: line-through;
 }
 
-/* â”€â”€ Links clic\u00e1veis no modal de detalhes â”€â”€ */
+/* ── Links clic\u00e1veis no modal de detalhes ── */
 .detail-links-row {
     display: flex;
     flex-wrap: wrap;
@@ -2518,7 +2515,7 @@ textarea { resize: vertical; min-height: 70px; }
 }
 .detail-link-btn i { font-size: 0.75rem; }
 
-/* â”€â”€ Corpo dos modais de sistema (alert / confirm) â”€â”€ */
+/* ── Corpo dos modais de sistema (alert / confirm) ── */
 .modal-sys-body {
     padding: 12px 20px 16px;
     color: var(--text-secondary);
@@ -2528,10 +2525,10 @@ textarea { resize: vertical; min-height: 70px; }
     text-align: center;
 }
 
-/* â”€â”€ MODAL FULLSCREEN (VisÃ£o Geral) â”€â”€ */
+/* ── MODAL FULLSCREEN (Visão Geral) ── */
 .modal-fullscreen {
     padding: 0;
-    z-index: 90; /* Abaixo dos outros modais para permitir confirmaÃ§Ã£o sobreposta */
+    z-index: 90; /* Abaixo dos outros modais para permitir confirmação sobreposta */
 }
 
 .modal-fullscreen .modal-content.modal-full {
@@ -2758,7 +2755,7 @@ textarea { resize: vertical; min-height: 70px; }
     gap: 4px; /* Aumentado levemente */
 }
 
-/* Cards maiores na visÃ£o tela cheia (apenas na horizontal) */
+/* Cards maiores na visão tela cheia (apenas na horizontal) */
 .full-view-columns .pending-item {
     padding: 10px 18px;
     margin-bottom: 4px;
@@ -2777,7 +2774,7 @@ textarea { resize: vertical; min-height: 70px; }
         flex: 1;
     }
     
-    .full-view-header-content h2 span { display: inline; } /* Re-exibe parte do tÃ­tulo */
+    .full-view-header-content h2 span { display: inline; } /* Re-exibe parte do título */
 
     .full-view-controls {
         order: 3;
@@ -2818,7 +2815,7 @@ textarea { resize: vertical; min-height: 70px; }
     z-index: 200 !important;
 }
 
-/* BotÃ£o de exclusÃ£o mais discreto (transparÃªncia atÃ© o hover) */
+/* Botão de exclusão mais discreto (transparência até o hover) */
 .btn-delete {
     opacity: 0.3;
     transition: opacity 0.2s, color 0.2s, transform 0.1s !important;
@@ -2833,7 +2830,7 @@ textarea { resize: vertical; min-height: 70px; }
     transform: scale(1.1);
 }
 
-/* â”€â”€  do Header â”€â”€ */
+/* ── Animações de Hover dos Ícones do Header ── */
 .header-controls .btn-icon {
     transition: color 0.2s, transform 0.2s;
 }
@@ -2891,7 +2888,7 @@ textarea { resize: vertical; min-height: 70px; }
     background: var(--border-color);
 }
 
-/* â”€â”€ SeÃ§Ãµes de ConfiguraÃ§Ãµes no Modal â”€â”€ */
+/* ── Seções de Configurações no Modal ── */
 .settings-section {
     display: flex;
     flex-direction: column;
@@ -2914,7 +2911,7 @@ textarea { resize: vertical; min-height: 70px; }
     opacity: 0.5;
 }
 
-/* â”€â”€ Switch Toggle (Cyberpunk/iOS Hybrid) â”€â”€ */
+/* ── Switch Toggle (Cyberpunk/iOS Hybrid) ── */
 .switch {
     position: relative;
     display: inline-block;
