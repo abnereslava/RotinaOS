@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RotinaOS</title>
+    <title>To-doOS</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="stylesheet" href="css/style.css">
@@ -16,13 +16,13 @@
 <body>
 
     <!-- ══════════════════════════════════════
-         TELA DE LOGIN / CADASTRO
+         TELA DE LOGIN
     ══════════════════════════════════════ -->
     <div id="auth-container" class="auth-wrapper">
         <div class="auth-card">
             <div class="auth-logo">
                 <i class="fas fa-robot"></i>
-                <span>ROTINA<strong>OS</strong></span>
+                <span>TO-DO<strong>OS</strong></span>
             </div>
             <h3 id="auth-title">// ENTRAR NO SISTEMA</h3>
             <form id="form-auth">
@@ -35,7 +35,8 @@
                     <input type="password" id="auth-password" required minlength="6" placeholder="••••••••">
                 </div>
                 <button type="submit" class="btn-primary" id="btn-auth-submit">ENTRAR</button>
-                <p class="auth-switch">Sem conta? <a href="#" id="link-toggle-auth">Cadastre-se</a></p>
+                <div class="auth-divider">OU</div>
+                <button type="button" class="btn-secondary" id="btn-demo-mode">TESTAR O APLICATIVO</button>
             </form>
         </div>
     </div>
@@ -63,6 +64,10 @@
                     <button id="btn-toggle-view" class="btn-icon" title="Alternar Visualização">
                         <i class="fas fa-compress-arrows-alt"></i>
                     </button>
+                    <!-- Botão Visão Geral (Todas as Categorias) -->
+                    <button id="btn-full-view" class="btn-icon" title="Visão Geral por Categorias">
+                        <i class="fas fa-layer-group"></i>
+                    </button>
                     <!-- Abre Sidebar -->
                     <button id="toggle-sidebar" class="btn-icon" title="Abrir Hub">
                         <i class="fas fa-bars"></i>
@@ -79,8 +84,8 @@
                     <div class="modal-body" style="padding:12px;">
                         <select id="theme-select" class="btn-primary">
                             <option value="y2k">Y2K (Original)</option>
-                            <option value="persona5">Persona 5</option>
                             <option value="medieval">Medieval</option>
+                            <option value="zelda">Boy Without a Fairy</option>
                         </select>
                     </div>
                     <div class="modal-actions">
@@ -345,6 +350,60 @@
             <div class="modal-actions">
                 <button type="button" class="btn-secondary" id="modal-confirm-cancel">CANCELAR</button>
                 <button type="button" class="btn-primary" id="modal-confirm-ok">CONFIRMAR</button>
+            </div>
+        </div>
+    </div>
+    <!-- ══════════════════════════════════════
+         MODAL 5: AVISO DE DEMONSTRAÇÃO
+    ══════════════════════════════════════ -->
+    <div id="modal-demo-notice" class="modal hidden">
+        <div class="modal-content modal-small">
+            <div class="modal-header-slant">
+                <h2><i class="fas fa-vial"></i> AMBIENTE DE TESTE</h2>
+            </div>
+            <div class="modal-body" style="padding: 20px; text-align: center; color: var(--text-secondary); font-family: 'Rajdhani', sans-serif;">
+                <p>Você entrou no <strong>Modo de Demonstração</strong>.</p>
+                <p style="margin-top: 10px; font-size: 0.9rem;">As alterações feitas aqui são locais e não serão salvas permanentemente no banco de dados. Sinta-se à vontade para explorar todas as funcionalidades!</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-primary" id="btn-close-demo-notice">ENTENDI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         MODAL 4: VISÃO GERAL (TODAS AS CATEGORIAS)
+    ══════════════════════════════════════ -->
+    <div id="modal-full-view" class="modal hidden modal-fullscreen">
+        <div class="modal-content modal-full">
+            <div class="modal-header-slant">
+                    <div class="full-view-header-content">
+                        <h2><i class="fas fa-layer-group"></i> VISÃO GERAL DO BANCO</h2>
+                        
+                        <div class="full-view-controls">
+                            <input type="text" id="full-view-search" placeholder="// buscar nome...">
+                            
+                            <select id="full-view-sort">
+                                <option value="none">▸ Ordenar por...</option>
+                                <option value="prio-desc">Prioridade: Alta ➔ Baixa</option>
+                                <option value="prio-asc">Prioridade: Baixa ➔ Alta</option>
+                                <option value="date-asc">Data Limite: Próximas</option>
+                                <option value="date-desc">Data Limite: Distantes</option>
+                                <option value="fixed-first">Fixadas (📌) Primeiro</option>
+                            </select>
+
+                            <button type="button" id="btn-full-view-hide-scheduled" class="btn-toggle-filter" title="Ocultar atividades já agendadas para hoje">
+                                <i class="fas fa-eye-slash"></i> <span>OCULTAR AGENDADAS</span>
+                            </button>
+                        </div>
+
+                        <button type="button" class="btn-icon close-modal" id="btn-close-full-view">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+            </div>
+            <div id="full-view-container" class="full-view-columns">
+                <!-- Colunas de categorias serão inseridas aqui via JS -->
             </div>
         </div>
     </div>

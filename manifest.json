@@ -1,6 +1,6 @@
 {
-  "name": "Planejamento Semanal",
-  "short_name": "Planejador",
+  "name": "To-doOS",
+  "short_name": "To-doOS",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#121212",

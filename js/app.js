@@ -23,7 +23,64 @@ let currentSelectedBlock = null;
 let currentTab = 'pending';
 let editingActivityId = null;
 let isChecklistMode = false;
-let isCompactMode = false;
+let isCompactMode = localStorage.getItem('isCompactMode') === 'true';
+
+// Filtros Persistidos
+let sidebarFilterCategory = localStorage.getItem('sidebarFilterCategory') || '';
+let sidebarSortMode = localStorage.getItem('sidebarSortMode') || 'none';
+let fullViewSortMode = localStorage.getItem('fullViewSortMode') || 'none';
+let fullViewHideScheduled = localStorage.getItem('fullViewHideScheduled') === 'true';
+
+// Modo Demonstração
+let isDemoMode = false;
+const mockActivities = [
+    { id: 'demo1', title: '🚀 Explorar o To-doOS', category: 'Tutorial', priority: '3', recurrence: 'single', status: 'pending', createdAt: Date.now() },
+    { id: 'demo2', title: '🍔 Almoçar com a equipe', category: 'Social', priority: '2', recurrence: 'daily', scheduledTime: '12:00', status: 'pending', createdAt: Date.now() },
+    { id: 'demo3', title: '💻 Finalizar Projeto X', category: 'Trabalho', priority: '3', recurrence: 'single', deadline: '2026-05-15', status: 'pending', createdAt: Date.now() },
+    { id: 'demo4', title: '🎸 Praticar Violão', category: 'Hobby', priority: '1', recurrence: 'weekly', fixedDays: [1, 3, 5], status: 'pending', createdAt: Date.now() },
+    { id: 'demo5', title: '🧹 Limpar a sala', category: 'Casa', priority: '1', recurrence: 'weekly', fixedDays: [6], status: 'completed', createdAt: Date.now() },
+    { id: 'demo6', title: '📚 Ler 20 páginas', category: 'Estudos', priority: '2', recurrence: 'single', status: 'pending', createdAt: Date.now() },
+    { id: 'demo7', title: '🛒 Fazer compras', category: 'Casa', priority: '1', recurrence: 'single', status: 'pending', createdAt: Date.now() },
+    { id: 'demo8', title: '🎧 Podcast Semanal', category: 'Hobby', priority: '2', recurrence: 'weekly', fixedDays: [2, 4], status: 'pending', createdAt: Date.now() },
+    { id: 'demo9', title: '☕ Café da manhã', category: 'Rotina', priority: '1', recurrence: 'daily', scheduledTime: '08:30', status: 'pending', createdAt: Date.now() },
+    { id: 'demo10', title: '📞 Reunião de Alinhamento', category: 'Trabalho', priority: '3', recurrence: 'single', scheduledTime: '10:00', status: 'pending', createdAt: Date.now() },
+    { id: 'demo11', title: '🏋️ Treino na Academia', category: 'Saúde', priority: '2', recurrence: 'daily', scheduledTime: '18:00', status: 'pending', createdAt: Date.now() }
+];
+
+// Auxiliar de Mutação (Intercepta para o Modo Demo)
+async function safeUpdate(id, data) {
+    if (isDemoMode) {
+        const idx = activities.findIndex(a => a.id === id);
+        if (idx !== -1) activities[idx] = { ...activities[idx], ...data };
+        renderAgenda();
+        renderPendingList();
+        populateCategories();
+        return;
+    }
+    await updateDoc(doc(db, "activities", id), data);
+}
+
+async function safeDelete(id) {
+    if (isDemoMode) {
+        activities = activities.filter(a => a.id !== id);
+        renderAgenda();
+        renderPendingList();
+        return;
+    }
+    await deleteDoc(doc(db, "activities", id));
+}
+
+async function safeAdd(data) {
+    if (isDemoMode) {
+        const newId = 'demo-' + Date.now();
+        activities.push({ id: newId, ...data });
+        renderAgenda();
+        renderPendingList();
+        populateCategories();
+        return;
+    }
+    await addDoc(collection(db, "activities"), data);
+}
 
 // Registro do Service Worker para PWA
 if ('serviceWorker' in navigator) {
@@ -70,11 +127,7 @@ const timeLabelsGrid = document.getElementById('time-grid-labels');
 // ============================================================================
 // LÓGICA DE AUTENTICAÇÃO
 // ============================================================================
-let isLoginMode = true;
 const formAuth = document.getElementById('form-auth');
-const authTitle = document.getElementById('auth-title');
-const btnAuthSubmit = document.getElementById('btn-auth-submit');
-const linkToggleAuth = document.getElementById('link-toggle-auth');
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -90,30 +143,54 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-linkToggleAuth.addEventListener('click', (e) => {
-  e.preventDefault();
-  isLoginMode = !isLoginMode;
-  authTitle.textContent = isLoginMode ? 'Entrar' : 'Criar Conta';
-  btnAuthSubmit.textContent = isLoginMode ? 'Entrar' : 'Cadastrar';
-  linkToggleAuth.textContent = isLoginMode ? 'Cadastre-se' : 'Faça login';
-});
-
 formAuth.addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('auth-email').value;
   const password = document.getElementById('auth-password').value;
   try {
-    if (isLoginMode) {
-      await signInWithEmailAndPassword(auth, email, password);
-    } else {
-      await createUserWithEmailAndPassword(auth, email, password);
-    }
+    await signInWithEmailAndPassword(auth, email, password);
   } catch (error) {
-    showAlert('Erro de Autentificação: ' + error.message, 'Erro de Login');
+    showAlert('Erro de Autenticação: Verifique suas credenciais.', 'Erro de Login');
   }
 });
 
-document.getElementById('btn-logout').addEventListener('click', () => { signOut(auth); });
+// Listener Modo Demo
+document.getElementById('btn-demo-mode')?.addEventListener('click', () => {
+    isDemoMode = true;
+    currentUser = { uid: 'demo-user', email: 'demo@todoos.app' };
+    
+    // Sincroniza atividades agendadas com a data de hoje
+    const today = getTodayString();
+    activities = mockActivities.map(a => {
+        if (a.scheduledTime && !a.fixedDays) {
+            return { ...a, scheduledDate: today };
+        }
+        return a;
+    });
+    authContainer.classList.add('hidden');
+    appEl.classList.remove('hidden');
+    
+    renderPendingList();
+    renderAgenda();
+    populateCategories(); // Adicionado para preencher o filtro de categorias no modo demo
+    
+    document.getElementById('modal-demo-notice').classList.remove('hidden');
+});
+
+document.getElementById('btn-close-demo-notice')?.addEventListener('click', () => {
+    document.getElementById('modal-demo-notice').classList.add('hidden');
+});
+
+document.getElementById('btn-logout').addEventListener('click', async () => {
+    const ok = await showConfirm('Deseja realmente sair da conta?', 'Sair');
+    if (!ok) return;
+    
+    if (isDemoMode) {
+        window.location.reload();
+        return;
+    }
+    signOut(auth);
+});
 
 // ============================================================================
 // MODAIS DE SISTEMA (substitui alert/confirm nativos)
@@ -257,6 +334,7 @@ function scrollToCurrentTimeIndicator() {
 // FIREBASE: CARREGAMENTO E MANIPULAÇÃO DE DADOS
 // ============================================================================
 function loadActivities() {
+  if (isDemoMode) return;
   if (!currentUser) return;
   const q = query(collection(db, "activities"), where("userId", "==", currentUser.uid));
 
@@ -287,12 +365,12 @@ async function runDailyMaintenance(loadedActivities) {
     if (a.recurrence === 'single') {
       // Deletar se concluída no passado
       if (a.status === 'completed' && a.completionDate && a.completionDate < todayString) {
-        promises.push(deleteDoc(doc(db, "activities", a.id)));
+        promises.push(safeDelete(a.id));
         continue;
       }
       // Se não concluída e ficou no passado, rolar para hoje (se tem horário, continua na agenda)
       if (a.status !== 'completed' && a.scheduledDate && a.scheduledDate < todayString) {
-        promises.push(updateDoc(doc(db, "activities", a.id), { scheduledDate: todayString }));
+        promises.push(safeUpdate(a.id, { scheduledDate: todayString }));
         continue;
       }
     } else {
@@ -322,7 +400,7 @@ async function runDailyMaintenance(loadedActivities) {
           if (a.useChecklist && a.checklist) {
             resetData.checklist = a.checklist.map(item => ({ ...item, done: false }));
           }
-          promises.push(updateDoc(doc(db, "activities", a.id), resetData));
+          promises.push(safeUpdate(a.id, resetData));
         }
       }
     }
@@ -376,14 +454,14 @@ function isActivityActiveToday(a) {
   // MÚLTIPLOS DIAS FIXOS (Semanal)
   if (a.recurrence === 'weekly' && a.fixedDays && a.fixedDays.length > 0 && a.scheduledTime) {
     const currentDay = currentDayDate.getDay();
-    if (a.fixedDays.some(d => d <= currentDay)) return true; 
+    if (a.fixedDays.some(d => d === currentDay)) return true; 
   }
 
   // DIAS DO MÊS (Mensal)
   if (a.recurrence === 'monthly' && a.monthlyDays && a.scheduledTime) {
     const dayOfMonth = currentDayDate.getDate();
     const daysArr = a.monthlyDays.split(',').map(d => parseInt(d.trim()));
-    if (daysArr.some(d => d <= dayOfMonth)) return true; 
+    if (daysArr.some(d => d === dayOfMonth)) return true; 
   }
   return false;
 }
@@ -393,8 +471,15 @@ function isActivityActiveToday(a) {
 // ============================================================================
 document.getElementById('btn-toggle-view')?.addEventListener('click', () => {
   isCompactMode = !isCompactMode;
+  localStorage.setItem('isCompactMode', isCompactMode);
+  applyViewMode();
+});
+
+function applyViewMode() {
   const btn = document.getElementById('btn-toggle-view');
   const container = document.getElementById('agenda-container');
+  if (!btn || !container) return;
+  
   if (isCompactMode) {
     container.classList.add('compact-mode');
     btn.style.color = 'var(--accent-color)';
@@ -403,7 +488,10 @@ document.getElementById('btn-toggle-view')?.addEventListener('click', () => {
     btn.style.color = '';
   }
   renderAgenda();
-});
+}
+
+// Inicializa o modo de visualização no carregamento
+setTimeout(applyViewMode, 100);
 
 function renderAgenda() {
   document.querySelectorAll('.activity-block, .activity-group-wrapper, .compact-time-indicator').forEach(b => b.remove());
@@ -522,7 +610,7 @@ function renderAgenda() {
         showDetailModal(act);
       });
 
-      block.querySelector('.toggle-btn').addEventListener('click', (e) => {
+      block.querySelector('.toggle-btn').addEventListener('click', async (e) => {
         e.stopPropagation();
         if (act.status === 'completed' && act.completionDate === todayString) {
           let updateData = { status: 'pending', completionDate: null };
@@ -530,7 +618,7 @@ function renderAgenda() {
             act.checklist.forEach(i => i.done = false);
             updateData.checklist = act.checklist;
           }
-          updateDoc(doc(db, "activities", act.id), updateData);
+          await safeUpdate(act.id, updateData);
         } else {
           if (act.recurrence === 'single') {
             currentSelectedBlock = act;
@@ -550,7 +638,7 @@ function renderAgenda() {
               act.checklist.forEach(i => i.done = true);
               updateData.checklist = act.checklist;
             }
-            updateDoc(doc(db, "activities", act.id), updateData);
+            await safeUpdate(act.id, updateData);
           }
         }
       });
@@ -732,15 +820,9 @@ function showDetailModal(act, isPendingMode = false) {
                 ${linksHtml}
                 ${schedulingHtml}
             </div>
-            <div class="modal-actions detail-actions">
-                ${actionButtons}
-                <button type="button" class="btn-secondary" id="btn-close-detail">FECHAR</button>
-            </div>
-            
-            <!-- Divisor gerenciamento -->
             <div class="detail-mgmt-divider"></div>
 
-            <!-- Linha de gerenciamento -->
+            <!-- Linha de gerenciamento (agora acima) -->
             <div class="modal-actions detail-mgmt-actions">
                 ${isPendingMode ? '' : `
                 <button type="button" class="btn-detail-mgmt btn-mgmt-return" id="detail-btn-return" title="Remove agendamento e retorna ao banco" ${act.status === 'completed' ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
@@ -753,6 +835,11 @@ function showDetailModal(act, isPendingMode = false) {
                 <button type="button" class="btn-detail-mgmt btn-mgmt-delete" id="detail-btn-delete" title="Excluir permanentemente">
                     <i class="fas fa-trash"></i> DELETAR
                 </button>
+            </div>
+
+            <div class="modal-actions detail-actions">
+                ${actionButtons}
+                <button type="button" class="btn-secondary" id="btn-close-detail">FECHAR</button>
             </div>
         </div>
     `;
@@ -780,7 +867,7 @@ function showDetailModal(act, isPendingMode = false) {
           if (allDone) newStatus = 'completed';
           if (noneDone) newStatus = 'pending';
 
-          await updateDoc(doc(db, 'activities', act.id), {
+          await safeUpdate(act.id, {
             checklist: act.checklist,
             status: newStatus,
             completionDate: newStatus !== 'pending' ? todayString : null
@@ -797,14 +884,14 @@ function showDetailModal(act, isPendingMode = false) {
       act.checklist.forEach(i => i.done = true);
       updateData.checklist = act.checklist;
     }
-    await updateDoc(doc(db, 'activities', act.id), updateData);
+    await safeUpdate(act.id, updateData);
     overlay.remove();
   });
 
   // Botão: fiz o que deu (parcial) — só para single
   document.getElementById('detail-btn-partial')?.addEventListener('click', async () => {
     let updateData = { status: 'partial', completionDate: todayString };
-    await updateDoc(doc(db, 'activities', act.id), updateData);
+    await safeUpdate(act.id, updateData);
     overlay.remove();
   });
 
@@ -815,14 +902,14 @@ function showDetailModal(act, isPendingMode = false) {
       act.checklist.forEach(i => i.done = false);
       updateData.checklist = act.checklist;
     }
-    await updateDoc(doc(db, 'activities', act.id), updateData);
+    await safeUpdate(act.id, updateData);
     overlay.remove();
   });
 
   // Botão: retornar ao banco (remove agendamento, mantém atividade)
   document.getElementById('detail-btn-return')?.addEventListener('click', async () => {
     if (act.status === 'completed') return;
-    await updateDoc(doc(db, 'activities', act.id), {
+    await safeUpdate(act.id, {
       scheduledDate: null,
       scheduledTime: null,
       duration: null
@@ -838,8 +925,9 @@ function showDetailModal(act, isPendingMode = false) {
 
   // Botão: deletar permanentemente
   document.getElementById('detail-btn-delete')?.addEventListener('click', async () => {
-    if (confirm(`Deletar "${act.title}" permanentemente? Esta ação não pode ser desfeita.`)) {
-      await deleteDoc(doc(db, 'activities', act.id));
+    const ok = await showConfirm(`Deletar "${act.title}" permanentemente? Esta ação não pode ser desfeita.`, 'Deletar');
+    if (ok) {
+      await safeDelete(act.id);
       overlay.remove();
     }
   });
@@ -878,7 +966,7 @@ function showDetailModal(act, isPendingMode = false) {
       if (!ok) return;
     }
 
-    await updateDoc(doc(db, 'activities', act.id), {
+    await safeUpdate(act.id, {
       scheduledTime: startTime,
       scheduledDate: todayString,
       duration: duration
@@ -936,14 +1024,105 @@ document.getElementById('tab-all')?.addEventListener('click', () => {
   renderPendingList();
 });
 
+// ── GERADOR DE CARDS UNIFICADO ──────────────────
+function createActivityCard(act, options = {}) {
+  const { showDeadline = true, showSchedule = true } = options;
+  const prio = parseInt(act.priority) || 0;
+  const div = document.createElement('div');
+  div.className = `pending-item priority-item-${prio}`;
+
+  let warningIcon = '';
+  if (act.recurrence === 'daily' && !act.scheduledTime) {
+    warningIcon = `<i class="fas fa-exclamation-triangle" style="color: var(--warning-color); margin-right: 5px;" title="Atividade diária pendente de agendamento"></i>`;
+  }
+
+  const isActive = isActivityActiveToday(act);
+  const isCompletedToday = act.status === 'completed' && act.completionDate === todayString;
+  
+  const statusBadge = ''; // Removido do H3
+
+  const pinIcon = act.scheduledTime ? `<i class="fas fa-thumbtack" style="color: var(--accent-color); margin-right: 5px;" title="Horário Fixado: ${act.scheduledTime}"></i>` : '';
+
+  let deadlineHtml = '';
+  if (act.deadline && showDeadline) {
+    const [y, m, d] = act.deadline.split('-');
+    // Estilo unificado com as outras tags, usando a cor de perigo (vermelho/coral)
+    deadlineHtml = `<div style="font-size: 0.72rem; color: var(--danger-color); margin-top: 2px; font-family: 'Chakra Petch', monospace; font-weight: 600;">▶ DATA LIMITE: ${d}/${m}</div>`;
+  }
+
+  let scheduleInfoHtml = '';
+  if (showSchedule) {
+      let progText = '';
+      if (act.recurrence === 'weekly' && act.fixedDays && act.fixedDays.length > 0) {
+          const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+          const daysStr = act.fixedDays.map(d => dayNames[d]).join(', ');
+          progText = `Dias: ${daysStr}`;
+      } else if (act.recurrence === 'monthly' && act.monthlyDays) {
+          progText = `Dias do mês: ${act.monthlyDays}`;
+      } else if (act.recurrence === 'single' && act.scheduledDate) {
+          const [y, m, d] = act.scheduledDate.split('-');
+          progText = `Data: ${d}/${m}/${y}`;
+      }
+      
+      if (progText) {
+          scheduleInfoHtml += `<div style="font-size: 0.72rem; color: var(--accent-color); margin-top: 4px; font-family: 'Chakra Petch', monospace; font-weight: 600;">▶ PROGRAMADA: ${progText.toUpperCase()}</div>`;
+      }
+  }
+
+  // Marcador de Agendada Hoje (estilo Programada)
+  let agendaHojeHtml = '';
+  if (isActive && !isCompletedToday) {
+    agendaHojeHtml = `<div style="font-size: 0.72rem; color: var(--primary-color); margin-top: 2px; font-family: 'Chakra Petch', monospace; font-weight: 600;">▶ AGENDADA PARA HOJE</div>`;
+  }
+
+  // Marcador de Concluída Hoje (estilo unificado)
+  let concluidaHojeHtml = '';
+  if (isCompletedToday) {
+    concluidaHojeHtml = `<div style="font-size: 0.72rem; color: var(--success-color); margin-top: 2px; font-family: 'Chakra Petch', monospace; font-weight: 600;">▶ CONCLUÍDA HOJE</div>`;
+  }
+
+  div.innerHTML = `
+      <div class="pending-item-inner ${isCompletedToday ? 'completed-today' : ''}">
+          <div class="pending-priority-dot prio-dot-${prio}"></div>
+          <div style="flex: 1; min-width: 0;">
+              <h3>${warningIcon}${pinIcon}${act.title}</h3>
+              <span>${act.category || 'Sem categoria'}</span>
+              ${deadlineHtml}
+              ${concluidaHojeHtml}
+              ${agendaHojeHtml}
+              ${scheduleInfoHtml}
+          </div>
+          <button class="btn-delete" style="background:none; border:none; color:var(--text-secondary); font-size:1.1rem; cursor:pointer; padding: 5px; flex-shrink:0;" title="Excluir Atividade">
+              <i class="fas fa-trash"></i>
+          </button>
+      </div>
+  `;
+
+  div.querySelector('.btn-delete').addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const ok = await showConfirm(`Excluir "${act.title}" definitivamente? Esta ação não pode ser desfeita.`, 'Excluir Atividade');
+    if (ok) await safeDelete(act.id);
+  });
+
+  div.addEventListener('click', () => {
+    showDetailModal(act, !act.scheduledTime);
+  });
+
+  return div;
+}
+
 function renderPendingList() {
   pendingList.innerHTML = '';
   const searchTerm = document.getElementById('search-activity').value.toLowerCase();
-  
-  // Apenas a Categoria atua como filtro de exclusão
   const selectedCategory = document.getElementById('filter-category').value;
-  // A Ordenação atua na reestruturação da lista
   const sortMode = document.getElementById('sort-activities').value;
+
+  // Persistência e Estilo Visual (Laranja se ativo)
+  localStorage.setItem('sidebarFilterCategory', selectedCategory);
+  localStorage.setItem('sidebarSortMode', sortMode);
+  
+  document.getElementById('filter-category').classList.toggle('filter-active', selectedCategory !== '');
+  document.getElementById('sort-activities').classList.toggle('filter-active', sortMode !== 'none');
 
   const [y, m, d] = todayString.split('-');
   const currentDayDate = new Date(y, m - 1, d);
@@ -968,27 +1147,22 @@ function renderPendingList() {
     }
     const isFuture = isFutureWeekly || isFutureMonthly || (a.recurrence === 'single' && a.scheduledDate && a.scheduledDate > todayString);
 
+    const isActiveToday = isActivityActiveToday(a);
+    const isScheduledRecurrent = a.scheduledTime || a.recurrence === 'daily' || a.recurrence === 'weekly' || a.recurrence === 'monthly';
+
     if (currentTab === 'pending') {
       if (isFuture) return false;
+      if (isActiveToday) return false;
       
-      // Não esconde tarefas recorrentes (diárias/semanais/mensais) mesmo que concluídas hoje,
-      // para que o usuário veja que elas voltaram/estão no banco.
+      // Se for recorrente/agendada e não for para hoje nem futuro (ex: dia da semana que já passou), 
+      // ela pode aparecer no banco como algo a ser feito manualmente ou simplesmente sumir.
+      // Vamos manter a lógica de que se tem horário/recorrência definida, ela deve estar em "Programadas"
+      if (isScheduledRecurrent) return false;
+
       if (a.status === 'completed' && a.recurrence === 'single') return false;
-      
-      if (a.scheduledDate === todayString && a.scheduledTime) return false;
-      if (a.recurrence === 'daily' && a.scheduledTime) return false;
-      
-      if (a.recurrence === 'weekly' && a.fixedDays && a.scheduledTime) {
-        const currentDay = currentDayDate.getDay();
-        if (a.fixedDays.some(d => d <= currentDay)) return false; 
-      }
-      if (a.recurrence === 'monthly' && a.monthlyDays && a.scheduledTime) {
-        const dayOfMonth = currentDayDate.getDate();
-        const daysArr = a.monthlyDays.split(',').map(d => parseInt(d.trim()));
-        if (daysArr.some(d => d <= dayOfMonth)) return false; 
-      }
     } else if (currentTab === 'scheduled') {
-      if (!isFuture) return false;
+      // No modo "Programadas", mostramos tudo que tem horário/recorrência mas NÃO é para hoje
+      if (!isScheduledRecurrent || isActiveToday) return false;
     }
 
     return true;
@@ -1018,85 +1192,134 @@ function renderPendingList() {
       const bFixed = b.scheduledTime ? 1 : 0;
       return bFixed - aFixed; // Quem for 1 (tem horário) sobe
     }
-    return 0; // "none" (mantém ordem natural)
+    // Default ("none"): Ordem Alfabética
+    return a.title.localeCompare(b.title);
   });
 
   // 3. ETAPA DE RENDERIZAÇÃO
   filteredActivities.forEach(act => {
-    const div = document.createElement('div');
-    const prio = parseInt(act.priority) || 0;
-    div.className = `pending-item priority-item-${prio}`;
-
-    let warningIcon = '';
-    if (act.recurrence === 'daily' && !act.scheduledTime) {
-      warningIcon = `<i class="fas fa-exclamation-triangle" style="color: var(--warning-color); margin-right: 5px;" title="Atividade diária pendente de agendamento"></i>`;
-    }
-
-    const isActive = isActivityActiveToday(act);
-    const isCompletedToday = act.status === 'completed' && act.completionDate === todayString;
-    
-    const statusBadge = isCompletedToday ? 
-      `<span style="margin-left: 6px; font-size: 0.65rem; background: var(--success-color, #10b981); color: #fff; padding: 2px 6px; border-radius: 4px; font-family: 'Chakra Petch', monospace;">CONCLUÍDA</span>` :
-      (isActive && currentTab === 'all' ? `<span style="margin-left: 6px; font-size: 0.65rem; background: var(--primary-color); color: #fff; padding: 2px 6px; border-radius: 4px; font-family: 'Chakra Petch', monospace;">AGENDADA</span>` : '');
-
-    const pinIcon = act.scheduledTime ? `<i class="fas fa-thumbtack" style="color: var(--accent-color); margin-right: 5px;" title="Horário Fixado: ${act.scheduledTime}"></i>` : '';
-
-    // Mostra data limite no card se estiver ordenada por ela (feedback visual útil)
-    let deadlineBadge = '';
-    if (act.deadline && (sortMode === 'date-asc' || sortMode === 'date-desc')) {
-      const [y, m, d] = act.deadline.split('-');
-      deadlineBadge = `<span style="margin-left: 6px; font-size: 0.65rem; border: 1px solid var(--border-bright); padding: 1px 4px; border-radius: 2px;">Limite: ${d}/${m}</span>`;
-    }
-
-    let scheduleInfoHtml = '';
-    if (currentTab === 'scheduled' || currentTab === 'all') {
-        let progText = '';
-        if (act.recurrence === 'weekly' && act.fixedDays && act.fixedDays.length > 0) {
-            const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-            const daysStr = act.fixedDays.map(d => dayNames[d]).join(', ');
-            progText = `Dias: ${daysStr}`;
-        } else if (act.recurrence === 'monthly' && act.monthlyDays) {
-            progText = `Dias do mês: ${act.monthlyDays}`;
-        } else if (act.recurrence === 'single' && act.scheduledDate) {
-            const [y, m, d] = act.scheduledDate.split('-');
-            progText = `Data: ${d}/${m}/${y}`;
-        }
-        
-        if (progText) {
-            scheduleInfoHtml = `<div style="font-size: 0.72rem; color: var(--accent-color); margin-top: 4px; font-family: 'Chakra Petch', monospace;">▶ Prog: ${progText}</div>`;
-        }
-    }
-
-    div.innerHTML = `
-        <div class="pending-item-inner ${isCompletedToday ? 'completed-today' : ''}">
-            <div class="pending-priority-dot prio-dot-${prio}"></div>
-            <div style="flex: 1; min-width: 0;">
-                <h3>${warningIcon}${pinIcon}${act.title}${deadlineBadge}${statusBadge}</h3>
-                <span>${act.category || 'Sem categoria'}</span>
-                ${scheduleInfoHtml}
-            </div>
-            <button class="btn-delete" style="background:none; border:none; color:#ef4444; font-size:1.1rem; cursor:pointer; padding: 5px; flex-shrink:0;">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>
-    `;
-
-    div.querySelector('.btn-delete').addEventListener('click', async (e) => {
-      e.stopPropagation();
-      const ok = await showConfirm(`Excluir "${act.title}" definitivamente? Esta ação não pode ser desfeita.`, 'Excluir Atividade');
-      if (ok) await deleteDoc(doc(db, "activities", act.id));
+    const card = createActivityCard(act, {
+      showDeadline: (sortMode === 'date-asc' || sortMode === 'date-desc'),
+      showSchedule: (currentTab === 'scheduled' || currentTab === 'all')
     });
-
-    div.addEventListener('click', () => {
-      showDetailModal(act, true);
-    });
-    pendingList.appendChild(div);
+    pendingList.appendChild(card);
   });
 }
+
+// ── LÓGICA DA VISÃO GERAL (TODAS AS CATEGORIAS) ──────────────────
+const btnFullView = document.getElementById('btn-full-view');
+const modalFullView = document.getElementById('modal-full-view');
+const fullViewContainer = document.getElementById('full-view-container');
+
+btnFullView?.addEventListener('click', () => {
+  renderFullView();
+  modalFullView.classList.remove('hidden');
+});
+
+function renderFullView() {
+  fullViewContainer.innerHTML = '';
+  
+  const searchTerm = document.getElementById('full-view-search').value.toLowerCase();
+  const sortMode = document.getElementById('full-view-sort').value;
+  
+  // Persistência e Estilo Visual
+  localStorage.setItem('fullViewSortMode', sortMode);
+  localStorage.setItem('fullViewHideScheduled', fullViewHideScheduled);
+
+  document.getElementById('full-view-sort').classList.toggle('filter-active', sortMode !== 'none');
+  const btnHide = document.getElementById('btn-full-view-hide-scheduled');
+  if (btnHide) btnHide.classList.toggle('active', fullViewHideScheduled);
+
+  // 1. Filtra as atividades
+  let filtered = activities.filter(a => {
+    const matchSearch = a.title.toLowerCase().includes(searchTerm);
+    const isScheduledToday = isActivityActiveToday(a);
+    const matchSchedule = !fullViewHideScheduled || !isScheduledToday;
+    return matchSearch && matchSchedule;
+  });
+
+  // 2. Ordena as atividades
+  filtered.sort((a, b) => {
+    if (sortMode === 'prio-desc') return (parseInt(b.priority) || 0) - (parseInt(a.priority) || 0);
+    if (sortMode === 'prio-asc') return (parseInt(a.priority) || 0) - (parseInt(b.priority) || 0);
+    if (sortMode === 'date-asc' || sortMode === 'date-desc') {
+      if (!a.deadline && b.deadline) return 1;
+      if (a.deadline && !b.deadline) return -1;
+      if (!a.deadline && !b.deadline) return 0;
+      return sortMode === 'date-asc' ? new Date(a.deadline) - new Date(b.deadline) : new Date(b.deadline) - new Date(a.deadline);
+    }
+    if (sortMode === 'fixed-first') {
+      const aF = a.scheduledTime ? 1 : 0;
+      const bF = b.scheduledTime ? 1 : 0;
+      return bF - aF;
+    }
+    // Default: Ordem Alfabética se nada selecionado
+    return a.title.localeCompare(b.title);
+  });
+
+  // 3. Agrupa atividades por categoria
+  const categoriesMap = {};
+  filtered.forEach(a => {
+    const cat = a.category || 'Sem categoria';
+    if (!categoriesMap[cat]) categoriesMap[cat] = [];
+    categoriesMap[cat].push(a);
+  });
+
+  // Ordena categorias alfabeticamente
+  const sortedCategories = Object.keys(categoriesMap).sort();
+
+  sortedCategories.forEach(catName => {
+    const column = document.createElement('div');
+    column.className = 'category-column';
+    
+    const acts = categoriesMap[catName];
+    
+    column.innerHTML = `
+      <div class="category-column-header">
+        <h3>${catName}</h3>
+        <span style="font-size: 0.7rem; color: var(--text-secondary);">${acts.length}</span>
+      </div>
+      <div class="category-column-items"></div>
+    `;
+
+    const itemsContainer = column.querySelector('.category-column-items');
+
+    acts.forEach(act => {
+      const card = createActivityCard(act, {
+        showDeadline: true,
+        showSchedule: true
+      });
+      itemsContainer.appendChild(card);
+    });
+
+    fullViewContainer.appendChild(column);
+  });
+}
+
+// Listeners para os controles da Visão Geral
+document.getElementById('full-view-search')?.addEventListener('input', renderFullView);
+document.getElementById('full-view-sort')?.addEventListener('change', renderFullView);
+document.getElementById('btn-full-view-hide-scheduled')?.addEventListener('click', () => {
+    fullViewHideScheduled = !fullViewHideScheduled;
+    renderFullView();
+});
 
 document.getElementById('search-activity').addEventListener('input', renderPendingList);
 document.getElementById('filter-category').addEventListener('change', renderPendingList);
 document.getElementById('sort-activities').addEventListener('change', renderPendingList);
+
+// Aplicar valores iniciais persistidos
+window.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('filter-category')) {
+        document.getElementById('filter-category').value = sidebarFilterCategory;
+    }
+    if (document.getElementById('sort-activities')) {
+        document.getElementById('sort-activities').value = sidebarSortMode;
+    }
+    if (document.getElementById('full-view-sort')) {
+        document.getElementById('full-view-sort').value = fullViewSortMode;
+    }
+});
 
 // ============================================================================
 // MENU DE ESTILO (Engrenagem)
@@ -1119,6 +1342,9 @@ btnCloseStyle.addEventListener('click', () => {
 window.addEventListener('click', (e) => {
   if (e.target === modalStyle) {
     modalStyle.classList.add('hidden');
+  }
+  if (e.target === modalFullView) {
+    modalFullView.classList.add('hidden');
   }
 });
 
@@ -1348,7 +1574,7 @@ formActivity.addEventListener('submit', async (e) => {
   try {
     if (editingActivityId) {
       // MODO EDIÇÃO: atualiza documento existente
-      await updateDoc(doc(db, 'activities', editingActivityId), {
+      await safeUpdate(editingActivityId, {
         title: newAct.title,
         category: newAct.category,
         priority: newAct.priority,
@@ -1367,7 +1593,7 @@ formActivity.addEventListener('submit', async (e) => {
       editingActivityId = null;
     } else {
       // MODO CRIAÇÃO: novo documento
-      await addDoc(collection(db, 'activities'), newAct);
+      await safeAdd(newAct);
     }
     modalActivity.classList.add('hidden');
     isChecklistMode = false;
@@ -1423,7 +1649,7 @@ document.getElementById('btn-confirm-schedule').addEventListener('click', async 
     }
 
     try {
-      await updateDoc(doc(db, "activities", pendingActivityToSchedule.id), {
+      await safeUpdate(pendingActivityToSchedule.id, {
         scheduledTime: startTime,
         scheduledDate: todayString,
         duration
@@ -1446,7 +1672,7 @@ document.getElementById('btn-complete-full').addEventListener('click', async () 
       currentSelectedBlock.checklist.forEach(i => i.done = true);
       updateData.checklist = currentSelectedBlock.checklist;
     }
-    await updateDoc(doc(db, "activities", currentSelectedBlock.id), updateData);
+    await safeUpdate(currentSelectedBlock.id, updateData);
     modalCompletion.classList.add('hidden');
     currentSelectedBlock = null;
   }
@@ -1454,7 +1680,7 @@ document.getElementById('btn-complete-full').addEventListener('click', async () 
 
 document.getElementById('btn-complete-partial').addEventListener('click', async () => {
   if (currentSelectedBlock) {
-    await updateDoc(doc(db, "activities", currentSelectedBlock.id), {
+    await safeUpdate(currentSelectedBlock.id, {
       status: 'partial',
       completionDate: todayString
     });
@@ -1470,7 +1696,7 @@ document.getElementById('btn-complete-reset')?.addEventListener('click', async (
       currentSelectedBlock.checklist.forEach(i => i.done = false);
       updateData.checklist = currentSelectedBlock.checklist;
     }
-    await updateDoc(doc(db, "activities", currentSelectedBlock.id), updateData);
+    await safeUpdate(currentSelectedBlock.id, updateData);
     modalCompletion.classList.add('hidden');
     currentSelectedBlock = null;
   }
