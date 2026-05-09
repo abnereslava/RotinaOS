@@ -1,5 +1,7 @@
 1. Criar novos temas:
     a. Videogame Retrô
     b. Pink ball (Inspirado em Kirby)
-    c. Espaço
-    d. Portal 2
+    c. Nebulosa
+    d. GLaDOS
+
+2. 

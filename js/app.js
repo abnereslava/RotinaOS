@@ -52,9 +52,7 @@ async function safeUpdate(id, data) {
     if (isDemoMode) {
         const idx = activities.findIndex(a => a.id === id);
         if (idx !== -1) activities[idx] = { ...activities[idx], ...data };
-        renderAgenda();
-        renderPendingList();
-        populateCategories();
+        refreshUI();
         return;
     }
     await updateDoc(doc(db, "activities", id), data);
@@ -63,8 +61,7 @@ async function safeUpdate(id, data) {
 async function safeDelete(id) {
     if (isDemoMode) {
         activities = activities.filter(a => a.id !== id);
-        renderAgenda();
-        renderPendingList();
+        refreshUI();
         return;
     }
     await deleteDoc(doc(db, "activities", id));
@@ -74,9 +71,7 @@ async function safeAdd(data) {
     if (isDemoMode) {
         const newId = 'demo-' + Date.now();
         activities.push({ id: newId, ...data });
-        renderAgenda();
-        renderPendingList();
-        populateCategories();
+        refreshUI();
         return;
     }
     await addDoc(collection(db, "activities"), data);
@@ -123,6 +118,17 @@ const formActivity = document.getElementById('form-activity');
 const pendingList = document.getElementById('pending-activities-list');
 const agendaGrid = document.getElementById('agenda-grid');
 const timeLabelsGrid = document.getElementById('time-grid-labels');
+const modalFullView = document.getElementById('modal-full-view');
+
+// Função Centralizada de Atualização
+function refreshUI() {
+    populateCategories();
+    renderAgenda();
+    renderPendingList();
+    if (modalFullView && !modalFullView.classList.contains('hidden')) {
+        renderFullView();
+    }
+}
 
 // ============================================================================
 // LÓGICA DE AUTENTICAÇÃO
@@ -170,9 +176,7 @@ document.getElementById('btn-demo-mode')?.addEventListener('click', () => {
     authContainer.classList.add('hidden');
     appEl.classList.remove('hidden');
     
-    renderPendingList();
-    renderAgenda();
-    populateCategories(); // Adicionado para preencher o filtro de categorias no modo demo
+    refreshUI();
     
     document.getElementById('modal-demo-notice').classList.remove('hidden');
 });
@@ -350,9 +354,7 @@ function loadActivities() {
 
     // Usa a lista (possivelmente antes das atualizações refletirem, mas na próxima batida do snapshot atualiza)
     activities = loadedActivities;
-    populateCategories();
-    renderAgenda();
-    renderPendingList();
+    refreshUI();
   });
 }
 
@@ -620,25 +622,17 @@ function renderAgenda() {
           }
           await safeUpdate(act.id, updateData);
         } else {
-          if (act.recurrence === 'single') {
-            currentSelectedBlock = act;
-            modalCompletion.classList.remove('hidden');
+          // Para qualquer atividade (única ou recorrente): abre o modal de opções de conclusão
+          currentSelectedBlock = act;
+          modalCompletion.classList.remove('hidden');
 
-            const resetBtn = document.getElementById('btn-complete-reset');
-            if (resetBtn) {
-              if (act.status === 'partial') {
-                resetBtn.style.display = 'block';
-              } else {
-                resetBtn.style.display = 'none';
-              }
+          const resetBtn = document.getElementById('btn-complete-reset');
+          if (resetBtn) {
+            if (act.status === 'partial') {
+              resetBtn.style.display = 'block';
+            } else {
+              resetBtn.style.display = 'none';
             }
-          } else {
-            let updateData = { status: 'completed', completionDate: todayString };
-            if (act.useChecklist && act.checklist) {
-              act.checklist.forEach(i => i.done = true);
-              updateData.checklist = act.checklist;
-            }
-            await safeUpdate(act.id, updateData);
           }
         }
       });
@@ -743,11 +737,6 @@ function showDetailModal(act, isPendingMode = false) {
   let schedulingHtml = '';
 
   if (isPendingMode) {
-    actionButtons = `
-            <button type="button" class="btn-primary" id="detail-btn-schedule">
-                <i class="fas fa-clock"></i> ${isScheduledToday ? 'SALVAR HORÁRIO' : 'AGENDAR'}
-            </button>`;
-
     let startVal = '';
     let endVal = '';
     if (isScheduledToday) {
@@ -777,29 +766,30 @@ function showDetailModal(act, isPendingMode = false) {
                 </div>
             </div>
         `;
+    
+    // Botão de agendamento sempre aparece no topo das ações se for modo banco
+    actionButtons += `
+            <button type="button" class="btn-primary" id="detail-btn-schedule">
+                <i class="fas fa-clock"></i> ${isScheduledToday ? 'SALVAR HORÁRIO' : 'AGENDAR'}
+            </button>`;
+  }
+
+  // Adiciona botões de conclusão independente do modo (Banco ou Agenda)
+  if (isCompleted || isPartial) {
+    // Já marcada: mostra opção de desmarcar
+    actionButtons += `
+            <button type="button" class="btn-secondary" id="detail-btn-unmark">
+                <i class="fas fa-undo"></i> DESMARCAR
+            </button>`;
   } else {
-    if (isCompleted || isPartial) {
-      // Já marcada: mostra opção de desmarcar
-      actionButtons = `
-                <button type="button" class="btn-secondary" id="detail-btn-unmark">
-                    <i class="fas fa-undo"></i> DESMARCAR
-                </button>`;
-    } else if (act.recurrence === 'single') {
-      // Conclusão única: mostra os dois botões
-      actionButtons = `
-                <button type="button" class="btn-detail-action btn-action-partial" id="detail-btn-partial">
-                    <i class="fas fa-adjust"></i> FIZ O QUE DEU
-                </button>
-                <button type="button" class="btn-detail-action btn-action-full" id="detail-btn-full">
-                    <i class="fas fa-check"></i> CONCLUÍDA
-                </button>`;
-    } else {
-      // Recorrente: marca como concluída direto
-      actionButtons = `
-                <button type="button" class="btn-detail-action btn-action-full" id="detail-btn-full">
-                    <i class="fas fa-check"></i> MARCAR CONCLUÍDA
-                </button>`;
-    }
+    // Para qualquer tipo de atividade (única ou recorrente): mostra os dois botões
+    actionButtons += `
+            <button type="button" class="btn-detail-action btn-action-partial" id="detail-btn-partial">
+                <i class="fas fa-adjust"></i> FIZ O QUE DEU
+            </button>
+            <button type="button" class="btn-detail-action btn-action-full" id="detail-btn-full">
+                <i class="fas fa-check"></i> CONCLUÍDA
+            </button>`;
   }
 
   const overlay = document.createElement('div');
@@ -1148,7 +1138,8 @@ function renderPendingList() {
     const isFuture = isFutureWeekly || isFutureMonthly || (a.recurrence === 'single' && a.scheduledDate && a.scheduledDate > todayString);
 
     const isActiveToday = isActivityActiveToday(a);
-    const isScheduledRecurrent = a.scheduledTime || a.recurrence === 'daily' || a.recurrence === 'weekly' || a.recurrence === 'monthly';
+    const isForToday = isActiveToday || (a.recurrence === 'single' && a.scheduledDate === todayString);
+    const isScheduledRecurrent = a.scheduledTime || a.recurrence === 'daily' || a.recurrence === 'weekly' || a.recurrence === 'monthly' || (a.recurrence === 'single' && a.scheduledDate);
 
     if (currentTab === 'pending') {
       if (isFuture) return false;
@@ -1162,7 +1153,7 @@ function renderPendingList() {
       if (a.status === 'completed' && a.recurrence === 'single') return false;
     } else if (currentTab === 'scheduled') {
       // No modo "Programadas", mostramos tudo que tem horário/recorrência mas NÃO é para hoje
-      if (!isScheduledRecurrent || isActiveToday) return false;
+      if (!isScheduledRecurrent || isForToday) return false;
     }
 
     return true;
@@ -1208,7 +1199,6 @@ function renderPendingList() {
 
 // ── LÓGICA DA VISÃO GERAL (TODAS AS CATEGORIAS) ──────────────────
 const btnFullView = document.getElementById('btn-full-view');
-const modalFullView = document.getElementById('modal-full-view');
 const fullViewContainer = document.getElementById('full-view-container');
 
 btnFullView?.addEventListener('click', () => {
@@ -1369,22 +1359,28 @@ if (savedTheme) {
 // ============================================================================
 document.getElementById('act-recurrence').addEventListener('change', (e) => {
   const val = e.target.value;
+  // Data: só quando única
+  document.getElementById('group-single-date').classList.toggle('hidden', val !== 'single');
   // Dias do mês: só quando mensal
   document.getElementById('group-monthly-days').classList.toggle('hidden', val !== 'monthly');
   // Dias da semana: só quando semanal
   document.getElementById('group-fixed-days').classList.toggle('hidden', val !== 'weekly');
 });
 
-btnNewActivity.addEventListener('click', () => {
-  editingActivityId = null;
-  isChecklistMode = false;
-  document.getElementById('modal-activity-title').innerHTML = '<i class="fas fa-pen-nib"></i> Nova Atividade';
-  formActivity.reset();
-  setChecklistMode(false);
-  document.getElementById('checklist-items-list').innerHTML = '';
-  document.getElementById('group-fixed-days').classList.add('hidden');
-  document.getElementById('group-monthly-days').classList.add('hidden');
-  modalActivity.classList.remove('hidden');
+// Listener para todos os botões de "Nova Atividade" (Sidebar, Visão Geral Desktop e Mobile)
+document.querySelectorAll('.btn-new-activity-trigger, #btn-new-activity').forEach(btn => {
+  btn.addEventListener('click', () => {
+    editingActivityId = null;
+    isChecklistMode = false;
+    document.getElementById('modal-activity-title').innerHTML = '<i class="fas fa-pen-nib"></i> Nova Atividade';
+    formActivity.reset();
+    setChecklistMode(false);
+    document.getElementById('checklist-items-list').innerHTML = '';
+    document.getElementById('group-single-date').classList.remove('hidden');
+    document.getElementById('group-fixed-days').classList.add('hidden');
+    document.getElementById('group-monthly-days').classList.add('hidden');
+    modalActivity.classList.remove('hidden');
+  });
 });
 
 // ── Helpers de Checklist ─────────────────────────
@@ -1456,6 +1452,7 @@ function openEditModal(act) {
   document.getElementById('act-recurrence').value = act.recurrence || 'single';
   document.getElementById('act-priority').value = act.priority ?? 0;
   document.getElementById('act-deadline').value = act.deadline || '';
+  document.getElementById('act-date').value = (act.recurrence === 'single' ? act.scheduledDate : '') || '';
   document.getElementById('act-time').value = act.scheduledTime || '';
   document.getElementById('act-monthly-days').value = act.monthlyDays || '';
 
@@ -1493,6 +1490,7 @@ function openEditModal(act) {
   });
 
   const rec = act.recurrence || 'single';
+  document.getElementById('group-single-date').classList.toggle('hidden', rec !== 'single');
   document.getElementById('group-fixed-days').classList.toggle('hidden', rec !== 'weekly');
   document.getElementById('group-monthly-days').classList.toggle('hidden', rec !== 'monthly');
   document.querySelectorAll('details.form-section').forEach(d => d.open = true);
@@ -1548,6 +1546,10 @@ formActivity.addEventListener('submit', async (e) => {
     createdAt: new Date().toISOString()
   };
 
+  if (newAct.recurrence === 'single') {
+    newAct.scheduledDate = document.getElementById('act-date').value || todayString;
+  }
+
   const fixedTime = document.getElementById('act-time').value;
   const fixedTimeEnd = document.getElementById('act-time-end').value;
   if (fixedTime) {
@@ -1560,7 +1562,8 @@ formActivity.addEventListener('submit', async (e) => {
     } else {
       newAct.duration = 60;
     }
-    if (fixedDays.length === 0 && newAct.recurrence !== 'daily' && newAct.recurrence !== 'monthly') {
+    // Se não for única (recorrente), e não tem dias fixos mas tem horário, assume que é para hoje
+    if (newAct.recurrence !== 'single' && fixedDays.length === 0 && newAct.recurrence !== 'daily' && newAct.recurrence !== 'monthly') {
       newAct.scheduledDate = todayString;
     }
     const hasConflict = activities.some(a => a.scheduledDate === todayString && a.scheduledTime === fixedTime

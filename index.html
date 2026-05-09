@@ -75,6 +75,7 @@
                 </div>
             </header>
             
+            
             <!-- Modal de temas (engrenagem) -->
             <div id="modal-style" class="modal hidden">
                 <div class="modal-content modal-small">
@@ -213,6 +214,10 @@
                                 <option value="monthly">Mensal (Dias do mês)</option>
                             </select>
                         </div>
+                        <div class="form-group" id="group-single-date">
+                            <label>Data de Agendamento (Opcional)</label>
+                            <input type="date" id="act-date">
+                        </div>
                         <div class="form-group hidden" id="group-fixed-days">
                             <label>Dias da Semana</label>
                             <div id="act-fixed-days" class="checkbox-day-row">
@@ -229,7 +234,7 @@
                             <label>Dias do Mês (ex: 5, 10, 20)</label>
                             <input type="text" id="act-monthly-days" placeholder="Ex: 1, 15, 30">
                         </div>
-                        <div class="form-group row">
+                        <div class="form-group row" style="align-items: flex-end;">
                             <div class="col">
                                 <label>Início Fixo (Opcional)</label>
                                 <input type="time" id="act-time">
@@ -381,6 +386,9 @@
                         <h2><i class="fas fa-layer-group"></i> VISÃO GERAL DO BANCO</h2>
                         
                         <div class="full-view-controls">
+                            <button class="btn-primary btn-new-activity-trigger desktop-only" style="padding: 6px 12px; font-size: 0.72rem; width: auto; margin-bottom: 0;">
+                                <i class="fas fa-plus"></i> NOVA ATIVIDADE
+                            </button>
                             <input type="text" id="full-view-search" placeholder="// buscar nome...">
                             
                             <select id="full-view-sort">
@@ -404,6 +412,11 @@
             </div>
             <div id="full-view-container" class="full-view-columns">
                 <!-- Colunas de categorias serão inseridas aqui via JS -->
+            </div>
+            <div class="full-view-footer-mobile mobile-only">
+                <button class="btn-primary btn-new-activity-trigger">
+                    <i class="fas fa-plus"></i> NOVA ATIVIDADE
+                </button>
             </div>
         </div>
     </div>
