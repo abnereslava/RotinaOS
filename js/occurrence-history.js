@@ -9,8 +9,6 @@ import {
   onSnapshot,
   doc,
   setDoc,
-  updateDoc,
-  deleteDoc,
   writeBatch
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
@@ -220,7 +218,7 @@ async function reconcileActivities(activities, { initial = false } = {}) {
         occurrenceMap.set(id, { id, ...data });
       }
 
-      // Se uma tarefa única ficou para trás, registra a obrigação antiga antes de o app rolá-la para hoje.
+      // Se uma tarefa única ficou para trás, sabemos que aquela obrigação existiu e preservamos seu estado conhecido.
       if (
         activity.recurrence === 'single' &&
         activity.scheduledDate &&
@@ -229,7 +227,8 @@ async function reconcileActivities(activities, { initial = false } = {}) {
       ) {
         const id = occurrenceId(userId, activity.id, activity.scheduledDate);
         if (!occurrenceMap.has(id)) {
-          const data = occurrenceSnapshot(activity, activity.scheduledDate, currentStatus === 'completed' || currentStatus === 'partial' ? currentStatus : 'pending', userId);
+          const knownStatus = currentStatus === 'completed' || currentStatus === 'partial' ? currentStatus : 'pending';
+          const data = occurrenceSnapshot(activity, activity.scheduledDate, knownStatus, userId);
           operations.push({
             type: 'set',
             ref: doc(db, OCCURRENCE_COLLECTION, id),
@@ -239,7 +238,8 @@ async function reconcileActivities(activities, { initial = false } = {}) {
         }
       }
 
-      // Backfill do mês anterior e do mês atual para que obrigações recorrentes antigas permaneçam consultáveis.
+      // Backfill do mês anterior e do mês atual. Para datas anteriores à implantação,
+      // não inventamos se a obrigação foi cumprida: sem evidência, fica como "unknown".
       let cursor = parseDateKey(historyStartKey);
       const end = parseDateKey(todayKey);
       while (cursor <= end) {
@@ -247,7 +247,7 @@ async function reconcileActivities(activities, { initial = false } = {}) {
         if (occursOn(activity, dateKey)) {
           const id = occurrenceId(userId, activity.id, dateKey);
           if (!occurrenceMap.has(id)) {
-            let status = 'pending';
+            let status = dateKey < todayKey ? 'unknown' : 'pending';
             if (completionDate === dateKey && (currentStatus === 'completed' || currentStatus === 'partial')) {
               status = currentStatus;
             }
