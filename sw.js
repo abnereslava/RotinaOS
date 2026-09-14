@@ -1,18 +1,30 @@
-const CACHE_NAME = 'todo-os-cache-v10';
+const CACHE_NAME = 'todo-os-cache-v11';
+const ASSET_VERSION = '20260914-1903';
+
+const versionedAsset = (path) => `${path}?v=${ASSET_VERSION}`;
+
 const urlsToCache = [
   './',
   './index.html',
   './css/style.css',
-  './css/mobile-fixes.css',
-  './js/bootstrap.js',
-  './js/ui-fixes.js',
-  './js/main-swipe.js',
-  './js/app.js',
+  versionedAsset('./css/mobile-fixes.css'),
+  versionedAsset('./js/bootstrap.js'),
+  versionedAsset('./js/ui-fixes.js'),
+  versionedAsset('./js/main-swipe.js'),
+  versionedAsset('./js/app.js'),
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
   './favicon.png'
 ];
+
+const NETWORK_FIRST_PATHS = new Set([
+  '/RotinaOS/css/mobile-fixes.css',
+  '/RotinaOS/js/bootstrap.js',
+  '/RotinaOS/js/ui-fixes.js',
+  '/RotinaOS/js/main-swipe.js',
+  '/RotinaOS/js/app.js'
+]);
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -36,7 +48,7 @@ self.addEventListener('activate', event => {
 
 async function getBaseNavigationResponse(request) {
   try {
-    const networkResponse = await fetch(request);
+    const networkResponse = await fetch(request, { cache: 'no-store' });
     if (networkResponse && networkResponse.ok) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, networkResponse.clone()).catch(() => {});
@@ -59,12 +71,12 @@ async function serveGoogleAuthEntry(request) {
   const html = await response.text();
   const transformed = html.replace(
     '<script type="module" src="js/app.js"></script>',
-    '<link rel="stylesheet" href="css/mobile-fixes.css">\n    <script src="js/ui-fixes.js" defer></script>\n    <script src="js/main-swipe.js" defer></script>\n    <script type="module" src="js/bootstrap.js"></script>'
+    `<link rel="stylesheet" href="css/mobile-fixes.css?v=${ASSET_VERSION}">\n    <script src="js/ui-fixes.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/main-swipe.js?v=${ASSET_VERSION}" defer></script>\n    <script type="module" src="js/bootstrap.js?v=${ASSET_VERSION}"></script>`
   );
 
   const headers = new Headers(response.headers);
   headers.set('content-type', 'text/html; charset=utf-8');
-  headers.set('cache-control', 'no-cache');
+  headers.set('cache-control', 'no-store, max-age=0');
 
   return new Response(transformed, {
     status: response.status,
@@ -73,9 +85,36 @@ async function serveGoogleAuthEntry(request) {
   });
 }
 
+async function networkFirst(request) {
+  try {
+    const networkResponse = await fetch(request, { cache: 'no-store' });
+    if (networkResponse && networkResponse.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone()).catch(() => {});
+      return networkResponse;
+    }
+  } catch (error) {
+    // Offline: usa a cópia armazenada abaixo.
+  }
+
+  return caches.match(request);
+}
+
 self.addEventListener('fetch', event => {
   if (event.request.mode === 'navigate') {
     event.respondWith(serveGoogleAuthEntry(event.request));
+    return;
+  }
+
+  const requestUrl = new URL(event.request.url);
+  const isLocalVersionedAsset =
+    requestUrl.origin === self.location.origin &&
+    NETWORK_FIRST_PATHS.has(requestUrl.pathname);
+
+  if (isLocalVersionedAsset) {
+    event.respondWith(
+      networkFirst(event.request).then(response => response || new Response('Offline', { status: 503 }))
+    );
     return;
   }
 
