@@ -1,5 +1,5 @@
-const CACHE_NAME = 'todo-os-cache-v14';
-const ASSET_VERSION = '20260914-2010';
+const CACHE_NAME = 'todo-os-cache-v15';
+const ASSET_VERSION = '20260914-2018';
 
 const versionedAsset = (path) => `${path}?v=${ASSET_VERSION}`;
 
