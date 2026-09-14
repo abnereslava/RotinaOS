@@ -132,7 +132,7 @@ async function handleGoogleLogin() {
     let result;
 
     // Caso a sessão antiga ainda esteja aberta, ligamos o Google diretamente ao
-    // UID antigo. Assim o banco continua pertencendo ao mesmo usuário.
+    // UID antigo. Assim o banco continua pertencendo ao mesmo usuário Firebase.
     if (existingUser && existingUser.uid === LEGACY_UID && !hasProvider(existingUser, "google.com")) {
       setGoogleButtonBusy(true, "VINCULANDO CONTA...");
       result = await linkWithPopup(existingUser, googleProvider);
@@ -260,6 +260,10 @@ async function loadOriginalApplication() {
 
   const authContainer = document.getElementById("auth-container");
   if (authContainer) authContainer.classList.add("hidden");
+
+  // Prepara o histórico por ocorrência antes da lógica antiga fazer manutenção diária.
+  const occurrenceModule = await import("./occurrence-history.js");
+  await occurrenceModule.occurrenceHistoryReady;
 
   // Só agora a lógica completa do RotinaOS é carregada.
   await import("./app.js");
