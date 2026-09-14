@@ -1,9 +1,11 @@
-const CACHE_NAME = 'todo-os-cache-v7';
+const CACHE_NAME = 'todo-os-cache-v8';
 const urlsToCache = [
   './',
   './index.html',
   './css/style.css',
+  './css/mobile-fixes.css',
   './js/bootstrap.js',
+  './js/ui-fixes.js',
   './js/app.js',
   './manifest.json',
   './icon-192.png',
@@ -56,7 +58,7 @@ async function serveGoogleAuthEntry(request) {
   const html = await response.text();
   const transformed = html.replace(
     '<script type="module" src="js/app.js"></script>',
-    '<script type="module" src="js/bootstrap.js"></script>'
+    '<link rel="stylesheet" href="css/mobile-fixes.css">\n    <script src="js/ui-fixes.js" defer></script>\n    <script type="module" src="js/bootstrap.js"></script>'
   );
 
   const headers = new Headers(response.headers);
