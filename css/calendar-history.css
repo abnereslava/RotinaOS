@@ -17,3 +17,8 @@
   color: var(--text-accent, #93c5fd);
   border: 1px solid var(--border-bright, #2d4a72);
 }
+
+.calendar-task-row.status-unknown {
+  opacity: .72;
+  border-left-color: var(--text-secondary, #6b8cad);
+}
