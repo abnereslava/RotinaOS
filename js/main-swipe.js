@@ -1,7 +1,7 @@
 (() => {
   const OPEN_THRESHOLD = 70;
   const CLOSE_THRESHOLD = 70;
-  const EDGE_ZONE = 48;
+  const SCROLL_LEFT_TOLERANCE = 2;
   const START_DRAG_DISTANCE = 12;
   const HORIZONTAL_DOMINANCE = 1.15;
   const ANIMATION_MS = 280;
@@ -26,6 +26,10 @@
     return document.getElementById('modal-full-view');
   }
 
+  function getFullViewContainer() {
+    return document.getElementById('full-view-container');
+  }
+
   function isMainScreenActive() {
     const app = getApp();
     const fullView = getFullView();
@@ -40,6 +44,11 @@
   function isFullViewActive() {
     const fullView = getFullView();
     return Boolean(fullView && !fullView.classList.contains('hidden'));
+  }
+
+  function isActivityBankAtLeftmostList() {
+    const container = getFullViewContainer();
+    return Boolean(container && container.scrollLeft <= SCROLL_LEFT_TOLERANCE);
   }
 
   function clearInlineAnimationStyles() {
@@ -163,7 +172,10 @@
       return;
     }
 
-    if (isFullViewActive() && startX <= EDGE_ZONE) {
+    // O retorno depende da posição horizontal das listas, não da posição do dedo.
+    // Se o banco já está totalmente à esquerda, um gesto para a direita pode fechá-lo.
+    // Se ainda existem listas à esquerda, deixamos o navegador fazer a rolagem horizontal normal.
+    if (isFullViewActive() && isActivityBankAtLeftmostList()) {
       mode = 'close';
       dragging = false;
       previewOpened = false;
@@ -193,6 +205,7 @@
         return;
       }
 
+      // No banco, um gesto para a esquerda continua navegando pelas listas.
       if (mode === 'close' && deltaX <= 0) {
         resetGesture();
         return;
