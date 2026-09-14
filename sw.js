@@ -1,5 +1,5 @@
-const CACHE_NAME = 'todo-os-cache-v13';
-const ASSET_VERSION = '20260914-1945';
+const CACHE_NAME = 'todo-os-cache-v14';
+const ASSET_VERSION = '20260914-2010';
 
 const versionedAsset = (path) => `${path}?v=${ASSET_VERSION}`;
 
@@ -9,10 +9,12 @@ const urlsToCache = [
   './css/style.css',
   versionedAsset('./css/mobile-fixes.css'),
   versionedAsset('./css/calendar-view.css'),
+  versionedAsset('./css/calendar-history.css'),
   versionedAsset('./js/bootstrap.js'),
   versionedAsset('./js/ui-fixes.js'),
   versionedAsset('./js/main-swipe.js'),
   versionedAsset('./js/calendar-view.js'),
+  versionedAsset('./js/occurrence-history.js'),
   versionedAsset('./js/app.js'),
   './manifest.json',
   './icon-192.png',
@@ -23,10 +25,12 @@ const urlsToCache = [
 const NETWORK_FIRST_PATHS = new Set([
   '/RotinaOS/css/mobile-fixes.css',
   '/RotinaOS/css/calendar-view.css',
+  '/RotinaOS/css/calendar-history.css',
   '/RotinaOS/js/bootstrap.js',
   '/RotinaOS/js/ui-fixes.js',
   '/RotinaOS/js/main-swipe.js',
   '/RotinaOS/js/calendar-view.js',
+  '/RotinaOS/js/occurrence-history.js',
   '/RotinaOS/js/app.js'
 ]);
 
@@ -75,7 +79,7 @@ async function serveGoogleAuthEntry(request) {
   const html = await response.text();
   const transformed = html.replace(
     '<script type="module" src="js/app.js"></script>',
-    `<link rel="stylesheet" href="css/mobile-fixes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-view.css?v=${ASSET_VERSION}">\n    <script src="js/ui-fixes.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/main-swipe.js?v=${ASSET_VERSION}" defer></script>\n    <script type="module" src="js/bootstrap.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/calendar-view.js?v=${ASSET_VERSION}"></script>`
+    `<link rel="stylesheet" href="css/mobile-fixes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-view.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-history.css?v=${ASSET_VERSION}">\n    <script src="js/ui-fixes.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/main-swipe.js?v=${ASSET_VERSION}" defer></script>\n    <script type="module" src="js/bootstrap.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/calendar-view.js?v=${ASSET_VERSION}"></script>`
   );
 
   const headers = new Headers(response.headers);
