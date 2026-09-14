@@ -1,0 +1,94 @@
+/* Mobile UI fixes kept separate from the legacy theme stylesheet. */
+
+@media (max-width: 900px) {
+  /* Y2K/default: use two explicit rows so controls never get squeezed. */
+  :where(body:not([data-theme]), body[data-theme="y2k"]) .full-view-header-content {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title close"
+      "controls controls";
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 16px !important;
+  }
+
+  :where(body:not([data-theme]), body[data-theme="y2k"]) .full-view-header-content > h2 {
+    grid-area: title;
+    min-width: 0;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  :where(body:not([data-theme]), body[data-theme="y2k"]) #btn-close-full-view {
+    grid-area: close;
+    position: static !important;
+    inset: auto !important;
+    justify-self: end;
+    margin: 0 !important;
+  }
+
+  :where(body:not([data-theme]), body[data-theme="y2k"]) .full-view-controls {
+    grid-area: controls;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: 10px !important;
+    width: 100% !important;
+    min-width: 0;
+    margin: 0 !important;
+  }
+
+  :where(body:not([data-theme]), body[data-theme="y2k"]) #full-view-search,
+  :where(body:not([data-theme]), body[data-theme="y2k"]) #full-view-sort {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box;
+    margin: 0 !important;
+  }
+
+  :where(body:not([data-theme]), body[data-theme="y2k"]) #btn-full-view-hide-scheduled {
+    width: 56px !important;
+    min-width: 56px !important;
+    max-width: 56px !important;
+    margin: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :where(body:not([data-theme]), body[data-theme="y2k"]) #btn-full-view-hide-scheduled span {
+    display: none !important;
+  }
+}
+
+@media (max-width: 420px) {
+  :where(body:not([data-theme]), body[data-theme="y2k"]) .full-view-header-content {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  :where(body:not([data-theme]), body[data-theme="y2k"]) .full-view-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr) 48px;
+    gap: 8px !important;
+  }
+
+  :where(body:not([data-theme]), body[data-theme="y2k"]) #btn-full-view-hide-scheduled {
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+  }
+}
+
+/* The collapsed title itself is rotated 180deg. Counter-rotate only emoji glyphs. */
+.category-column.collapsed .category-column-header h3 .category-emoji-fix {
+  display: inline-block;
+  transform: rotate(180deg);
+  transform-origin: center;
+}
