@@ -1,0 +1,19 @@
+.calendar-day.is-past {
+  opacity: .72;
+  cursor: pointer;
+}
+
+.calendar-day.is-past.has-tasks {
+  opacity: .9;
+}
+
+.calendar-day.is-past:hover,
+.calendar-day.is-past:active {
+  background: var(--bg-surface-hover, #1e2d45);
+}
+
+.calendar-day.is-past .calendar-task-count {
+  background: var(--bg-surface-2, #1a2235);
+  color: var(--text-accent, #93c5fd);
+  border: 1px solid var(--border-bright, #2d4a72);
+}
