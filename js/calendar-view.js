@@ -227,7 +227,7 @@ function getActivitiesForDate(dateKey) {
 
 function getOccurrenceStatus(activity, dateKey) {
   if (activity.date === dateKey && activity.activityId) {
-    return activity.status || 'pending';
+    return activity.status || 'unknown';
   }
 
   const savedOccurrence = getOccurrenceRecord(activity.id, dateKey);
@@ -524,7 +524,13 @@ function renderSelectedDay() {
     }[activity.recurrence] || 'Atividade';
 
     const timeLabel = activity.scheduledTime || 'Sem horário';
-    const statusLabel = status === 'completed' ? 'Concluída' : status === 'partial' ? 'Parcial' : 'Pendente';
+    const statusLabel = status === 'completed'
+      ? 'Concluída'
+      : status === 'partial'
+        ? 'Parcial'
+        : status === 'unknown'
+          ? 'Sem registro'
+          : 'Pendente';
 
     item.innerHTML = `
       <div class="calendar-task-time">${timeLabel}</div>
