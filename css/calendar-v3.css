@@ -1,0 +1,48 @@
+.calendar-new-day-activity {
+  width: min(780px, calc(100% - 28px));
+  margin: 12px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.calendar-new-day-activity:disabled {
+  opacity: .42;
+  cursor: default;
+  filter: grayscale(.35);
+}
+
+button.calendar-unprogrammed {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* O feedback de toque é controlado por uma classe temporária para evitar :active/:hover preso no mobile. */
+button.calendar-unprogrammed:active,
+button.calendar-unprogrammed:focus:not(:focus-visible) {
+  color: var(--text-secondary, #6b8cad);
+  border-color: var(--border-color, #1e3050);
+  background: color-mix(in srgb, var(--bg-surface, #111827) 82%, transparent);
+}
+
+button.calendar-unprogrammed.is-pressing {
+  color: var(--text-primary, #d6e4f7);
+  border-color: var(--accent-color, #d97b3a);
+  background: var(--accent-light, rgba(217,123,58,.12));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  button.calendar-unprogrammed:hover {
+    color: var(--text-primary, #d6e4f7);
+    border-color: var(--accent-color, #d97b3a);
+    background: var(--accent-light, rgba(217,123,58,.12));
+  }
+}
+
+@media (max-width: 700px) {
+  .calendar-new-day-activity {
+    width: calc(100% - 20px);
+    margin-top: 10px;
+  }
+}
