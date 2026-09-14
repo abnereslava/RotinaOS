@@ -13,10 +13,13 @@ const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 
 const HORIZON_MONTHS = 24;
+const HISTORY_MONTHS = 1;
 const WEEKDAY_LABELS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
 let activities = [];
+let occurrences = [];
 let unsubscribeActivities = null;
+let unsubscribeOccurrences = null;
 let viewYear = null;
 let viewMonth = null;
 let selectedDate = null;
@@ -59,19 +62,26 @@ function monthFromIndex(index) {
 function getCalendarWindow() {
   const todayKey = getTodayString();
   const today = parseDateKey(todayKey);
-  const minIndex = monthIndex(today.getFullYear(), today.getMonth());
-  const maxIndex = minIndex + HORIZON_MONTHS;
+  const currentIndex = monthIndex(today.getFullYear(), today.getMonth());
+  const minIndex = currentIndex - HISTORY_MONTHS;
+  const maxIndex = currentIndex + HORIZON_MONTHS;
+  const minParts = monthFromIndex(minIndex);
   const maxParts = monthFromIndex(maxIndex);
+  const historyStart = new Date(minParts.year, minParts.month, 1);
   const maxDate = new Date(maxParts.year, maxParts.month + 1, 0);
 
   return {
     todayKey,
     today,
+    currentIndex,
+    currentYear: today.getFullYear(),
+    currentMonth: today.getMonth(),
     minIndex,
     maxIndex,
+    historyStartKey: toDateKey(historyStart),
     maxDateKey: toDateKey(maxDate),
-    minYear: today.getFullYear(),
-    minMonth: today.getMonth(),
+    minYear: minParts.year,
+    minMonth: minParts.month,
     maxYear: maxParts.year,
     maxMonth: maxParts.month
   };
@@ -79,25 +89,25 @@ function getCalendarWindow() {
 
 function syncWindow({ forceCurrentMonth = false } = {}) {
   const windowInfo = getCalendarWindow();
-  const signature = `${windowInfo.todayKey.slice(0, 7)}:${windowInfo.maxYear}-${windowInfo.maxMonth}`;
+  const signature = `${windowInfo.todayKey.slice(0, 7)}:${windowInfo.historyStartKey.slice(0, 7)}:${windowInfo.maxDateKey.slice(0, 7)}`;
   const changed = signature !== currentWindowSignature;
   currentWindowSignature = signature;
 
   if (viewYear === null || viewMonth === null || forceCurrentMonth) {
-    viewYear = windowInfo.minYear;
-    viewMonth = windowInfo.minMonth;
+    viewYear = windowInfo.currentYear;
+    viewMonth = windowInfo.currentMonth;
   }
 
-  const currentIndex = monthIndex(viewYear, viewMonth);
-  if (currentIndex < windowInfo.minIndex) {
+  const currentViewIndex = monthIndex(viewYear, viewMonth);
+  if (currentViewIndex < windowInfo.minIndex) {
     viewYear = windowInfo.minYear;
     viewMonth = windowInfo.minMonth;
-  } else if (currentIndex > windowInfo.maxIndex) {
+  } else if (currentViewIndex > windowInfo.maxIndex) {
     viewYear = windowInfo.maxYear;
     viewMonth = windowInfo.maxMonth;
   }
 
-  if (changed && selectedDate && selectedDate < windowInfo.todayKey) {
+  if (changed && selectedDate && selectedDate < windowInfo.historyStartKey) {
     selectedDate = windowInfo.todayKey;
   }
 
@@ -119,16 +129,44 @@ function parseFixedDays(value) {
   return [...new Set(value.map(Number).filter(day => Number.isInteger(day) && day >= 0 && day <= 6))];
 }
 
+function getActivityCreatedDateKey(activity) {
+  const raw = activity?.createdAt;
+  if (!raw) return null;
+
+  let date = null;
+  if (typeof raw === 'string' || typeof raw === 'number') {
+    const parsed = new Date(raw);
+    if (!Number.isNaN(parsed.getTime())) date = parsed;
+  } else if (typeof raw?.toDate === 'function') {
+    date = raw.toDate();
+  }
+
+  if (!date || Number.isNaN(date.getTime())) return null;
+
+  const parts = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(date);
+
+  const year = parts.find(part => part.type === 'year')?.value;
+  const month = parts.find(part => part.type === 'month')?.value;
+  const day = parts.find(part => part.type === 'day')?.value;
+  return `${year}-${month}-${day}`;
+}
+
 function occursOn(activity, dateKey) {
+  const createdDate = getActivityCreatedDateKey(activity);
+  if (createdDate && dateKey < createdDate) return false;
+
   const date = parseDateKey(dateKey);
 
   if (activity.recurrence === 'single') {
     return Boolean(activity.scheduledDate && activity.scheduledDate === dateKey);
   }
 
-  if (activity.recurrence === 'daily') {
-    return true;
-  }
+  if (activity.recurrence === 'daily') return true;
 
   if (activity.recurrence === 'weekly') {
     return parseFixedDays(activity.fixedDays).includes(date.getDay());
@@ -157,9 +195,25 @@ function activityHasOccurrenceInWindow(activity, windowInfo) {
   return false;
 }
 
+function getOccurrenceRecord(activityId, dateKey) {
+  return occurrences.find(item => item.activityId === activityId && item.date === dateKey) || null;
+}
+
 function getActivitiesForDate(dateKey) {
   const windowInfo = getCalendarWindow();
-  if (dateKey < windowInfo.todayKey || dateKey > windowInfo.maxDateKey) return [];
+  if (dateKey < windowInfo.historyStartKey || dateKey > windowInfo.maxDateKey) return [];
+
+  // Datas passadas são lidas do histórico persistido para não serem reescritas por mudanças futuras na atividade.
+  if (dateKey < windowInfo.todayKey) {
+    return occurrences
+      .filter(item => item.date === dateKey)
+      .sort((a, b) => {
+        const timeA = a.scheduledTime || '99:99';
+        const timeB = b.scheduledTime || '99:99';
+        if (timeA !== timeB) return timeA.localeCompare(timeB);
+        return String(a.title || '').localeCompare(String(b.title || ''), 'pt-BR');
+      });
+  }
 
   return activities
     .filter(activity => occursOn(activity, dateKey))
@@ -172,6 +226,13 @@ function getActivitiesForDate(dateKey) {
 }
 
 function getOccurrenceStatus(activity, dateKey) {
+  if (activity.date === dateKey && activity.activityId) {
+    return activity.status || 'pending';
+  }
+
+  const savedOccurrence = getOccurrenceRecord(activity.id, dateKey);
+  if (savedOccurrence?.status) return savedOccurrence.status;
+
   if (activity.completionDate !== dateKey) return 'pending';
   if (activity.status === 'completed') return 'completed';
   if (activity.status === 'partial') return 'partial';
@@ -271,9 +332,9 @@ function ensureSelectedDateForCurrentMonth() {
   const windowInfo = syncWindow();
   const currentMonthKey = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}`;
 
-  if (selectedDate?.startsWith(currentMonthKey) && selectedDate >= windowInfo.todayKey) return;
+  if (selectedDate?.startsWith(currentMonthKey)) return;
 
-  if (viewYear === windowInfo.minYear && viewMonth === windowInfo.minMonth) {
+  if (viewYear === windowInfo.currentYear && viewMonth === windowInfo.currentMonth) {
     selectedDate = windowInfo.todayKey;
     return;
   }
@@ -302,6 +363,51 @@ function changeMonth(delta) {
   renderCalendar();
 }
 
+function openNewActivityForDate(dateKey) {
+  const windowInfo = getCalendarWindow();
+  if (dateKey < windowInfo.todayKey) return;
+
+  const calendar = document.getElementById('calendar-view');
+  const openForm = () => {
+    const button = document.getElementById('btn-new-activity');
+    if (!button) return;
+
+    button.click();
+
+    window.setTimeout(() => {
+      const recurrence = document.getElementById('act-recurrence');
+      const dateInput = document.getElementById('act-date');
+
+      if (recurrence) {
+        recurrence.value = 'single';
+        recurrence.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+
+      if (dateInput) {
+        dateInput.value = dateKey;
+        dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }, 0);
+  };
+
+  if (!calendar || calendar.classList.contains('hidden')) {
+    openForm();
+    return;
+  }
+
+  let opened = false;
+  const afterClose = () => {
+    if (opened) return;
+    opened = true;
+    calendar.removeEventListener('rotinaos:calendar-close', afterClose);
+    openForm();
+  };
+
+  calendar.addEventListener('rotinaos:calendar-close', afterClose, { once: true });
+  document.dispatchEvent(new CustomEvent('rotinaos:calendar-close-request'));
+  window.setTimeout(afterClose, 420);
+}
+
 function renderCalendar() {
   const screen = createCalendarScreen();
   const windowInfo = syncWindow();
@@ -312,7 +418,7 @@ function renderCalendar() {
 
   const horizon = document.getElementById('calendar-horizon-label');
   if (horizon) {
-    horizon.textContent = `até ${formatMonthTitle(windowInfo.maxYear, windowInfo.maxMonth)}`;
+    horizon.textContent = `histórico desde ${formatMonthTitle(windowInfo.minYear, windowInfo.minMonth)} · até ${formatMonthTitle(windowInfo.maxYear, windowInfo.maxMonth)}`;
   }
 
   const prevButton = document.getElementById('calendar-prev-month');
@@ -343,7 +449,7 @@ function renderMonthGrid(windowInfo) {
   for (let day = 1; day <= daysInMonth; day += 1) {
     const key = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const isPast = key < windowInfo.todayKey;
-    const dayActivities = isPast ? [] : getActivitiesForDate(key);
+    const dayActivities = getActivitiesForDate(key);
 
     const cell = document.createElement('div');
     cell.className = 'calendar-day';
@@ -367,13 +473,14 @@ function renderMonthGrid(windowInfo) {
       ` : ''}
     `;
 
-    if (!isPast) {
-      cell.addEventListener('click', () => {
-        selectedDate = key;
-        renderMonthGrid(windowInfo);
-        renderSelectedDay();
-      });
-    }
+    cell.addEventListener('click', () => {
+      selectedDate = key;
+      renderMonthGrid(windowInfo);
+      renderSelectedDay();
+
+      // Histórico é apenas consulta. Hoje e futuro abrem o cadastro já com a data escolhida.
+      if (!isPast) openNewActivityForDate(key);
+    });
 
     grid.appendChild(cell);
   }
@@ -417,13 +524,13 @@ function renderSelectedDay() {
     }[activity.recurrence] || 'Atividade';
 
     const timeLabel = activity.scheduledTime || 'Sem horário';
-    const statusLabel = status === 'completed' ? 'Concluída' : status === 'partial' ? 'Parcial' : '';
+    const statusLabel = status === 'completed' ? 'Concluída' : status === 'partial' ? 'Parcial' : 'Pendente';
 
     item.innerHTML = `
       <div class="calendar-task-time">${timeLabel}</div>
       <div class="calendar-task-main">
         <strong>${escapeHtml(activity.title || 'Sem título')}</strong>
-        <span>${escapeHtml(activity.category || 'Sem categoria')} · ${recurrenceLabel}${statusLabel ? ` · ${statusLabel}` : ''}</span>
+        <span>${escapeHtml(activity.category || 'Sem categoria')} · ${recurrenceLabel} · ${statusLabel}</span>
       </div>
     `;
 
@@ -458,9 +565,14 @@ onAuthStateChanged(auth, user => {
     unsubscribeActivities();
     unsubscribeActivities = null;
   }
+  if (unsubscribeOccurrences) {
+    unsubscribeOccurrences();
+    unsubscribeOccurrences = null;
+  }
 
   if (!user) {
     activities = [];
+    occurrences = [];
     renderCalendar();
     return;
   }
@@ -470,11 +582,23 @@ onAuthStateChanged(auth, user => {
     where('userId', '==', user.uid)
   );
 
+  const occurrencesQuery = query(
+    collection(db, 'activity_occurrences'),
+    where('userId', '==', user.uid)
+  );
+
   unsubscribeActivities = onSnapshot(activitiesQuery, snapshot => {
     activities = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
     renderCalendar();
   }, error => {
     console.error('Falha ao carregar atividades do calendário:', error);
+  });
+
+  unsubscribeOccurrences = onSnapshot(occurrencesQuery, snapshot => {
+    occurrences = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+    renderCalendar();
+  }, error => {
+    console.error('Falha ao carregar histórico do calendário:', error);
   });
 });
 
