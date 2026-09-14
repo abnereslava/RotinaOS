@@ -22,3 +22,228 @@
   opacity: .72;
   border-left-color: var(--text-secondary, #6b8cad);
 }
+
+.calendar-desktop-launch {
+  display: inline-flex;
+}
+
+#calendar-month-picker-trigger.calendar-month-title-wrap {
+  appearance: none;
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+#calendar-month-picker-trigger.calendar-month-title-wrap:hover,
+#calendar-month-picker-trigger.calendar-month-title-wrap:focus-visible {
+  border-color: var(--border-color, #1e3050);
+  background: var(--bg-surface-2, #1a2235);
+  outline: none;
+}
+
+.calendar-filter-row {
+  max-width: 780px;
+  margin: 0 auto 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.calendar-filter-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 8px 11px;
+  border: 1px solid var(--border-color, #1e3050);
+  background: var(--bg-surface, #111827);
+  color: var(--text-secondary, #6b8cad);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.calendar-filter-button.active {
+  color: var(--text-primary, #d6e4f7);
+  border-color: var(--accent-color, #d97b3a);
+  background: var(--accent-light, rgba(217,123,58,.18));
+}
+
+.calendar-filter-button i {
+  color: var(--accent-color, #d97b3a);
+}
+
+button.calendar-unprogrammed {
+  display: block;
+  width: calc(100% - 28px);
+  border: 1px dashed var(--border-color, #1e3050);
+  cursor: pointer;
+}
+
+button.calendar-unprogrammed:hover,
+button.calendar-unprogrammed:active {
+  color: var(--text-primary, #d6e4f7);
+  border-color: var(--accent-color, #d97b3a);
+  background: var(--accent-light, rgba(217,123,58,.12));
+}
+
+.calendar-control-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0,0,0,.64);
+  backdrop-filter: blur(4px);
+}
+
+.calendar-control-modal.hidden {
+  display: none !important;
+}
+
+.calendar-control-card {
+  width: min(440px, 100%);
+  max-height: min(78vh, 640px);
+  overflow: auto;
+  padding: 16px;
+  background: var(--bg-surface, #111827);
+  color: var(--text-primary, #d6e4f7);
+  border: 1px solid var(--border-bright, #2d4a72);
+  box-shadow: var(--shadow-hard, 4px 4px 0 rgba(0,0,0,.6));
+}
+
+.calendar-control-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.calendar-control-header h3 {
+  margin: 3px 0 0;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 1rem;
+}
+
+.calendar-year-select {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 10px;
+  border: 1px solid var(--border-color, #1e3050);
+  background: var(--bg-color, #0b0f1a);
+  color: var(--text-primary, #d6e4f7);
+  font-family: 'Chakra Petch', sans-serif;
+}
+
+.calendar-picker-months {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.calendar-picker-month {
+  min-height: 44px;
+  border: 1px solid var(--border-color, #1e3050);
+  background: var(--bg-surface-2, #1a2235);
+  color: var(--text-primary, #d6e4f7);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.calendar-picker-month.active {
+  border-color: var(--accent-color, #d97b3a);
+  background: var(--accent-light, rgba(217,123,58,.18));
+  color: var(--text-accent, #93c5fd);
+}
+
+.calendar-picker-month:disabled {
+  opacity: .22;
+  cursor: default;
+}
+
+.calendar-filter-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.calendar-category-options {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.calendar-category-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border-color, #1e3050);
+  background: var(--bg-surface-2, #1a2235);
+  cursor: pointer;
+}
+
+.calendar-category-option input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color, #d97b3a);
+}
+
+.calendar-category-option span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body[data-theme="medieval"] .calendar-control-header h3,
+body[data-theme="medieval"] .calendar-year-select,
+body[data-theme="medieval"] .calendar-picker-month {
+  font-family: 'Cinzel', serif;
+}
+
+@media (max-width: 700px) {
+  #main-header #btn-full-view,
+  #main-header #btn-calendar-view {
+    display: none !important;
+  }
+
+  .calendar-filter-row {
+    justify-content: stretch;
+  }
+
+  .calendar-filter-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .calendar-control-modal {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .calendar-control-card {
+    width: 100%;
+    max-height: 82vh;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+
+  .calendar-picker-months {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  button.calendar-unprogrammed {
+    width: calc(100% - 20px);
+  }
+}
