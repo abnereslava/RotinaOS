@@ -1,8 +1,12 @@
 /* Mobile UI fixes kept separate from the legacy theme stylesheet. */
 
 @media (max-width: 900px) {
-  /* Y2K/default: use two explicit rows so controls never get squeezed. */
-  :where(body:not([data-theme]), body[data-theme="y2k"]) .full-view-header-content {
+  /*
+   * O Banco usa a mesma estrutura responsiva em todos os temas.
+   * Antes esta correção estava limitada ao Y2K, então temas adicionados depois
+   * voltavam ao flex legado e espremiam busca/ordenação/botões no header.
+   */
+  .full-view-header-content {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
@@ -12,18 +16,21 @@
     column-gap: 12px;
     row-gap: 14px;
     width: 100%;
+    min-width: 0;
     box-sizing: border-box;
     padding: 14px 16px !important;
   }
 
-  :where(body:not([data-theme]), body[data-theme="y2k"]) .full-view-header-content > h2 {
+  .full-view-header-content > h2 {
     grid-area: title;
     min-width: 0;
     margin: 0;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  :where(body:not([data-theme]), body[data-theme="y2k"]) #btn-close-full-view {
+  #btn-close-full-view {
     grid-area: close;
     position: static !important;
     inset: auto !important;
@@ -31,7 +38,7 @@
     margin: 0 !important;
   }
 
-  :where(body:not([data-theme]), body[data-theme="y2k"]) .full-view-controls {
+  .full-view-controls {
     grid-area: controls;
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
@@ -42,8 +49,8 @@
     margin: 0 !important;
   }
 
-  :where(body:not([data-theme]), body[data-theme="y2k"]) #full-view-search,
-  :where(body:not([data-theme]), body[data-theme="y2k"]) #full-view-sort {
+  #full-view-search,
+  #full-view-sort {
     width: 100% !important;
     min-width: 0 !important;
     max-width: none !important;
@@ -51,7 +58,7 @@
     margin: 0 !important;
   }
 
-  :where(body:not([data-theme]), body[data-theme="y2k"]) #btn-full-view-hide-scheduled {
+  #btn-full-view-hide-scheduled {
     width: 56px !important;
     min-width: 56px !important;
     max-width: 56px !important;
@@ -63,23 +70,23 @@
     justify-content: center;
   }
 
-  :where(body:not([data-theme]), body[data-theme="y2k"]) #btn-full-view-hide-scheduled span {
+  #btn-full-view-hide-scheduled span {
     display: none !important;
   }
 }
 
 @media (max-width: 420px) {
-  :where(body:not([data-theme]), body[data-theme="y2k"]) .full-view-header-content {
+  .full-view-header-content {
     padding-left: 12px !important;
     padding-right: 12px !important;
   }
 
-  :where(body:not([data-theme]), body[data-theme="y2k"]) .full-view-controls {
+  .full-view-controls {
     grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr) 48px;
     gap: 8px !important;
   }
 
-  :where(body:not([data-theme]), body[data-theme="y2k"]) #btn-full-view-hide-scheduled {
+  #btn-full-view-hide-scheduled {
     width: 48px !important;
     min-width: 48px !important;
     max-width: 48px !important;
