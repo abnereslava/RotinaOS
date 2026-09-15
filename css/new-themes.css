@@ -1,0 +1,351 @@
+/* ====================================================
+   ROTINA OS — Temas Sage / Graphite e Japanese Stationery
+   Ambos acompanham prefers-color-scheme para conforto diurno/noturno.
+==================================================== */
+
+/* ---------- SAGE / GRAPHITE — DIA ---------- */
+body[data-theme="sage"] {
+  color-scheme: light;
+  --bg-color: #e9ece6;
+  --bg-surface: #f5f5ef;
+  --bg-surface-2: #dde3dc;
+  --bg-surface-hover: #d2dbd3;
+  --text-primary: #27312c;
+  --text-secondary: #66736c;
+  --text-accent: #526d5d;
+  --primary-color: #66806f;
+  --primary-hover: #536c5d;
+  --primary-light: rgba(102,128,111,.17);
+  --accent-color: #a97942;
+  --accent-light: rgba(169,121,66,.15);
+  --success-color: #5f856c;
+  --success-light: rgba(95,133,108,.16);
+  --warning-color: #a97f3e;
+  --danger-color: #a5524d;
+  --border-color: #c4cec5;
+  --border-bright: #9eafa2;
+  --shadow-hard: 0 10px 30px rgba(46,58,51,.12);
+  --shadow-card: 0 4px 14px rgba(46,58,51,.10);
+  --shadow-inset: inset 0 1px 2px rgba(46,58,51,.10);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+}
+
+body[data-theme="sage"],
+body[data-theme="sage"] .auth-wrapper {
+  background-color: var(--bg-color);
+  background-image:
+    radial-gradient(circle at 8% 0%, rgba(102,128,111,.14), transparent 34%),
+    radial-gradient(circle at 92% 100%, rgba(169,121,66,.08), transparent 30%);
+}
+
+/* ---------- JAPANESE STATIONERY — DIA ---------- */
+body[data-theme="japanese"] {
+  color-scheme: light;
+  --bg-color: #d9d1c1;
+  --bg-surface: #eee8dc;
+  --bg-surface-2: #e2dacb;
+  --bg-surface-hover: #d6cebe;
+  --text-primary: #252c2e;
+  --text-secondary: #6b6a63;
+  --text-accent: #243f58;
+  --primary-color: #2f506d;
+  --primary-hover: #233f57;
+  --primary-light: rgba(47,80,109,.14);
+  --accent-color: #a64f43;
+  --accent-light: rgba(166,79,67,.14);
+  --success-color: #58765b;
+  --success-light: rgba(88,118,91,.15);
+  --warning-color: #a17432;
+  --danger-color: #a64f43;
+  --border-color: #c0b7a7;
+  --border-bright: #928777;
+  --shadow-hard: 0 9px 24px rgba(47,43,36,.14);
+  --shadow-card: 0 3px 12px rgba(47,43,36,.11);
+  --shadow-inset: inset 0 1px 2px rgba(47,43,36,.10);
+  font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  letter-spacing: .005em;
+}
+
+body[data-theme="japanese"],
+body[data-theme="japanese"] .auth-wrapper {
+  background-color: var(--bg-color);
+  background-image:
+    linear-gradient(rgba(47,80,109,.035) 1px, transparent 1px),
+    radial-gradient(circle at 88% 12%, rgba(166,79,67,.09), transparent 22%);
+  background-size: 100% 28px, auto;
+}
+
+/* ---------- Estrutura suave compartilhada ---------- */
+body[data-theme="sage"] #main-header,
+body[data-theme="japanese"] #main-header,
+body[data-theme="sage"] .calendar-header,
+body[data-theme="japanese"] .calendar-header,
+body[data-theme="sage"] .full-view-header,
+body[data-theme="japanese"] .full-view-header {
+  clip-path: none;
+  background: color-mix(in srgb, var(--bg-surface) 94%, transparent);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 5px 20px color-mix(in srgb, var(--text-primary) 8%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+body[data-theme="sage"] .header-accent,
+body[data-theme="japanese"] .header-accent {
+  clip-path: none;
+  width: 4px;
+  border-radius: 0 999px 999px 0;
+  background: var(--accent-color);
+  box-shadow: none;
+}
+
+body[data-theme="sage"] #current-date-title,
+body[data-theme="japanese"] #current-date-title,
+body[data-theme="sage"] .calendar-header h2,
+body[data-theme="japanese"] .calendar-header h2 {
+  color: var(--text-primary);
+  text-shadow: none;
+  letter-spacing: -.01em;
+}
+
+body[data-theme="japanese"] #current-date-title,
+body[data-theme="japanese"] .calendar-header h2,
+body[data-theme="japanese"] #calendar-month-title,
+body[data-theme="japanese"] .modal-header-slant h2 {
+  font-family: Georgia, "Yu Mincho", "Hiragino Mincho ProN", serif;
+  font-weight: 600;
+}
+
+body[data-theme="sage"] .btn-primary,
+body[data-theme="japanese"] .btn-primary,
+body[data-theme="sage"] .btn-secondary,
+body[data-theme="japanese"] .btn-secondary,
+body[data-theme="sage"] .btn-mode-toggle,
+body[data-theme="japanese"] .btn-mode-toggle,
+body[data-theme="sage"] .calendar-filter-button,
+body[data-theme="japanese"] .calendar-filter-button,
+body[data-theme="sage"] .calendar-picker-month,
+body[data-theme="japanese"] .calendar-picker-month {
+  clip-path: none;
+  border-radius: 10px;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+body[data-theme="sage"] .btn-primary,
+body[data-theme="japanese"] .btn-primary {
+  border: 1px solid color-mix(in srgb, var(--primary-color) 78%, black 8%);
+}
+
+body[data-theme="sage"] .btn-primary:hover,
+body[data-theme="japanese"] .btn-primary:hover {
+  box-shadow: 0 5px 14px var(--primary-light);
+}
+
+body[data-theme="sage"] .btn-icon,
+body[data-theme="japanese"] .btn-icon {
+  border-radius: 10px;
+  color: var(--text-secondary);
+}
+
+body[data-theme="sage"] .btn-icon:hover,
+body[data-theme="japanese"] .btn-icon:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface-2);
+}
+
+body[data-theme="sage"] .modal-content,
+body[data-theme="japanese"] .modal-content,
+body[data-theme="sage"] .auth-card,
+body[data-theme="japanese"] .auth-card,
+body[data-theme="sage"] .calendar-card,
+body[data-theme="japanese"] .calendar-card,
+body[data-theme="sage"] .calendar-day-details,
+body[data-theme="japanese"] .calendar-day-details,
+body[data-theme="sage"] .calendar-control-card,
+body[data-theme="japanese"] .calendar-control-card,
+body[data-theme="sage"] .category-column,
+body[data-theme="japanese"] .category-column {
+  clip-path: none;
+  border-radius: 14px;
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-card);
+  background-color: var(--bg-surface);
+}
+
+body[data-theme="sage"] .modal-header-slant,
+body[data-theme="japanese"] .modal-header-slant,
+body[data-theme="sage"] .category-column-header,
+body[data-theme="japanese"] .category-column-header {
+  clip-path: none;
+  background: var(--bg-surface-2);
+  border-bottom: 1px solid var(--border-color);
+}
+
+body[data-theme="sage"] input,
+body[data-theme="sage"] select,
+body[data-theme="sage"] textarea,
+body[data-theme="japanese"] input,
+body[data-theme="japanese"] select,
+body[data-theme="japanese"] textarea {
+  border-radius: 9px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+body[data-theme="sage"] input:focus,
+body[data-theme="sage"] select:focus,
+body[data-theme="sage"] textarea:focus,
+body[data-theme="japanese"] input:focus,
+body[data-theme="japanese"] select:focus,
+body[data-theme="japanese"] textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+body[data-theme="sage"] #agenda-grid,
+body[data-theme="japanese"] #agenda-grid {
+  border-left-color: var(--border-color);
+  background-color: var(--bg-color);
+  background-image:
+    linear-gradient(to bottom, color-mix(in srgb, var(--border-color) 80%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--border-color) 35%, transparent) 1px, transparent 1px);
+  background-size: 100% 120px, 100% 30px;
+}
+
+body[data-theme="japanese"] #agenda-grid {
+  background-image:
+    linear-gradient(to bottom, rgba(47,80,109,.14) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(47,80,109,.055) 1px, transparent 1px);
+}
+
+body[data-theme="sage"] .activity-block,
+body[data-theme="japanese"] .activity-block,
+body[data-theme="sage"] .full-view-card,
+body[data-theme="japanese"] .full-view-card {
+  clip-path: none;
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+  background: var(--bg-surface);
+}
+
+body[data-theme="japanese"] .activity-block,
+body[data-theme="japanese"] .full-view-card {
+  border-left-width: 4px;
+}
+
+body[data-theme="sage"] .form-section,
+body[data-theme="japanese"] .form-section,
+body[data-theme="sage"] .checklist-editor,
+body[data-theme="japanese"] .checklist-editor {
+  border-radius: 10px;
+  border-color: var(--border-color);
+}
+
+body[data-theme="sage"] .calendar-day,
+body[data-theme="japanese"] .calendar-day {
+  border-radius: 9px;
+}
+
+body[data-theme="sage"] .calendar-day.is-selected,
+body[data-theme="japanese"] .calendar-day.is-selected {
+  box-shadow: inset 0 0 0 2px var(--accent-color);
+}
+
+body[data-theme="sage"] #current-time-indicator,
+body[data-theme="japanese"] #current-time-indicator {
+  background: var(--accent-color);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-color) 22%, transparent), 0 0 10px var(--accent-light);
+}
+
+body[data-theme="sage"] #current-time-indicator::before,
+body[data-theme="japanese"] #current-time-indicator::before {
+  background: var(--accent-color);
+  border-radius: 50%;
+  clip-path: none;
+}
+
+/* Japanese: detalhe de "selo" vermelho e linhas de papel discretas */
+body[data-theme="japanese"] .calendar-kicker,
+body[data-theme="japanese"] .calendar-detail-kicker,
+body[data-theme="japanese"] .settings-label {
+  color: var(--accent-color);
+  letter-spacing: .12em;
+}
+
+body[data-theme="japanese"] .calendar-task-row,
+body[data-theme="japanese"] .calendar-category-option {
+  background-image: linear-gradient(to right, rgba(47,80,109,.025), transparent 40%);
+}
+
+/* ---------- VARIANTES NOTURNAS AUTOMÁTICAS ---------- */
+@media (prefers-color-scheme: dark) {
+  body[data-theme="sage"] {
+    color-scheme: dark;
+    --bg-color: #171c19;
+    --bg-surface: #222925;
+    --bg-surface-2: #2b342f;
+    --bg-surface-hover: #354039;
+    --text-primary: #e3e8e3;
+    --text-secondary: #9aa89f;
+    --text-accent: #a5c0ad;
+    --primary-color: #789481;
+    --primary-hover: #8ba792;
+    --primary-light: rgba(120,148,129,.20);
+    --accent-color: #c29a68;
+    --accent-light: rgba(194,154,104,.18);
+    --success-color: #79a786;
+    --success-light: rgba(121,167,134,.18);
+    --warning-color: #c6a060;
+    --danger-color: #c87870;
+    --border-color: #39443e;
+    --border-bright: #526158;
+    --shadow-hard: 0 12px 34px rgba(0,0,0,.34);
+    --shadow-card: 0 5px 16px rgba(0,0,0,.24);
+    --shadow-inset: inset 0 1px 2px rgba(0,0,0,.25);
+  }
+
+  body[data-theme="japanese"] {
+    color-scheme: dark;
+    --bg-color: #1b1d1d;
+    --bg-surface: #252928;
+    --bg-surface-2: #303331;
+    --bg-surface-hover: #393d3a;
+    --text-primary: #e4dfd2;
+    --text-secondary: #aaa498;
+    --text-accent: #9eb7cc;
+    --primary-color: #688aa6;
+    --primary-hover: #7a9ab4;
+    --primary-light: rgba(104,138,166,.20);
+    --accent-color: #c46e61;
+    --accent-light: rgba(196,110,97,.18);
+    --success-color: #7d9d80;
+    --success-light: rgba(125,157,128,.18);
+    --warning-color: #c49a5b;
+    --danger-color: #c46e61;
+    --border-color: #494942;
+    --border-bright: #68665d;
+    --shadow-hard: 0 12px 34px rgba(0,0,0,.38);
+    --shadow-card: 0 5px 16px rgba(0,0,0,.26);
+    --shadow-inset: inset 0 1px 2px rgba(0,0,0,.26);
+  }
+
+  body[data-theme="japanese"],
+  body[data-theme="japanese"] .auth-wrapper {
+    background-image:
+      linear-gradient(rgba(158,183,204,.028) 1px, transparent 1px),
+      radial-gradient(circle at 88% 12%, rgba(196,110,97,.08), transparent 22%);
+  }
+}
+
+@media (max-width: 700px) {
+  body[data-theme="sage"] .modal-content,
+  body[data-theme="japanese"] .modal-content,
+  body[data-theme="sage"] .calendar-control-card,
+  body[data-theme="japanese"] .calendar-control-card {
+    border-radius: 14px 14px 0 0;
+  }
+}
