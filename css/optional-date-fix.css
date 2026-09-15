@@ -1,0 +1,37 @@
+.optional-date-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.optional-date-row #act-date {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.optional-date-clear {
+  flex: 0 0 auto;
+  min-width: 92px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding-inline: 12px;
+  white-space: nowrap;
+}
+
+.optional-date-clear i {
+  pointer-events: none;
+}
+
+@media (max-width: 520px) {
+  .optional-date-clear {
+    min-width: 44px;
+    width: 44px;
+    padding-inline: 0;
+  }
+
+  .optional-date-clear span {
+    display: none;
+  }
+}

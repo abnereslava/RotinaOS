@@ -1,5 +1,5 @@
-const CACHE_NAME = 'todo-os-cache-v18';
-const ASSET_VERSION = '20260914-sage-japanese';
+const CACHE_NAME = 'todo-os-cache-v19';
+const ASSET_VERSION = '20260915-optional-date';
 
 const versionedAsset = (path) => `${path}?v=${ASSET_VERSION}`;
 
@@ -12,7 +12,9 @@ const urlsToCache = [
   versionedAsset('./css/calendar-history.css'),
   versionedAsset('./css/calendar-v3.css'),
   versionedAsset('./css/new-themes.css'),
+  versionedAsset('./css/optional-date-fix.css'),
   versionedAsset('./js/theme-enhancements.js'),
+  versionedAsset('./js/optional-date-fix.js'),
   versionedAsset('./js/bootstrap.js'),
   versionedAsset('./js/ui-fixes.js'),
   versionedAsset('./js/main-swipe.js'),
@@ -31,7 +33,9 @@ const NETWORK_FIRST_PATHS = new Set([
   '/RotinaOS/css/calendar-history.css',
   '/RotinaOS/css/calendar-v3.css',
   '/RotinaOS/css/new-themes.css',
+  '/RotinaOS/css/optional-date-fix.css',
   '/RotinaOS/js/theme-enhancements.js',
+  '/RotinaOS/js/optional-date-fix.js',
   '/RotinaOS/js/bootstrap.js',
   '/RotinaOS/js/ui-fixes.js',
   '/RotinaOS/js/main-swipe.js',
@@ -85,7 +89,7 @@ async function serveGoogleAuthEntry(request) {
   const html = await response.text();
   const transformed = html.replace(
     '<script type="module" src="js/app.js"></script>',
-    `<link rel="stylesheet" href="css/mobile-fixes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-view.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-history.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-v3.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/new-themes.css?v=${ASSET_VERSION}">\n    <script src="js/theme-enhancements.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/ui-fixes.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/main-swipe.js?v=${ASSET_VERSION}" defer></script>\n    <script type="module" src="js/bootstrap.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/calendar-view-v3.js?v=${ASSET_VERSION}"></script>`
+    `<link rel="stylesheet" href="css/mobile-fixes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-view.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-history.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-v3.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/new-themes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/optional-date-fix.css?v=${ASSET_VERSION}">\n    <script src="js/theme-enhancements.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/ui-fixes.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/main-swipe.js?v=${ASSET_VERSION}" defer></script>\n    <script type="module" src="js/optional-date-fix.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/bootstrap.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/calendar-view-v3.js?v=${ASSET_VERSION}"></script>`
   );
 
   const headers = new Headers(response.headers);
