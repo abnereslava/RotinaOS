@@ -39,15 +39,15 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   width: 100%;
 }
 
 .category-rename-input {
   min-width: 0;
   width: 100%;
-  height: 34px;
-  padding: 5px 8px;
+  height: 38px;
+  padding: 6px 9px;
   border: 1px solid var(--primary-color);
   border-radius: 7px;
   background: var(--bg-surface, var(--bg-color));
@@ -64,16 +64,25 @@
 }
 
 .category-rename-action {
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
   display: inline-grid;
   place-items: center;
   border: 1px solid var(--border-color);
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--bg-surface-2, var(--bg-color));
   color: var(--text-primary);
   cursor: pointer;
   padding: 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.category-rename-action i {
+  pointer-events: none;
+  font-size: 1rem;
 }
 
 .category-rename-action.is-save {
@@ -82,6 +91,10 @@
 
 .category-rename-action.is-cancel {
   color: var(--danger-color);
+}
+
+.category-rename-action:active {
+  transform: scale(.94);
 }
 
 .category-rename-action:disabled,
@@ -119,18 +132,31 @@
   border-color: var(--danger-color);
 }
 
-@media (max-width: 700px) {
+@media (max-width: 700px), (pointer: coarse) {
+  .category-column-header h3.category-renaming {
+    margin-right: 4px;
+  }
+
   .category-rename-editor {
-    gap: 4px;
+    gap: 7px;
   }
 
   .category-rename-input {
-    height: 32px;
-    font-size: .9rem;
+    height: 46px;
+    min-height: 46px;
+    font-size: 16px;
+    padding: 8px 10px;
   }
 
   .category-rename-action {
-    width: 30px;
-    height: 30px;
+    width: 46px;
+    min-width: 46px;
+    height: 46px;
+    min-height: 46px;
+    border-radius: 10px;
+  }
+
+  .category-rename-action i {
+    font-size: 1.15rem;
   }
 }
