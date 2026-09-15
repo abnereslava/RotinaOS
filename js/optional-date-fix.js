@@ -1,4 +1,4 @@
-import { getApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 import {
   getFirestore,
@@ -10,7 +10,19 @@ import {
   doc
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-const firebaseApp = getApp();
+const firebaseConfig = {
+  apiKey: "AIzaSyC-iFjByyV-QLGP253kdlJYVqvryw1BI2E",
+  authDomain: "planejamentosemanal-6d1dc.firebaseapp.com",
+  projectId: "planejamentosemanal-6d1dc",
+  storageBucket: "planejamentosemanal-6d1dc.firebasestorage.app",
+  messagingSenderId: "537704966796",
+  appId: "1:537704966796:web:74b8c137790698f7f8a9a9"
+};
+
+// Este módulo carrega antes do bootstrap para interceptar o submit. Se o app
+// Firebase ainda não existir, inicializa a mesma instância/configuração usada
+// pelo bootstrap; initializeApp reutiliza a instância equivalente depois.
+const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 
@@ -71,7 +83,6 @@ function normalizePendingSentinel(snapshot) {
         candidates.map(id => updateDoc(doc(db, 'activities', id), { scheduledDate: null }))
       ).catch(error => {
         console.error('Falha ao limpar data opcional de agendamento:', error);
-        // Se a normalização falhar, deixa a próxima submissão poder tentar novamente.
         pendingNormalization = request;
       });
     } else if (Date.now() > pendingNormalization.expiresAt) {
@@ -119,7 +130,6 @@ function initializeOptionalDateUi() {
 }
 
 initializeOptionalDateUi();
-
 document.addEventListener('DOMContentLoaded', initializeOptionalDateUi, { once: true });
 
 const observer = new MutationObserver(() => initializeOptionalDateUi());
