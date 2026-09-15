@@ -119,7 +119,10 @@
 
   function ensureGuard() {
     if (!isMobileContext() || !isAppActive()) return;
-    if (guardArmed && history.state?.[GUARD_STATE_KEY]) return;
+    if (history.state?.[GUARD_STATE_KEY]) {
+      guardArmed = true;
+      return;
+    }
     pushGuardState();
   }
 
