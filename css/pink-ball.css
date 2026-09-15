@@ -1,0 +1,362 @@
+/* ====================================================
+   ROTINA OS — PINK BALL
+   Tema inspirado na paleta clássica do Kirby:
+   rosa macio, vermelho cereja e amarelo-estelar.
+==================================================== */
+
+body[data-theme="pinkball"] {
+  color-scheme: light;
+  --bg-color:         #f5e6ed;
+  --bg-surface:       #fff8fb;
+  --bg-surface-2:     #f2d8e3;
+  --bg-surface-hover: #ebc9d8;
+
+  --text-primary:     #3d2933;
+  --text-secondary:   #80616f;
+  --text-accent:      #b93662;
+
+  --primary-color:    #df6f99;
+  --primary-hover:    #c94f7b;
+  --primary-light:    rgba(223,111,153,.18);
+
+  --accent-color:     #edb936;
+  --accent-light:     rgba(237,185,54,.20);
+
+  --success-color:    #579a78;
+  --success-light:    rgba(87,154,120,.17);
+  --warning-color:    #df9636;
+  --danger-color:     #c94052;
+
+  --border-color:     #e8b8cb;
+  --border-bright:    #d985a6;
+
+  --shadow-hard:      0 10px 28px rgba(132,55,87,.18);
+  --shadow-card:      0 5px 15px rgba(132,55,87,.13);
+  --shadow-inset:     inset 0 1px 3px rgba(132,55,87,.10);
+
+  font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+body[data-theme="pinkball"],
+body[data-theme="pinkball"] .auth-wrapper {
+  background-color: var(--bg-color);
+  background-image:
+    radial-gradient(circle at 10% 12%, rgba(255,255,255,.66) 0 2px, transparent 3px),
+    radial-gradient(circle at 82% 18%, rgba(237,185,54,.18) 0 3px, transparent 4px),
+    radial-gradient(circle at 18% 82%, rgba(223,111,153,.12), transparent 26%),
+    radial-gradient(circle at 88% 78%, rgba(201,64,82,.08), transparent 22%);
+  background-size: 76px 76px, 112px 112px, auto, auto;
+}
+
+/* Cabeçalhos: suaves e arredondados, com detalhe de estrela. */
+body[data-theme="pinkball"] #main-header,
+body[data-theme="pinkball"] .calendar-header,
+body[data-theme="pinkball"] .modal-header-slant,
+body[data-theme="pinkball"] .category-column-header,
+body[data-theme="pinkball"] .full-view-footer-mobile {
+  clip-path: none !important;
+  background-color: var(--bg-surface-2);
+  background-image: linear-gradient(135deg, rgba(255,255,255,.34), transparent 52%);
+  border-color: var(--border-color);
+  box-shadow: none;
+}
+
+body[data-theme="pinkball"] #main-header {
+  border-bottom: 2px solid var(--border-bright);
+  border-radius: 0 0 18px 18px;
+  box-shadow: 0 6px 18px rgba(132,55,87,.12);
+}
+
+body[data-theme="pinkball"] .header-accent {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  flex: 0 0 20px;
+  clip-path: polygon(50% 0%, 61% 34%, 98% 35%, 68% 56%, 79% 92%, 50% 70%, 21% 92%, 32% 56%, 2% 35%, 39% 34%) !important;
+  background: var(--accent-color);
+  box-shadow: none;
+}
+
+body[data-theme="pinkball"] #current-date-title,
+body[data-theme="pinkball"] .calendar-header h2,
+body[data-theme="pinkball"] .modal-header-slant h2,
+body[data-theme="pinkball"] .category-column-header h3,
+body[data-theme="pinkball"] #calendar-month-title,
+body[data-theme="pinkball"] #calendar-selected-date,
+body[data-theme="pinkball"] .full-view-header-content h2 {
+  font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  color: var(--text-primary);
+  text-shadow: none;
+  letter-spacing: .015em;
+}
+
+body[data-theme="pinkball"] #current-date-title i,
+body[data-theme="pinkball"] .calendar-header h2 i,
+body[data-theme="pinkball"] .modal-header-slant h2 i,
+body[data-theme="pinkball"] .full-view-header-content h2 i {
+  color: var(--danger-color);
+}
+
+/* Botões redondos, com rosa principal e amarelo em destaque. */
+body[data-theme="pinkball"] .btn-primary,
+body[data-theme="pinkball"] .btn-secondary,
+body[data-theme="pinkball"] .btn-mode-toggle,
+body[data-theme="pinkball"] .btn-toggle-filter,
+body[data-theme="pinkball"] .calendar-filter-button,
+body[data-theme="pinkball"] .calendar-picker-month,
+body[data-theme="pinkball"] .detail-link-btn {
+  clip-path: none !important;
+  border-radius: 999px;
+  text-shadow: none;
+}
+
+body[data-theme="pinkball"] .btn-primary {
+  background: linear-gradient(180deg, #e783a7, var(--primary-color));
+  border: 2px solid color-mix(in srgb, var(--danger-color) 48%, var(--primary-color));
+  color: #fffafd;
+  box-shadow: 0 4px 0 rgba(163,55,91,.18), 0 7px 16px rgba(132,55,87,.12);
+}
+
+body[data-theme="pinkball"] .btn-primary:hover {
+  background: linear-gradient(180deg, #e4759f, var(--primary-hover));
+  box-shadow: 0 5px 0 rgba(163,55,91,.20), 0 8px 18px rgba(132,55,87,.15);
+}
+
+body[data-theme="pinkball"] .btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(163,55,91,.18);
+}
+
+body[data-theme="pinkball"] .btn-secondary,
+body[data-theme="pinkball"] .btn-toggle-filter,
+body[data-theme="pinkball"] .calendar-filter-button {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-bright);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+body[data-theme="pinkball"] .btn-toggle-filter.active,
+body[data-theme="pinkball"] .calendar-filter-button.active,
+body[data-theme="pinkball"] .filter-active {
+  color: var(--danger-color) !important;
+  border-color: var(--danger-color) !important;
+  background: color-mix(in srgb, var(--danger-color) 9%, var(--bg-surface));
+}
+
+body[data-theme="pinkball"] .btn-icon {
+  border-radius: 50%;
+  color: var(--text-secondary);
+}
+
+body[data-theme="pinkball"] .btn-icon:hover {
+  color: var(--danger-color) !important;
+  background: var(--primary-light);
+}
+
+/* Inputs e selects: cápsulas leves, sem herança angular. */
+body[data-theme="pinkball"] input,
+body[data-theme="pinkball"] select,
+body[data-theme="pinkball"] textarea,
+body[data-theme="pinkball"] #full-view-search,
+body[data-theme="pinkball"] #full-view-sort {
+  clip-path: none !important;
+  border-radius: 14px !important;
+  border: 1px solid var(--border-color);
+  background: rgba(255,248,251,.94);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+body[data-theme="pinkball"] input:focus,
+body[data-theme="pinkball"] select:focus,
+body[data-theme="pinkball"] textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* Cards e painéis com uma linguagem visual mais macia. */
+body[data-theme="pinkball"] .modal-content,
+body[data-theme="pinkball"] .auth-card,
+body[data-theme="pinkball"] .calendar-card,
+body[data-theme="pinkball"] .calendar-day-details,
+body[data-theme="pinkball"] .calendar-control-card,
+body[data-theme="pinkball"] .category-column,
+body[data-theme="pinkball"] .form-section,
+body[data-theme="pinkball"] .checklist-editor {
+  clip-path: none !important;
+  border-radius: 18px;
+  border-color: var(--border-color);
+  background-color: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+body[data-theme="pinkball"] .category-column {
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--accent-color);
+}
+
+body[data-theme="pinkball"] .category-column-header {
+  border-radius: 0 !important;
+  border-bottom: 1px solid var(--border-color);
+}
+
+body[data-theme="pinkball"] .cat-count {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--accent-light);
+  color: #9c6d05;
+  border: 1px solid color-mix(in srgb, var(--accent-color) 60%, transparent);
+}
+
+body[data-theme="pinkball"] .activity-block,
+body[data-theme="pinkball"] .pending-item,
+body[data-theme="pinkball"] .full-view-columns .pending-item {
+  clip-path: none !important;
+  border-radius: 14px;
+  background-color: var(--bg-surface);
+  box-shadow: 0 3px 10px rgba(132,55,87,.10);
+  overflow: hidden;
+}
+
+body[data-theme="pinkball"] .pending-item {
+  border-color: var(--border-color);
+  border-left-color: var(--primary-color);
+}
+
+body[data-theme="pinkball"] .pending-item:hover,
+body[data-theme="pinkball"] .activity-block:hover {
+  box-shadow: 0 6px 16px rgba(132,55,87,.15);
+}
+
+/* Agenda e calendário: rosa discreto, estrela amarela para seleção. */
+body[data-theme="pinkball"] #agenda-grid {
+  border-left-color: var(--border-color);
+  background-color: rgba(255,248,251,.55);
+  background-image:
+    linear-gradient(to bottom, rgba(223,111,153,.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(237,185,54,.055) 1px, transparent 1px);
+  background-size: 100% 120px, 100% 30px;
+}
+
+body[data-theme="pinkball"] #current-time-indicator {
+  background: var(--danger-color);
+  box-shadow: 0 0 10px rgba(201,64,82,.22);
+  clip-path: none !important;
+}
+
+body[data-theme="pinkball"] #current-time-indicator::before {
+  background: var(--accent-color);
+  border: 2px solid var(--danger-color);
+  border-radius: 50%;
+  clip-path: none !important;
+  box-shadow: 0 0 8px rgba(237,185,54,.25);
+}
+
+body[data-theme="pinkball"] .calendar-day {
+  border-radius: 12px;
+}
+
+body[data-theme="pinkball"] .calendar-day:hover {
+  background: var(--primary-light);
+}
+
+body[data-theme="pinkball"] .calendar-day.is-selected {
+  background: color-mix(in srgb, var(--accent-color) 14%, var(--bg-surface));
+  box-shadow: inset 0 0 0 2px var(--accent-color), 0 4px 10px rgba(132,55,87,.10);
+}
+
+body[data-theme="pinkball"] .calendar-kicker,
+body[data-theme="pinkball"] .calendar-detail-kicker,
+body[data-theme="pinkball"] .settings-label {
+  color: var(--danger-color);
+}
+
+body[data-theme="pinkball"] .full-view-columns::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, var(--primary-color), var(--danger-color));
+  border-radius: 999px;
+}
+
+body[data-theme="pinkball"] .full-view-columns::-webkit-scrollbar-track {
+  background: var(--bg-surface-2);
+}
+
+/* Prioridades continuam legíveis, mas conversam com a paleta. */
+body[data-theme="pinkball"] .activity-block.priority-1 { border-color: var(--success-color); border-left-color: var(--success-color); }
+body[data-theme="pinkball"] .activity-block.priority-2 { border-color: var(--accent-color); border-left-color: var(--accent-color); }
+body[data-theme="pinkball"] .activity-block.priority-3 { border-color: var(--danger-color); border-left-color: var(--danger-color); }
+
+/* À noite, mantém a identidade rosa/vermelho/amarelo sem estourar luminância. */
+@media (prefers-color-scheme: dark) {
+  body[data-theme="pinkball"] {
+    color-scheme: dark;
+    --bg-color:         #21131b;
+    --bg-surface:       #2d1a24;
+    --bg-surface-2:     #3a2130;
+    --bg-surface-hover: #48293a;
+
+    --text-primary:     #fae9f0;
+    --text-secondary:   #c6a4b2;
+    --text-accent:      #f08db0;
+
+    --primary-color:    #e77fa6;
+    --primary-hover:    #f08eb3;
+    --primary-light:    rgba(231,127,166,.18);
+
+    --accent-color:     #e7bb4b;
+    --accent-light:     rgba(231,187,75,.18);
+
+    --success-color:    #70aa89;
+    --success-light:    rgba(112,170,137,.18);
+    --warning-color:    #d99946;
+    --danger-color:     #e15b69;
+
+    --border-color:     #563245;
+    --border-bright:    #7b4560;
+
+    --shadow-hard:      0 12px 30px rgba(0,0,0,.38);
+    --shadow-card:      0 5px 16px rgba(0,0,0,.27);
+    --shadow-inset:     inset 0 1px 3px rgba(0,0,0,.28);
+  }
+
+  body[data-theme="pinkball"],
+  body[data-theme="pinkball"] .auth-wrapper {
+    background-image:
+      radial-gradient(circle at 10% 12%, rgba(255,255,255,.07) 0 2px, transparent 3px),
+      radial-gradient(circle at 82% 18%, rgba(231,187,75,.12) 0 3px, transparent 4px),
+      radial-gradient(circle at 18% 82%, rgba(231,127,166,.09), transparent 26%),
+      radial-gradient(circle at 88% 78%, rgba(225,91,105,.07), transparent 22%);
+    background-size: 76px 76px, 112px 112px, auto, auto;
+  }
+
+  body[data-theme="pinkball"] input,
+  body[data-theme="pinkball"] select,
+  body[data-theme="pinkball"] textarea,
+  body[data-theme="pinkball"] #full-view-search,
+  body[data-theme="pinkball"] #full-view-sort {
+    background: rgba(45,26,36,.94);
+  }
+
+  body[data-theme="pinkball"] #agenda-grid {
+    background-color: rgba(33,19,27,.68);
+  }
+
+  body[data-theme="pinkball"] .cat-count {
+    color: #f3cf78;
+  }
+}
+
+@media (max-width: 700px) {
+  body[data-theme="pinkball"] .modal-content,
+  body[data-theme="pinkball"] .calendar-control-card {
+    border-radius: 18px 18px 0 0;
+  }
+}
