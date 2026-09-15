@@ -32,7 +32,6 @@ let pressTimer = null;
 let pressTarget = null;
 let pressStartX = 0;
 let pressStartY = 0;
-let longPressTriggered = false;
 let suppressClicksUntil = 0;
 let activeEditor = null;
 
@@ -42,6 +41,10 @@ onAuthStateChanged(auth, user => {
 
 function isTouchLikeEvent(event) {
   return event.pointerType === 'touch' || event.pointerType === 'pen';
+}
+
+function isCoarsePointer() {
+  return Boolean(window.matchMedia?.('(pointer: coarse)')?.matches);
 }
 
 function getCategoryHeading(target) {
@@ -114,34 +117,45 @@ async function renameCategory(oldName, newName) {
     where('userId', '==', userId)
   );
 
-  const [activitiesSnapshot, occurrencesSnapshot] = await Promise.all([
-    getDocs(userQuery('activities')),
-    getDocs(userQuery('activity_occurrences'))
-  ]);
-
+  const activitiesSnapshot = await getDocs(userQuery('activities'));
   const activityRefs = activitiesSnapshot.docs
     .filter(item => matchesCategory(item.data().category, oldName))
     .map(item => item.ref);
 
-  const occurrenceRefs = occurrencesSnapshot.docs
-    .filter(item => matchesCategory(item.data().category, oldName))
-    .map(item => item.ref);
+  if (activityRefs.length === 0) return 0;
+  await commitCategoryUpdates(activityRefs, newName);
 
-  await commitCategoryUpdates([...activityRefs, ...occurrenceRefs], newName);
+  // O histórico acompanha a renomeação quando a coleção estiver disponível,
+  // mas uma eventual regra mais restritiva nele não bloqueia a edição das atividades.
+  try {
+    const occurrencesSnapshot = await getDocs(userQuery('activity_occurrences'));
+    const occurrenceRefs = occurrencesSnapshot.docs
+      .filter(item => matchesCategory(item.data().category, oldName))
+      .map(item => item.ref);
+    if (occurrenceRefs.length > 0) await commitCategoryUpdates(occurrenceRefs, newName);
+  } catch (error) {
+    console.warn('Não foi possível atualizar a categoria no histórico:', error);
+  }
+
   migrateLocalCategoryPreferences(oldName, newName);
-
   return activityRefs.length;
 }
 
 function finishEditor({ restoreName = null } = {}) {
-  if (!activeEditor) return;
+  if (!activeEditor) return false;
   const { heading, oldName } = activeEditor;
   if (heading?.isConnected) {
-    heading.classList.remove('category-renaming');
+    heading.classList.remove('category-renaming', 'is-saving');
     heading.dataset.categoryOriginal = restoreName ?? oldName;
     heading.textContent = restoreName ?? oldName;
   }
   activeEditor = null;
+  return true;
+}
+
+function cancelActiveEditor() {
+  if (!activeEditor) return false;
+  return finishEditor({ restoreName: activeEditor.oldName });
 }
 
 function startEditor(heading) {
@@ -170,18 +184,25 @@ function startEditor(heading) {
   save.className = 'category-rename-action is-save';
   save.title = 'Salvar nome';
   save.setAttribute('aria-label', 'Salvar nome da categoria');
-  save.innerHTML = '<i class="fas fa-check"></i>';
+  save.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i>';
 
   const cancel = document.createElement('button');
   cancel.type = 'button';
   cancel.className = 'category-rename-action is-cancel';
   cancel.title = 'Cancelar';
   cancel.setAttribute('aria-label', 'Cancelar edição da categoria');
-  cancel.innerHTML = '<i class="fas fa-times"></i>';
+  cancel.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
 
   editor.append(input, save, cancel);
   heading.appendChild(editor);
   activeEditor = { heading, input, save, cancel, oldName, busy: false };
+
+  // Impede o cabeçalho da coluna de interpretar os toques do editor como
+  // expandir/recolher. Diferente do listener antigo, isto roda depois que o
+  // evento chega aos botões, então ✓ e ✕ continuam clicáveis.
+  ['click', 'dblclick', 'pointerdown', 'pointerup'].forEach(type => {
+    editor.addEventListener(type, event => event.stopPropagation());
+  });
 
   const commit = async () => {
     if (!activeEditor || activeEditor.busy) return;
@@ -232,6 +253,7 @@ function startEditor(heading) {
     finishEditor({ restoreName: oldName });
   });
 
+  input.addEventListener('input', () => input.classList.remove('is-invalid'));
   input.addEventListener('keydown', event => {
     event.stopPropagation();
     if (event.key === 'Enter') {
@@ -255,9 +277,10 @@ function cancelPress() {
   pressTarget = null;
 }
 
-// Mobile/tablet: segurar o nome. Cancela se o dedo se mover para não brigar com o scroll horizontal.
+// Mobile/tablet: segurar o nome. Cancela se o dedo se mover para não brigar
+// com o scroll horizontal entre as categorias.
 document.addEventListener('pointerdown', event => {
-  if (!isTouchLikeEvent(event) || activeEditor) return;
+  if (!isTouchLikeEvent(event) || activeEditor || event.target.closest?.('.category-rename-editor')) return;
   const heading = getCategoryHeading(event.target);
   if (!heading) return;
 
@@ -265,11 +288,9 @@ document.addEventListener('pointerdown', event => {
   pressTarget = heading;
   pressStartX = event.clientX;
   pressStartY = event.clientY;
-  longPressTriggered = false;
 
   pressTimer = window.setTimeout(() => {
     if (!pressTarget?.isConnected) return;
-    longPressTriggered = true;
     suppressClicksUntil = Date.now() + 900;
 
     try {
@@ -294,32 +315,34 @@ document.addEventListener('pointermove', event => {
 document.addEventListener('pointerup', cancelPress, { passive: true });
 document.addEventListener('pointercancel', cancelPress, { passive: true });
 
-// Desktop: duplo clique no nome. O clique simples sobre o nome não recolhe a coluna;
-// o restante do cabeçalho mantém o comportamento original de expandir/recolher.
+// Captura somente cliques no título fora do editor. O editor em si é deixado
+// seguir até o alvo para que seus botões recebam o click normalmente.
 document.addEventListener('click', event => {
+  if (event.target.closest?.('.category-rename-editor')) return;
+
   const heading = getCategoryHeading(event.target);
-  const insideEditor = event.target.closest?.('.category-rename-editor');
-
-  if (insideEditor || (heading && activeEditor?.heading === heading)) {
-    event.preventDefault();
-    event.stopPropagation();
-    return;
-  }
-
   if (Date.now() < suppressClicksUntil && event.target.closest?.('.category-column-header')) {
     event.preventDefault();
     event.stopPropagation();
     return;
   }
 
-  if (heading && event.pointerType !== 'touch' && !matchMedia('(pointer: coarse)').matches) {
+  if (heading && activeEditor?.heading === heading) {
+    event.preventDefault();
+    event.stopPropagation();
+    return;
+  }
+
+  if (heading && !isCoarsePointer()) {
     event.stopPropagation();
   }
 }, true);
 
+// Desktop: duplo clique no nome da categoria.
 document.addEventListener('dblclick', event => {
+  if (event.target.closest?.('.category-rename-editor')) return;
   const heading = getCategoryHeading(event.target);
-  if (!heading || matchMedia('(pointer: coarse)').matches) return;
+  if (!heading || isCoarsePointer()) return;
   event.preventDefault();
   event.stopPropagation();
   heading.classList.add('category-rename-shake');
@@ -331,10 +354,11 @@ document.addEventListener('dblclick', event => {
 
 function enhanceCategoryHeadings() {
   document.querySelectorAll('.category-column-header h3').forEach(heading => {
+    if (heading.classList.contains('category-renaming')) return;
     if (heading.dataset.categoryRenameReady === 'true') return;
     heading.dataset.categoryRenameReady = 'true';
     heading.dataset.categoryOriginal = String(heading.textContent || '').trim();
-    heading.title = matchMedia('(pointer: coarse)').matches
+    heading.title = isCoarsePointer()
       ? 'Pressione e segure para renomear'
       : 'Duplo clique para renomear';
   });
@@ -345,3 +369,8 @@ new MutationObserver(enhanceCategoryHeadings).observe(document.documentElement, 
   childList: true,
   subtree: true
 });
+
+window.RotinaCategoryRename = {
+  cancelActiveEditor,
+  isEditing: () => Boolean(activeEditor)
+};
