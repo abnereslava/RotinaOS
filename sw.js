@@ -1,5 +1,5 @@
-const CACHE_NAME = 'todo-os-cache-v20';
-const ASSET_VERSION = '20260915-category-rename';
+const CACHE_NAME = 'todo-os-cache-v21';
+const ASSET_VERSION = '20260915-mobile-back-touch';
 
 const versionedAsset = (path) => `${path}?v=${ASSET_VERSION}`;
 
@@ -17,6 +17,7 @@ const urlsToCache = [
   versionedAsset('./js/theme-enhancements.js'),
   versionedAsset('./js/optional-date-fix.js'),
   versionedAsset('./js/category-rename.js'),
+  versionedAsset('./js/mobile-back-nav.js'),
   versionedAsset('./js/bootstrap.js'),
   versionedAsset('./js/ui-fixes.js'),
   versionedAsset('./js/main-swipe.js'),
@@ -40,6 +41,7 @@ const NETWORK_FIRST_PATHS = new Set([
   '/RotinaOS/js/theme-enhancements.js',
   '/RotinaOS/js/optional-date-fix.js',
   '/RotinaOS/js/category-rename.js',
+  '/RotinaOS/js/mobile-back-nav.js',
   '/RotinaOS/js/bootstrap.js',
   '/RotinaOS/js/ui-fixes.js',
   '/RotinaOS/js/main-swipe.js',
@@ -93,7 +95,7 @@ async function serveGoogleAuthEntry(request) {
   const html = await response.text();
   const transformed = html.replace(
     '<script type="module" src="js/app.js"></script>',
-    `<link rel="stylesheet" href="css/mobile-fixes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-view.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-history.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-v3.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/new-themes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/optional-date-fix.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/category-rename.css?v=${ASSET_VERSION}">\n    <script src="js/theme-enhancements.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/ui-fixes.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/main-swipe.js?v=${ASSET_VERSION}" defer></script>\n    <script type="module" src="js/optional-date-fix.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/bootstrap.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/category-rename.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/calendar-view-v3.js?v=${ASSET_VERSION}"></script>`
+    `<link rel="stylesheet" href="css/mobile-fixes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-view.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-history.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-v3.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/new-themes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/optional-date-fix.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/category-rename.css?v=${ASSET_VERSION}">\n    <script src="js/theme-enhancements.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/ui-fixes.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/main-swipe.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/mobile-back-nav.js?v=${ASSET_VERSION}" defer></script>\n    <script type="module" src="js/optional-date-fix.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/bootstrap.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/category-rename.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/calendar-view-v3.js?v=${ASSET_VERSION}"></script>`
   );
 
   const headers = new Headers(response.headers);
