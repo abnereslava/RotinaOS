@@ -1,0 +1,382 @@
+/* ====================================================
+   ROTINA OS — acabamento visual de temas
+   - corrige cantos/clip-path conflitantes em Sage/Japanese
+   - suaviza Medieval/Zelda mantendo suas paletas
+   - adiciona Xuan Paper / Cinnabar
+==================================================== */
+
+/* ---------- SAGE / JAPANESE: cantos consistentes ---------- */
+body[data-theme="sage"] .btn-toggle-filter,
+body[data-theme="japanese"] .btn-toggle-filter,
+body[data-theme="sage"] #full-view-search,
+body[data-theme="japanese"] #full-view-search,
+body[data-theme="sage"] #full-view-sort,
+body[data-theme="japanese"] #full-view-sort {
+  clip-path: none !important;
+  border-radius: 10px !important;
+}
+
+body[data-theme="sage"] .category-column,
+body[data-theme="japanese"] .category-column {
+  clip-path: none !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+}
+
+body[data-theme="sage"] .category-column-header,
+body[data-theme="japanese"] .category-column-header {
+  clip-path: none !important;
+  border-radius: 0 !important;
+}
+
+body[data-theme="sage"] .full-view-columns .pending-item,
+body[data-theme="japanese"] .full-view-columns .pending-item,
+body[data-theme="sage"] .pending-item,
+body[data-theme="japanese"] .pending-item {
+  clip-path: none !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+
+body[data-theme="sage"] .full-view-columns::-webkit-scrollbar-thumb,
+body[data-theme="japanese"] .full-view-columns::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+}
+
+/* ---------- MEDIEVAL: mesma temática, menos agressiva ---------- */
+body[data-theme="medieval"] {
+  --bg-color:         #181008;
+  --bg-surface:       #25170d;
+  --bg-surface-2:     #312014;
+  --bg-surface-hover: #3b2819;
+
+  --text-primary:     #e2d2ae;
+  --text-secondary:   #ad956c;
+  --text-accent:      #d2ad62;
+
+  --primary-color:    #7d2b26;
+  --primary-hover:    #62211d;
+  --primary-light:    rgba(125,43,38,.18);
+
+  --accent-color:     #d1ad58;
+  --accent-light:     rgba(209,173,88,.18);
+
+  --success-color:    #66885b;
+  --success-light:    rgba(102,136,91,.18);
+  --warning-color:    #b98245;
+  --danger-color:     #9c463d;
+
+  --border-color:     #493521;
+  --border-bright:    #725a37;
+
+  --shadow-hard:      0 8px 24px rgba(0,0,0,.52), 0 2px 6px rgba(0,0,0,.36);
+  --shadow-card:      0 4px 12px rgba(0,0,0,.34);
+  --shadow-inset:     inset 0 1px 5px rgba(0,0,0,.34);
+}
+
+body[data-theme="medieval"] #main-header,
+body[data-theme="medieval"] .modal-header-slant,
+body[data-theme="medieval"] .category-column-header,
+body[data-theme="medieval"] .full-view-footer-mobile {
+  background-color: var(--bg-surface-2);
+  background-image: linear-gradient(to bottom, rgba(209,173,88,.045), transparent 100%);
+}
+
+body[data-theme="medieval"] .btn-primary {
+  background-color: var(--primary-color);
+  border-color: color-mix(in srgb, var(--primary-color) 72%, var(--accent-color));
+}
+
+body[data-theme="medieval"] .btn-primary:hover {
+  background-color: var(--primary-hover);
+  box-shadow: 0 5px 15px rgba(0,0,0,.4), 0 0 10px rgba(125,43,38,.22);
+}
+
+/* ---------- ZELDA: floresta + ouro, com contraste mais repousante ---------- */
+body[data-theme="zelda"] {
+  --bg-color:         #07120d;
+  --bg-surface:       #0d1d14;
+  --bg-surface-2:     #14271b;
+  --bg-surface-hover: #1b3324;
+
+  --text-primary:     #d9d8be;
+  --text-secondary:   #9daf9d;
+  --text-accent:      #d0b864;
+
+  --primary-color:    #315f43;
+  --primary-hover:    #264d36;
+  --primary-light:    rgba(49,95,67,.20);
+
+  --accent-color:     #c3a24c;
+  --accent-light:     rgba(195,162,76,.18);
+
+  --success-color:    #579060;
+  --success-light:    rgba(87,144,96,.18);
+  --warning-color:    #b98242;
+  --danger-color:     #a64a43;
+
+  --border-color:     #244332;
+  --border-bright:    #3a6049;
+
+  --shadow-hard:      0 8px 24px rgba(0,0,0,.50);
+  --shadow-card:      0 4px 12px rgba(0,0,0,.34);
+  --shadow-inset:     inset 0 1px 4px rgba(0,0,0,.30);
+}
+
+body[data-theme="zelda"] #main-header,
+body[data-theme="zelda"] .modal-header-slant,
+body[data-theme="zelda"] .category-column-header,
+body[data-theme="zelda"] .full-view-footer-mobile {
+  background-color: var(--bg-surface-2);
+  background-image: linear-gradient(to bottom, rgba(195,162,76,.035), rgba(49,95,67,.035));
+}
+
+body[data-theme="zelda"] .btn-primary {
+  border-color: color-mix(in srgb, var(--primary-color) 68%, var(--accent-color));
+}
+
+body[data-theme="zelda"] #current-date-title,
+body[data-theme="zelda"] .category-column-header h3,
+body[data-theme="zelda"] .modal-header-slant h2 {
+  text-shadow: 0 1px 3px rgba(0,0,0,.55);
+}
+
+/* ====================================================
+   XUAN PAPER / CINNABAR
+   Papel xuan claro, tinta escura, vermelho cinábrio e ouro envelhecido.
+==================================================== */
+body[data-theme="xuan"] {
+  color-scheme: light;
+  --bg-color:         #eee7d8;
+  --bg-surface:       #fffdf6;
+  --bg-surface-2:     #f5ecdc;
+  --bg-surface-hover: #eadfcf;
+
+  --text-primary:     #29221d;
+  --text-secondary:   #75675a;
+  --text-accent:      #8f261f;
+
+  --primary-color:    #a53228;
+  --primary-hover:    #81251f;
+  --primary-light:    rgba(165,50,40,.12);
+
+  --accent-color:     #b28a3d;
+  --accent-light:     rgba(178,138,61,.15);
+
+  --success-color:    #557966;
+  --success-light:    rgba(85,121,102,.14);
+  --warning-color:    #b27a31;
+  --danger-color:     #a53228;
+
+  --border-color:     #d7c8ae;
+  --border-bright:    #b99d68;
+
+  --shadow-hard:      0 10px 28px rgba(76,55,31,.16);
+  --shadow-card:      0 4px 14px rgba(76,55,31,.11);
+  --shadow-inset:     inset 0 1px 3px rgba(76,55,31,.08);
+
+  font-family: "Noto Serif SC", "Songti SC", "STSong", Georgia, "Times New Roman", serif;
+  letter-spacing: .01em;
+}
+
+body[data-theme="xuan"],
+body[data-theme="xuan"] .auth-wrapper {
+  background-color: var(--bg-color);
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(165,50,40,.035), transparent 22%),
+    radial-gradient(circle at 82% 74%, rgba(178,138,61,.055), transparent 25%),
+    repeating-linear-gradient(8deg, rgba(91,69,44,.018) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(98deg, rgba(91,69,44,.012) 0 1px, transparent 1px 11px);
+}
+
+body[data-theme="xuan"] #main-header,
+body[data-theme="xuan"] .calendar-header,
+body[data-theme="xuan"] .modal-header-slant,
+body[data-theme="xuan"] .category-column-header,
+body[data-theme="xuan"] .full-view-footer-mobile {
+  clip-path: none !important;
+  background-color: var(--bg-surface-2);
+  background-image:
+    linear-gradient(to right, rgba(165,50,40,.035), transparent 35%),
+    linear-gradient(to bottom, rgba(178,138,61,.04), transparent 100%);
+  border-color: var(--border-color);
+  box-shadow: none;
+}
+
+body[data-theme="xuan"] #main-header {
+  border-top: 2px solid var(--accent-color);
+  border-bottom: 1px solid var(--border-bright);
+}
+
+body[data-theme="xuan"] .header-accent {
+  clip-path: none;
+  width: 5px;
+  border-radius: 1px;
+  background: var(--primary-color);
+  box-shadow: none;
+}
+
+body[data-theme="xuan"] #current-date-title,
+body[data-theme="xuan"] .calendar-header h2,
+body[data-theme="xuan"] .modal-header-slant h2,
+body[data-theme="xuan"] .category-column-header h3,
+body[data-theme="xuan"] #calendar-month-title,
+body[data-theme="xuan"] #calendar-selected-date {
+  font-family: "Noto Serif SC", "Songti SC", "STSong", Georgia, serif;
+  color: var(--text-primary);
+  text-shadow: none;
+  letter-spacing: .035em;
+}
+
+body[data-theme="xuan"] #current-date-title i,
+body[data-theme="xuan"] .modal-header-slant h2 i,
+body[data-theme="xuan"] .calendar-header h2 i,
+body[data-theme="xuan"] .full-view-header-content h2 i {
+  color: var(--primary-color);
+}
+
+body[data-theme="xuan"] .btn-primary,
+body[data-theme="xuan"] .btn-secondary,
+body[data-theme="xuan"] .btn-mode-toggle,
+body[data-theme="xuan"] .btn-toggle-filter,
+body[data-theme="xuan"] .calendar-filter-button,
+body[data-theme="xuan"] .calendar-picker-month,
+body[data-theme="xuan"] .detail-link-btn {
+  clip-path: none !important;
+  border-radius: 3px;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+body[data-theme="xuan"] .btn-primary {
+  background: var(--primary-color);
+  border: 1px solid color-mix(in srgb, var(--primary-color) 68%, var(--accent-color));
+  color: #fff9ed;
+}
+
+body[data-theme="xuan"] .btn-primary:hover {
+  background: var(--primary-hover);
+  box-shadow: 0 4px 12px rgba(165,50,40,.16);
+}
+
+body[data-theme="xuan"] .btn-secondary,
+body[data-theme="xuan"] .btn-toggle-filter,
+body[data-theme="xuan"] .calendar-filter-button {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-bright);
+  color: var(--text-primary);
+}
+
+body[data-theme="xuan"] .btn-icon {
+  color: var(--text-secondary);
+  border-radius: 3px;
+}
+
+body[data-theme="xuan"] .btn-icon:hover {
+  color: var(--primary-color);
+  background: var(--primary-light);
+}
+
+body[data-theme="xuan"] input,
+body[data-theme="xuan"] select,
+body[data-theme="xuan"] textarea {
+  clip-path: none !important;
+  border-radius: 3px;
+  border: 1px solid var(--border-color);
+  background: rgba(255,253,246,.88);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+body[data-theme="xuan"] input:focus,
+body[data-theme="xuan"] select:focus,
+body[data-theme="xuan"] textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+body[data-theme="xuan"] .modal-content,
+body[data-theme="xuan"] .auth-card,
+body[data-theme="xuan"] .calendar-card,
+body[data-theme="xuan"] .calendar-day-details,
+body[data-theme="xuan"] .calendar-control-card,
+body[data-theme="xuan"] .category-column {
+  clip-path: none !important;
+  border-radius: 4px;
+  border-color: var(--border-bright);
+  background-color: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+body[data-theme="xuan"] .category-column {
+  overflow: hidden;
+  border-width: 1px;
+  border-top: 2px solid var(--primary-color);
+}
+
+body[data-theme="xuan"] .category-column-header {
+  border-radius: 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+body[data-theme="xuan"] .activity-block,
+body[data-theme="xuan"] .pending-item,
+body[data-theme="xuan"] .full-view-columns .pending-item {
+  clip-path: none !important;
+  border-radius: 2px;
+  background-color: rgba(255,253,246,.92);
+  box-shadow: 0 2px 7px rgba(76,55,31,.08);
+}
+
+body[data-theme="xuan"] .pending-item {
+  border-color: var(--border-color);
+  border-left-color: var(--accent-color);
+}
+
+body[data-theme="xuan"] .activity-block.priority-1 { border-color: var(--success-color); border-left-color: var(--success-color); }
+body[data-theme="xuan"] .activity-block.priority-2 { border-color: var(--accent-color); border-left-color: var(--accent-color); }
+body[data-theme="xuan"] .activity-block.priority-3 { border-color: var(--primary-color); border-left-color: var(--primary-color); }
+
+body[data-theme="xuan"] #agenda-grid {
+  border-left-color: var(--border-color);
+  background-color: rgba(255,253,246,.50);
+  background-image:
+    linear-gradient(to bottom, rgba(165,50,40,.075) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(178,138,61,.05) 1px, transparent 1px);
+  background-size: 100% 120px, 100% 30px;
+}
+
+body[data-theme="xuan"] #current-time-indicator,
+body[data-theme="xuan"] #current-time-indicator::before {
+  background: var(--primary-color);
+  clip-path: none !important;
+  box-shadow: 0 0 8px rgba(165,50,40,.20);
+}
+
+body[data-theme="xuan"] .calendar-day {
+  border-radius: 2px;
+}
+
+body[data-theme="xuan"] .calendar-day.is-selected {
+  box-shadow: inset 0 0 0 2px var(--primary-color);
+}
+
+body[data-theme="xuan"] .calendar-kicker,
+body[data-theme="xuan"] .calendar-detail-kicker,
+body[data-theme="xuan"] .settings-label,
+body[data-theme="xuan"] .cat-count {
+  color: var(--primary-color);
+}
+
+body[data-theme="xuan"] .full-view-columns::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 999px;
+}
+
+@media (max-width: 700px) {
+  body[data-theme="xuan"] .modal-content,
+  body[data-theme="xuan"] .calendar-control-card {
+    border-radius: 4px 4px 0 0;
+  }
+}
