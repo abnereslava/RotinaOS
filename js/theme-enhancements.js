@@ -4,7 +4,8 @@
 
   const themes = [
     ['sage', 'Sage / Graphite'],
-    ['japanese', 'Japanese Stationery']
+    ['japanese', 'Japanese Stationery'],
+    ['xuan', 'Xuan Paper / Cinnabar']
   ];
 
   themes.forEach(([value, label]) => {
