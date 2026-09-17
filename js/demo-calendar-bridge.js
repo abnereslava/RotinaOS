@@ -1,9 +1,11 @@
 const DEMO_EVENT = 'rotinaos:demo-activities';
 const SENTINEL_DATE = '2099-12-31';
+const DEMO_FILTER_KEY = 'rotinaos.demo.calendar.categoryFilter.v1';
 
 let demoActivities = [];
 let gridObserver = null;
 let renderQueued = false;
+let demoCategoryFilter = loadDemoFilter();
 
 function isDemoMode() {
   return Boolean(window.__ROTINAOS_DEMO__);
@@ -31,6 +33,37 @@ function normalizeCategory(value) {
   return String(value || '').trim() || 'Sem categoria';
 }
 
+function loadDemoFilter() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(DEMO_FILTER_KEY) || 'null');
+    if (!saved || saved.mode === 'all') return null;
+    if (saved.mode === 'selected' && Array.isArray(saved.categories)) {
+      return new Set(saved.categories.map(normalizeCategory));
+    }
+  } catch (_) {}
+  return null;
+}
+
+function saveDemoFilter() {
+  if (demoCategoryFilter === null) {
+    localStorage.setItem(DEMO_FILTER_KEY, JSON.stringify({ mode: 'all' }));
+    return;
+  }
+  localStorage.setItem(DEMO_FILTER_KEY, JSON.stringify({
+    mode: 'selected',
+    categories: [...demoCategoryFilter]
+  }));
+}
+
+function getDemoCategories() {
+  return [...new Set(demoActivities.map(item => normalizeCategory(item.category)))]
+    .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+
+function categoryIsVisible(activity) {
+  return demoCategoryFilter === null || demoCategoryFilter.has(normalizeCategory(activity.category));
+}
+
 function parseMonthlyDays(value) {
   if (!value) return [];
   return String(value).split(',')
@@ -56,6 +89,7 @@ function statusFor(activity, dateKey) {
 
 function activitiesForDate(dateKey) {
   return demoActivities
+    .filter(categoryIsVisible)
     .filter(activity => occursOn(activity, dateKey))
     .sort((a, b) => {
       const timeA = a.scheduledTime || '99:99';
@@ -169,8 +203,66 @@ function hasAnyFutureOccurrence(activity) {
 function renderUnprogrammedCount() {
   const element = document.getElementById('calendar-unprogrammed');
   if (!element) return;
-  const count = demoActivities.filter(activity => !hasAnyFutureOccurrence(activity)).length;
+  const count = demoActivities.filter(categoryIsVisible).filter(activity => !hasAnyFutureOccurrence(activity)).length;
   element.textContent = `+${count} ${count === 1 ? 'tarefa não programada' : 'tarefas não programadas'}`;
+}
+
+function updateDemoFilterLabel() {
+  const label = document.getElementById('calendar-category-filter-label');
+  const button = document.getElementById('calendar-category-filter');
+  if (!label || !button) return;
+
+  const categories = getDemoCategories();
+  if (demoCategoryFilter === null) {
+    label.textContent = 'Todas as categorias';
+    button.classList.remove('active');
+  } else {
+    label.textContent = `${demoCategoryFilter.size} de ${categories.length} categorias`;
+    button.classList.add('active');
+  }
+}
+
+function renderDemoCategoryOptions() {
+  if (!isDemoMode()) return;
+  const container = document.getElementById('calendar-category-options');
+  if (!container) return;
+
+  const categories = getDemoCategories();
+  container.innerHTML = '';
+
+  if (!categories.length) {
+    container.innerHTML = '<div class="calendar-empty-day">Nenhuma categoria cadastrada.</div>';
+    return;
+  }
+
+  categories.forEach(category => {
+    const label = document.createElement('label');
+    label.className = 'calendar-category-option';
+
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.checked = demoCategoryFilter === null || demoCategoryFilter.has(category);
+
+    const span = document.createElement('span');
+    span.textContent = category;
+    label.append(input, span);
+
+    input.addEventListener('change', () => {
+      if (demoCategoryFilter === null) demoCategoryFilter = new Set(categories);
+      if (input.checked) demoCategoryFilter.add(category);
+      else demoCategoryFilter.delete(category);
+
+      if (demoCategoryFilter.size === categories.length && categories.every(item => demoCategoryFilter.has(item))) {
+        demoCategoryFilter = null;
+      }
+
+      saveDemoFilter();
+      updateDemoFilterLabel();
+      queueRender();
+    });
+
+    container.appendChild(label);
+  });
 }
 
 function renderDemoCalendar() {
@@ -179,6 +271,7 @@ function renderDemoCalendar() {
   renderDayCells();
   renderSelectedDay();
   renderUnprogrammedCount();
+  updateDemoFilterLabel();
 }
 
 function queueRender() {
@@ -239,8 +332,34 @@ document.addEventListener('rotinaos:calendar-open', () => {
 
 document.addEventListener('click', event => {
   if (!isDemoMode()) return;
+
   if (event.target?.closest?.('#calendar-grid .calendar-day[data-date], #calendar-prev-month, #calendar-next-month, #calendar-month-picker-trigger')) {
     window.setTimeout(queueRender, 0);
+  }
+
+  if (event.target?.closest?.('#calendar-category-filter')) {
+    window.setTimeout(() => {
+      renderDemoCategoryOptions();
+      updateDemoFilterLabel();
+    }, 0);
+  }
+
+  if (event.target?.closest?.('#calendar-filter-show-all')) {
+    demoCategoryFilter = null;
+    saveDemoFilter();
+    window.setTimeout(() => {
+      renderDemoCategoryOptions();
+      queueRender();
+    }, 0);
+  }
+
+  if (event.target?.closest?.('#calendar-filter-hide-all')) {
+    demoCategoryFilter = new Set();
+    saveDemoFilter();
+    window.setTimeout(() => {
+      renderDemoCategoryOptions();
+      queueRender();
+    }, 0);
   }
 }, true);
 
