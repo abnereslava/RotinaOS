@@ -26,6 +26,13 @@ const CLASSIC_SCRIPTS = [
   'js/mobile-back-nav.js'
 ];
 
+const MODERN_FEATURES = [
+  './category-rename.js',
+  './activity-tracking.js',
+  './calendar-view-v3.js',
+  './demo-calendar-bridge.js'
+];
+
 function ensureStyles() {
   STYLE_ASSETS.forEach(href => {
     if (document.querySelector(`link[data-rotinaos-style="${href}"]`)) return;
@@ -44,7 +51,7 @@ function loadClassicScript(src) {
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = src;
-    script.async = false;
+    script.async = true;
     script.dataset.rotinaosScript = src;
     script.addEventListener('load', resolve, { once: true });
     script.addEventListener('error', () => reject(new Error(`Falha ao carregar ${src}`)), { once: true });
@@ -52,22 +59,52 @@ function loadClassicScript(src) {
   });
 }
 
-ensureStyles();
-
-// Estes arquivos nasceram como scripts clássicos; mantemos essa semântica para
-// não alterar globals/strict mode ao unificar a primeira visita com o PWA.
-for (const src of CLASSIC_SCRIPTS) {
-  await loadClassicScript(src);
+function showBootFailure(error) {
+  console.error('Falha ao inicializar o RotinaOS:', error);
+  const auth = document.getElementById('auth-container');
+  if (!auth) return;
+  auth.classList.remove('hidden');
+  auth.innerHTML = `
+    <div class="auth-card">
+      <div class="auth-logo"><span>TO-DO<strong>OS</strong></span></div>
+      <h3>// NÃO FOI POSSÍVEL ABRIR</h3>
+      <p style="line-height:1.5;color:var(--text-secondary);text-align:center;">
+        ${navigator.onLine
+          ? 'O aplicativo não conseguiu concluir a inicialização. Recarregue a página.'
+          : 'O cache offline deste aparelho ainda não está completo. Conecte-se uma vez, abra o aplicativo e tente novamente sem internet.'}
+      </p>
+      <button type="button" class="btn-primary" style="width:100%;" onclick="location.reload()">TENTAR NOVAMENTE</button>
+    </div>
+  `;
 }
 
-await import('./optional-date-fix.js');
+ensureStyles();
 
-// Bootstrap cria Firebase/Auth e decide entre conta real e demonstração.
-await import('./bootstrap.js');
+// Antes estes scripts eram baixados um por vez, adicionando vários round-trips
+// ao boot. Eles são independentes e podem ser preparados em paralelo.
+const classicResults = await Promise.allSettled(CLASSIC_SCRIPTS.map(loadClassicScript));
+classicResults.forEach((result, index) => {
+  if (result.status === 'rejected') {
+    console.warn(`Recurso auxiliar não carregado: ${CLASSIC_SCRIPTS[index]}`, result.reason);
+  }
+});
 
-// Recursos modernos que funcionam tanto com Firestore quanto com o store local
-// do modo visitante.
-await import('./category-rename.js');
-await import('./activity-tracking.js');
-await import('./calendar-view-v3.js');
-await import('./demo-calendar-bridge.js');
+await import('./optional-date-fix.js').catch(error => {
+  console.warn('Interface de data opcional não carregada:', error);
+});
+
+try {
+  // Bootstrap cria Firebase/Auth e decide entre conta real e demonstração.
+  await import('./bootstrap.js');
+} catch (error) {
+  showBootFailure(error);
+  throw error;
+}
+
+// Recursos complementares não devem impedir a agenda principal de abrir.
+const featureResults = await Promise.allSettled(MODERN_FEATURES.map(path => import(path)));
+featureResults.forEach((result, index) => {
+  if (result.status === 'rejected') {
+    console.warn(`Recurso moderno não carregado: ${MODERN_FEATURES[index]}`, result.reason);
+  }
+});
