@@ -1,5 +1,5 @@
-const CACHE_NAME = 'todo-os-cache-v29';
-const ASSET_VERSION = '20260916-activity-tracking';
+const CACHE_NAME = 'todo-os-cache-v30';
+const ASSET_VERSION = '20260916-bank-horizontal-scroll-fix';
 
 const versionedAsset = (path) => `${path}?v=${ASSET_VERSION}`;
 
