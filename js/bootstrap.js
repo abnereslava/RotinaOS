@@ -199,8 +199,6 @@ async function handleGoogleLogin() {
 }
 
 async function handleDemoMode() {
-  // Quando o núcleo do app já foi carregado, deixamos o segundo clique seguir
-  // para o listener original de modo demonstração registrado no app-core.js.
   if (appLoaded || demoBootstrapping) return;
 
   demoBootstrapping = true;
@@ -209,12 +207,14 @@ async function handleDemoMode() {
   setLoginStatus("Preparando demonstração local...");
 
   try {
+    // Publica os dados antes de carregar o núcleo. Assim todos os módulos usam
+    // exatamente a mesma coleção local desde o primeiro render.
+    publishDemoActivities();
     await loadOriginalApplication({ demo: true });
 
     await new Promise(resolve => window.setTimeout(resolve, 120));
     setDemoButtonBusy(false);
     document.getElementById('btn-demo-mode')?.click();
-    publishDemoActivities();
   } catch (error) {
     console.error('Falha ao iniciar modo demonstração:', error);
     window.__ROTINAOS_DEMO__ = false;
@@ -260,7 +260,8 @@ async function loadOriginalApplication({ demo = false } = {}) {
     await occurrenceModule.occurrenceHistoryReady;
   }
 
-  await import("./app-core.js");
+  const coreLoader = await import("./core-loader.js");
+  await coreLoader.loadCore();
 }
 
 onAuthStateChanged(auth, async (user) => {
