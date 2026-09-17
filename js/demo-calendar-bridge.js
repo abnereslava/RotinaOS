@@ -1,5 +1,4 @@
 const DEMO_EVENT = 'rotinaos:demo-activities';
-const SENTINEL_DATE = '2099-12-31';
 const DEMO_FILTER_KEY = 'rotinaos.demo.calendar.categoryFilter.v1';
 
 let demoActivities = [];
@@ -193,7 +192,7 @@ function renderSelectedDay() {
 }
 
 function hasAnyFutureOccurrence(activity) {
-  if (activity.recurrence === 'single') return Boolean(activity.scheduledDate && activity.scheduledDate !== SENTINEL_DATE);
+  if (activity.recurrence === 'single') return Boolean(activity.scheduledDate);
   if (activity.recurrence === 'daily') return true;
   if (activity.recurrence === 'weekly') return Array.isArray(activity.fixedDays) && activity.fixedDays.length > 0;
   if (activity.recurrence === 'monthly') return parseMonthlyDays(activity.monthlyDays).length > 0;
@@ -290,37 +289,12 @@ function bindGridObserver() {
   gridObserver.observe(grid, { childList: true });
 }
 
-function readNewActivityFromForm() {
-  const title = document.getElementById('act-title')?.value.trim();
-  const category = document.getElementById('act-category')?.value.trim();
-  if (!title || !category) return null;
-
-  const recurrence = document.getElementById('act-recurrence')?.value || 'single';
-  let scheduledDate = document.getElementById('act-date')?.value || null;
-  if (scheduledDate === SENTINEL_DATE) scheduledDate = null;
-
-  return {
-    id: `demo-bridge-${Date.now()}`,
-    title,
-    category,
-    recurrence,
-    scheduledDate,
-    scheduledTime: document.getElementById('act-time')?.value || null,
-    scheduledTimeEnd: document.getElementById('act-time-end')?.value || null,
-    fixedDays: [...document.querySelectorAll('#act-fixed-days input:checked')].map(input => Number(input.value)),
-    monthlyDays: document.getElementById('act-monthly-days')?.value || '',
-    priority: document.getElementById('act-priority')?.value || '0',
-    deadline: document.getElementById('act-deadline')?.value || null,
-    status: 'pending',
-    createdAt: Date.now()
-  };
-}
-
 document.addEventListener(DEMO_EVENT, event => {
   demoActivities = Array.isArray(event.detail?.activities)
     ? event.detail.activities.map(item => ({ ...item }))
     : [];
   bindGridObserver();
+  renderDemoCategoryOptions();
   queueRender();
 });
 
@@ -363,28 +337,13 @@ document.addEventListener('click', event => {
   }
 }, true);
 
-document.addEventListener('submit', event => {
-  if (!isDemoMode() || event.target?.id !== 'form-activity') return;
-
-  const title = document.getElementById('modal-activity-title')?.textContent || '';
-  if (/editar/i.test(title)) {
-    window.setTimeout(queueRender, 0);
-    return;
-  }
-
-  const activity = readNewActivityFromForm();
-  if (!activity) return;
-  demoActivities.push(activity);
-  window.__ROTINAOS_DEMO_ACTIVITIES__ = demoActivities.map(item => ({ ...item }));
-  window.setTimeout(queueRender, 0);
-}, true);
-
 // Se o evento de demo ocorreu antes deste módulo terminar de carregar, recupera
 // a cópia publicada pelo bootstrap.
 if (isDemoMode() && Array.isArray(window.__ROTINAOS_DEMO_ACTIVITIES__)) {
   demoActivities = window.__ROTINAOS_DEMO_ACTIVITIES__.map(item => ({ ...item }));
   window.setTimeout(() => {
     bindGridObserver();
+    renderDemoCategoryOptions();
     queueRender();
   }, 0);
 }
