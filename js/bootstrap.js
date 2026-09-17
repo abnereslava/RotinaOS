@@ -1,51 +1,30 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import "./firebase-init.js";
+import { getApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithPopup,
-  linkWithPopup,
   signOut,
-  unlink,
   setPersistence,
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  getDocs,
-  writeBatch
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC-iFjByyV-QLGP253kdlJYVqvryw1BI2E",
-  authDomain: "planejamentosemanal-6d1dc.firebaseapp.com",
-  projectId: "planejamentosemanal-6d1dc",
-  storageBucket: "planejamentosemanal-6d1dc.firebasestorage.app",
-  messagingSenderId: "537704966796",
-  appId: "1:537704966796:web:74b8c137790698f7f8a9a9"
-};
-
-// Lista de contas Google autorizadas. Para liberar outra conta futuramente,
-// basta acrescentar o e-mail aqui e revisar as regras do Firebase.
-const ALLOWED_EMAILS = new Set([
-  "abner.eslava@gmail.com"
-]);
-
-// Usuário Firebase antigo, que contém os dados já existentes.
-const LEGACY_UID = "4WWB1N34GLXWBEAX1lj3LDNUgsL2";
-
-const firebaseApp = initializeApp(firebaseConfig);
+const firebaseApp = getApp();
 const auth = getAuth(firebaseApp);
-const db = getFirestore(firebaseApp);
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
 
+// Mantém a conta proprietária fora do código-fonte em texto puro. Isso é apenas
+// uma barreira de interface; a autorização real dos dados deve continuar nas
+// Security Rules do Firestore.
+const AUTHORIZED_EMAIL_HASHES = new Set([
+  "4bf451b29a9463c6a0759b549d5b8e44d4ca364b96f3138bd3d72aa61f903d19"
+]);
+
 let appLoaded = false;
 let authActionInProgress = false;
-let migrationInProgress = false;
+let demoBootstrapping = false;
 
 setPersistence(auth, browserLocalPersistence).catch((error) => {
   console.warn("Não foi possível configurar persistência local do Firebase Auth:", error);
@@ -60,13 +39,24 @@ function getGoogleEmail(user) {
   return normalizeEmail(googleProfile?.email || "");
 }
 
-function hasProvider(user, providerId) {
-  return Boolean(user?.providerData?.some((provider) => provider.providerId === providerId));
+function hasGoogleProvider(user) {
+  return Boolean(user?.providerData?.some((provider) => provider.providerId === "google.com"));
 }
 
-function isAllowedGoogleUser(user) {
+async function sha256Hex(value) {
+  if (!globalThis.crypto?.subtle) return "";
+  const data = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(digest)]
+    .map(byte => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function isAllowedGoogleUser(user) {
   const googleEmail = getGoogleEmail(user);
-  return Boolean(googleEmail && ALLOWED_EMAILS.has(googleEmail));
+  if (!googleEmail) return false;
+  const fingerprint = await sha256Hex(googleEmail);
+  return Boolean(fingerprint && AUTHORIZED_EMAIL_HASHES.has(fingerprint));
 }
 
 function setLoginStatus(message = "", isError = false) {
@@ -86,6 +76,16 @@ function setGoogleButtonBusy(busy, label) {
   if (labelEl) labelEl.textContent = label || (busy ? "AGUARDE..." : "ENTRAR COM GOOGLE");
 }
 
+function setDemoButtonBusy(busy) {
+  const button = document.getElementById("btn-demo-mode");
+  if (!button) return;
+  button.disabled = busy;
+  button.style.opacity = busy ? "0.65" : "1";
+  button.style.cursor = busy ? "wait" : "pointer";
+  const labelEl = button.querySelector("span");
+  if (labelEl) labelEl.textContent = busy ? "PREPARANDO DEMONSTRAÇÃO..." : "TESTAR O APLICATIVO";
+}
+
 function googleLoginCardMarkup() {
   return `
     <div class="auth-card">
@@ -93,14 +93,19 @@ function googleLoginCardMarkup() {
         <i class="fas fa-robot"></i>
         <span>TO-DO<strong>OS</strong></span>
       </div>
-      <h3 id="auth-title">// ACESSO PESSOAL</h3>
+      <h3 id="auth-title">// ACESSO</h3>
       <form id="form-auth">
         <p style="margin:0 0 18px;color:var(--text-secondary);text-align:center;line-height:1.45;">
-          Entre com a conta Google autorizada para acessar seus dados.
+          Entre com a conta autorizada ou explore uma demonstração local do aplicativo.
         </p>
-        <button type="button" class="btn-primary" id="btn-google-login" style="display:flex;align-items:center;justify-content:center;gap:10px;">
+        <button type="button" class="btn-primary" id="btn-google-login" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;">
           <i class="fab fa-google"></i>
           <span>ENTRAR COM GOOGLE</span>
+        </button>
+        <div class="auth-divider">OU</div>
+        <button type="button" class="btn-secondary" id="btn-demo-mode" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;">
+          <i class="fas fa-play"></i>
+          <span>TESTAR O APLICATIVO</span>
         </button>
         <p id="auth-status" aria-live="polite" style="min-height:20px;margin:14px 0 0;text-align:center;font-size:.85rem;color:var(--text-secondary);"></p>
       </form>
@@ -109,6 +114,8 @@ function googleLoginCardMarkup() {
 }
 
 function renderGoogleLogin(message = "", isError = false) {
+  if (window.__ROTINAOS_DEMO__) return;
+
   const app = document.getElementById("app");
   if (app) app.classList.add("hidden");
 
@@ -117,32 +124,67 @@ function renderGoogleLogin(message = "", isError = false) {
 
   authContainer.innerHTML = googleLoginCardMarkup();
   authContainer.classList.remove("hidden");
-  bindGoogleButton();
+  bindLoginButtons();
   setLoginStatus(message, isError);
 }
 
+function getTodayString() {
+  const parts = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
+  const year = parts.find(part => part.type === 'year')?.value;
+  const month = parts.find(part => part.type === 'month')?.value;
+  const day = parts.find(part => part.type === 'day')?.value;
+  return `${year}-${month}-${day}`;
+}
+
+function buildDemoActivities() {
+  const today = getTodayString();
+  const todayDate = new Date(`${today}T12:00:00`);
+  const weekday = todayDate.getDay();
+  const monthDay = todayDate.getDate();
+  const createdAt = Date.now() - (10 * 24 * 60 * 60 * 1000);
+
+  return [
+    { id: 'demo1', title: '🚀 Explorar o To-doOS', category: 'Tutorial', priority: '3', recurrence: 'single', status: 'pending', createdAt },
+    { id: 'demo2', title: '🍔 Almoçar com a equipe', category: 'Social', priority: '2', recurrence: 'daily', scheduledTime: '12:00', status: 'pending', createdAt },
+    { id: 'demo3', title: '💻 Finalizar Projeto X', category: 'Trabalho', priority: '3', recurrence: 'single', deadline: today, status: 'pending', createdAt },
+    { id: 'demo4', title: '🎸 Praticar Violão', category: 'Hobby', priority: '1', recurrence: 'weekly', fixedDays: [1, 3, 5], status: 'pending', createdAt },
+    { id: 'demo5', title: '🧹 Limpar a sala', category: 'Casa', priority: '1', recurrence: 'weekly', fixedDays: [6], status: 'pending', createdAt },
+    { id: 'demo6', title: '📚 Ler 20 páginas', category: 'Estudos', priority: '2', recurrence: 'single', status: 'pending', createdAt },
+    { id: 'demo7', title: '🛒 Fazer compras', category: 'Casa', priority: '1', recurrence: 'single', status: 'pending', createdAt },
+    { id: 'demo8', title: '🎧 Podcast Semanal', category: 'Hobby', priority: '2', recurrence: 'weekly', fixedDays: [2, 4], status: 'pending', createdAt },
+    { id: 'demo9', title: '☕ Café da manhã', category: 'Rotina', priority: '1', recurrence: 'daily', scheduledTime: '08:30', status: 'pending', createdAt },
+    { id: 'demo10', title: '📞 Reunião de Alinhamento', category: 'Trabalho', priority: '3', recurrence: 'single', scheduledDate: today, scheduledTime: '10:00', status: 'pending', createdAt },
+    { id: 'demo11', title: '🏋️ Treino na Academia', category: 'Saúde', priority: '2', recurrence: 'daily', scheduledTime: '18:00', status: 'pending', createdAt },
+    { id: 'demo12', title: '🗓️ Revisão mensal', category: 'Planejamento', priority: '2', recurrence: 'monthly', monthlyDays: String(monthDay), status: 'pending', createdAt },
+    { id: 'demo13', title: '✅ Exemplo concluído', category: 'Tutorial', priority: '1', recurrence: 'weekly', fixedDays: [weekday], status: 'completed', completionDate: today, createdAt }
+  ];
+}
+
+function publishDemoActivities() {
+  const list = buildDemoActivities();
+  window.__ROTINAOS_DEMO_ACTIVITIES__ = list.map(item => ({ ...item }));
+  document.dispatchEvent(new CustomEvent('rotinaos:demo-activities', {
+    detail: { activities: window.__ROTINAOS_DEMO_ACTIVITIES__.map(item => ({ ...item })) }
+  }));
+}
+
 async function handleGoogleLogin() {
-  if (authActionInProgress) return;
+  if (authActionInProgress || window.__ROTINAOS_DEMO__) return;
   authActionInProgress = true;
   setGoogleButtonBusy(true);
   setLoginStatus("");
 
   try {
-    const existingUser = auth.currentUser;
-    let result;
+    const result = await signInWithPopup(auth, googleProvider);
 
-    // Caso a sessão antiga ainda esteja aberta, ligamos o Google diretamente ao
-    // UID antigo. Assim o banco continua pertencendo ao mesmo usuário Firebase.
-    if (existingUser && existingUser.uid === LEGACY_UID && !hasProvider(existingUser, "google.com")) {
-      setGoogleButtonBusy(true, "VINCULANDO CONTA...");
-      result = await linkWithPopup(existingUser, googleProvider);
-    } else {
-      result = await signInWithPopup(auth, googleProvider);
-    }
-
-    if (!isAllowedGoogleUser(result.user)) {
+    if (!(await isAllowedGoogleUser(result.user))) {
       await signOut(auth);
-      renderGoogleLogin("Esta conta Google não está autorizada.", true);
+      renderGoogleLogin("Esta conta Google não está autorizada. Use a demonstração para explorar o aplicativo.", true);
       return;
     }
 
@@ -151,15 +193,8 @@ async function handleGoogleLogin() {
     console.error("Falha no login Google:", error);
 
     let message = "Não foi possível entrar com o Google.";
-    if (error?.code === "auth/popup-closed-by-user") {
-      message = "Login cancelado.";
-    } else if (error?.code === "auth/popup-blocked") {
-      message = "O navegador bloqueou a janela do Google. Permita pop-ups e tente novamente.";
-    } else if (error?.code === "auth/credential-already-in-use") {
-      message = "Esta conta Google já está ligada a outro usuário Firebase. A migração precisa ser concluída antes de continuar.";
-    } else if (error?.code === "auth/account-exists-with-different-credential") {
-      message = "O Firebase encontrou a conta antiga, mas ainda precisa vinculá-la ao Google. Entre uma vez pela sessão antiga neste navegador e tente novamente.";
-    }
+    if (error?.code === "auth/popup-closed-by-user") message = "Login cancelado.";
+    if (error?.code === "auth/popup-blocked") message = "O navegador bloqueou a janela do Google. Permita pop-ups e tente novamente.";
 
     setLoginStatus(message, true);
   } finally {
@@ -168,123 +203,88 @@ async function handleGoogleLogin() {
   }
 }
 
-function bindGoogleButton() {
-  const button = document.getElementById("btn-google-login");
-  if (!button || button.dataset.bound === "true") return;
-  button.dataset.bound = "true";
-  button.addEventListener("click", handleGoogleLogin);
-}
+async function handleDemoMode() {
+  // Quando o app legado já foi carregado, deixamos o segundo clique seguir para
+  // o listener original de modo demonstração registrado em app.js.
+  if (appLoaded || demoBootstrapping) return;
 
-async function removePasswordProviderIfPossible(user) {
-  if (!hasProvider(user, "google.com") || !hasProvider(user, "password")) return user;
+  demoBootstrapping = true;
+  window.__ROTINAOS_DEMO__ = true;
+  setDemoButtonBusy(true);
+  setLoginStatus("Preparando demonstração local...");
 
   try {
-    const updatedUser = await unlink(user, "password");
-    console.info("Provedor de senha removido; Google permanece vinculado ao usuário Firebase.");
-    return updatedUser;
+    await loadOriginalApplication({ demo: true });
+
+    // O app legado registra um listener próprio no mesmo botão. Esperamos o
+    // callback inicial de autenticação dele terminar e então reutilizamos esse
+    // listener para ativar o modo demo já existente.
+    await new Promise(resolve => window.setTimeout(resolve, 120));
+    setDemoButtonBusy(false);
+    document.getElementById('btn-demo-mode')?.click();
+    publishDemoActivities();
   } catch (error) {
-    console.warn("Não foi possível remover o provedor de senha automaticamente:", error);
-    return user;
+    console.error('Falha ao iniciar modo demonstração:', error);
+    window.__ROTINAOS_DEMO__ = false;
+    renderGoogleLogin('Não foi possível iniciar a demonstração.', true);
+  } finally {
+    demoBootstrapping = false;
   }
 }
 
-async function migrateLegacyActivitiesIfNeeded(user) {
-  if (!user || user.uid === LEGACY_UID || migrationInProgress) return;
+function bindLoginButtons() {
+  const googleButton = document.getElementById("btn-google-login");
+  if (googleButton && googleButton.dataset.bootstrapBound !== "true") {
+    googleButton.dataset.bootstrapBound = "true";
+    googleButton.addEventListener("click", handleGoogleLogin);
+  }
 
-  migrationInProgress = true;
-  setLoginStatus("Migrando seus dados antigos para a conta Google...");
-
-  try {
-    const legacyQuery = query(
-      collection(db, "activities"),
-      where("userId", "==", LEGACY_UID)
-    );
-    const snapshot = await getDocs(legacyQuery);
-
-    if (snapshot.empty) return;
-
-    const docs = snapshot.docs;
-    for (let start = 0; start < docs.length; start += 400) {
-      const batch = writeBatch(db);
-      docs.slice(start, start + 400).forEach((item) => {
-        batch.update(item.ref, { userId: user.uid });
-      });
-      await batch.commit();
-    }
-
-    console.info(`${docs.length} atividade(s) migrada(s) do UID antigo para o UID Google.`);
-  } finally {
-    migrationInProgress = false;
+  const demoButton = document.getElementById("btn-demo-mode");
+  if (demoButton && demoButton.dataset.bootstrapBound !== "true") {
+    demoButton.dataset.bootstrapBound = "true";
+    demoButton.addEventListener("click", handleDemoMode);
   }
 }
 
 async function prepareAuthorizedUser(user) {
-  // O UID legado pode chegar aqui ainda autenticado por senha. Ele só recebe acesso
-  // ao app depois que o Google autorizado for efetivamente vinculado.
-  if (!hasProvider(user, "google.com")) {
-    if (user.uid === LEGACY_UID) {
-      renderGoogleLogin("Sua sessão antiga foi encontrada. Clique abaixo para vinculá-la à sua conta Google.");
-      setGoogleButtonBusy(false, "VINCULAR COM GOOGLE");
-      return;
-    }
-
+  if (!hasGoogleProvider(user) || !(await isAllowedGoogleUser(user))) {
     await signOut(auth);
-    renderGoogleLogin("Use a conta Google autorizada para entrar.", true);
+    renderGoogleLogin("Use a conta autorizada ou entre na demonstração.", true);
     return;
   }
 
-  if (!isAllowedGoogleUser(user)) {
-    await signOut(auth);
-    renderGoogleLogin("Esta conta Google não está autorizada.", true);
-    return;
-  }
-
-  try {
-    await migrateLegacyActivitiesIfNeeded(user);
-  } catch (error) {
-    console.error("Falha ao migrar dados antigos:", error);
-    renderGoogleLogin(
-      "Sua conta Google entrou, mas o Firebase bloqueou a migração automática dos dados do UID antigo. Os dados antigos não foram apagados.",
-      true
-    );
-    return;
-  }
-
-  await removePasswordProviderIfPossible(user);
   await loadOriginalApplication();
 }
 
-async function loadOriginalApplication() {
+async function loadOriginalApplication({ demo = false } = {}) {
   if (appLoaded) return;
   appLoaded = true;
 
   const authContainer = document.getElementById("auth-container");
   if (authContainer) authContainer.classList.add("hidden");
 
-  // Prepara o histórico por ocorrência antes da lógica antiga fazer manutenção diária.
-  const occurrenceModule = await import("./occurrence-history.js");
-  await occurrenceModule.occurrenceHistoryReady;
+  // O histórico persistido pertence apenas ao usuário autenticado. A demo usa
+  // dados locais e não executa manutenção nem gravações no Firestore.
+  if (!demo) {
+    const occurrenceModule = await import("./occurrence-history.js");
+    await occurrenceModule.occurrenceHistoryReady;
+  }
 
-  // Só agora a lógica completa do RotinaOS é carregada.
   await import("./app.js");
 }
 
 onAuthStateChanged(auth, async (user) => {
+  if (window.__ROTINAOS_DEMO__) return;
+
   try {
     if (!user) {
       renderGoogleLogin();
       return;
     }
 
-    // Permite temporariamente apenas o UID legado chegar à etapa de vinculação.
-    if (user.uid === LEGACY_UID && !hasProvider(user, "google.com")) {
-      await prepareAuthorizedUser(user);
-      return;
-    }
-
-    if (!isAllowedGoogleUser(user)) {
+    if (!(await isAllowedGoogleUser(user))) {
       await signOut(auth);
-      renderGoogleLogin("Esta conta Google não está autorizada.", true);
+      renderGoogleLogin("Esta conta Google não está autorizada. Use a demonstração para explorar o aplicativo.", true);
       return;
     }
 
@@ -295,10 +295,8 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// Substitui imediatamente a interface antiga de e-mail/senha antes de qualquer login.
 renderGoogleLogin();
 
-// Mantém o PWA atualizável mesmo enquanto o usuário está parado na tela de login.
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch((error) => {
     console.warn("Falha ao registrar Service Worker:", error);
