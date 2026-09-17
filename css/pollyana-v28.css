@@ -1,4 +1,188 @@
-/* Pollyana — pequeno ajuste de alinhamento do planeta no header. */
+/* ====================================================
+   ROTINA OS — POLLYANA refinements
+   - mantém o planeta um pouco afastado da borda
+   - quadriculado maior, mais próximo do HUD de EarthBound
+   - paleta aproximada da roupa clássica do Ness:
+     azul da aba/camiseta, amarelo das listras e vermelho do boné
+   - evita compressão vertical dos cards no Banco de Atividades
+==================================================== */
+
+/* Banco de Atividades: os cards mantêm sua altura natural e a coluna passa a rolar. */
+.category-column {
+  min-height: 0;
+}
+
+.category-column-items {
+  min-height: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) transparent;
+}
+
+.category-column-items > .pending-item {
+  flex: 0 0 auto !important;
+}
+
+.category-column-items::-webkit-scrollbar {
+  width: 5px;
+}
+
+.category-column-items::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.category-column-items::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 999px;
+}
+
+body[data-theme="pollyana"] {
+  /* Azul da aba/camiseta como base; amarelo e vermelho ficam como acentos. */
+  --bg-color:         #426887;
+  --bg-surface:       #f1e7c9;
+  --bg-surface-2:     #d7e1df;
+  --bg-surface-hover: #c8d6d8;
+
+  --text-primary:     #243849;
+  --text-secondary:   #687781;
+  --text-accent:      #b95752;
+
+  --primary-color:    #456f98;
+  --primary-hover:    #375e82;
+  --primary-light:    rgba(69,111,152,.17);
+
+  --accent-color:     #d1b25e;
+  --accent-light:     rgba(209,178,94,.22);
+
+  --success-color:    #64856f;
+  --success-light:    rgba(100,133,111,.16);
+  --warning-color:    #b9834f;
+  --danger-color:     #b95752;
+
+  --border-color:     #a9bac1;
+  --border-bright:    #78919f;
+}
+
+/* O planeta continua o mesmo, apenas um pouco mais para dentro do header. */
 body[data-theme="pollyana"] .header-accent {
   margin-left: 6px;
+}
+
+/* Quadriculado maior no fundo geral. */
+body[data-theme="pollyana"],
+body[data-theme="pollyana"] .auth-wrapper {
+  background-color: var(--bg-color) !important;
+  background-image:
+    linear-gradient(45deg, rgba(246,235,198,.052) 25%, transparent 25%, transparent 75%, rgba(246,235,198,.052) 75%),
+    linear-gradient(45deg, rgba(246,235,198,.052) 25%, transparent 25%, transparent 75%, rgba(246,235,198,.052) 75%) !important;
+  background-size: 28px 28px !important;
+  background-position: 0 0, 14px 14px !important;
+}
+
+/* HUDs: quadrados um pouco menores que os do fundo, porém maiores que antes. */
+body[data-theme="pollyana"] #main-header,
+body[data-theme="pollyana"] .calendar-header,
+body[data-theme="pollyana"] .modal-header-slant,
+body[data-theme="pollyana"] .category-column-header,
+body[data-theme="pollyana"] .full-view-footer-mobile {
+  background-color: #315a79 !important;
+  background-image:
+    linear-gradient(45deg, rgba(246,235,198,.060) 25%, transparent 25%, transparent 75%, rgba(246,235,198,.060) 75%),
+    linear-gradient(45deg, rgba(246,235,198,.060) 25%, transparent 25%, transparent 75%, rgba(246,235,198,.060) 75%) !important;
+  background-size: 24px 24px !important;
+  background-position: 0 0, 12px 12px !important;
+}
+
+/* Vermelho do boné entra em detalhes decorativos, sem substituir cores semânticas. */
+body[data-theme="pollyana"] #main-header,
+body[data-theme="pollyana"] .calendar-header {
+  border-bottom-color: color-mix(in srgb, var(--danger-color) 68%, var(--accent-color)) !important;
+}
+
+body[data-theme="pollyana"] .calendar-kicker,
+body[data-theme="pollyana"] .calendar-detail-kicker,
+body[data-theme="pollyana"] .settings-label {
+  color: var(--danger-color) !important;
+}
+
+/* Os botões principais seguem o amarelo da camiseta; o azul continua em foco/navegação. */
+body[data-theme="pollyana"] .btn-primary,
+body[data-theme="pollyana"] .detail-link-btn,
+body[data-theme="pollyana"] .calendar-new-day-activity,
+body[data-theme="pollyana"] .btn-mode-toggle.active,
+body[data-theme="pollyana"] .calendar-picker-month.is-selected {
+  background: var(--accent-color) !important;
+  border-color: #9c7d3e !important;
+  color: #3e3423 !important;
+}
+
+body[data-theme="pollyana"] .btn-primary:hover,
+body[data-theme="pollyana"] .detail-link-btn:hover,
+body[data-theme="pollyana"] .calendar-new-day-activity:hover {
+  background: #bd9b4f !important;
+  border-color: #876a34 !important;
+}
+
+/* O fundo atrás das categorias continua propositalmente liso. */
+body[data-theme="pollyana"] .full-view-columns {
+  background-color: var(--bg-color) !important;
+  background-image: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body[data-theme="pollyana"] {
+    --bg-color:         #1b354a;
+    --bg-surface:       #2a4960;
+    --bg-surface-2:     #355870;
+    --bg-surface-hover: #41667d;
+
+    --text-primary:     #f0ead7;
+    --text-secondary:   #b7c1c3;
+    --text-accent:      #d57870;
+
+    --primary-color:    #5d86aa;
+    --primary-hover:    #7196b7;
+    --primary-light:    rgba(93,134,170,.19);
+
+    --accent-color:     #d2b35d;
+    --accent-light:     rgba(210,179,93,.20);
+
+    --success-color:    #80a087;
+    --success-light:    rgba(128,160,135,.18);
+    --warning-color:    #c18b58;
+    --danger-color:     #ca6a63;
+
+    --border-color:     #557184;
+    --border-bright:    #78909e;
+  }
+
+  body[data-theme="pollyana"],
+  body[data-theme="pollyana"] .auth-wrapper {
+    background-image:
+      linear-gradient(45deg, rgba(239,229,196,.032) 25%, transparent 25%, transparent 75%, rgba(239,229,196,.032) 75%),
+      linear-gradient(45deg, rgba(239,229,196,.032) 25%, transparent 25%, transparent 75%, rgba(239,229,196,.032) 75%) !important;
+    background-size: 28px 28px !important;
+    background-position: 0 0, 14px 14px !important;
+  }
+
+  body[data-theme="pollyana"] #main-header,
+  body[data-theme="pollyana"] .calendar-header,
+  body[data-theme="pollyana"] .modal-header-slant,
+  body[data-theme="pollyana"] .category-column-header,
+  body[data-theme="pollyana"] .full-view-footer-mobile {
+    background-color: #24445f !important;
+    background-image:
+      linear-gradient(45deg, rgba(239,229,196,.038) 25%, transparent 25%, transparent 75%, rgba(239,229,196,.038) 75%),
+      linear-gradient(45deg, rgba(239,229,196,.038) 25%, transparent 25%, transparent 75%, rgba(239,229,196,.038) 75%) !important;
+    background-size: 24px 24px !important;
+    background-position: 0 0, 12px 12px !important;
+  }
+
+  body[data-theme="pollyana"] .full-view-columns {
+    background-color: var(--bg-color) !important;
+    background-image: none !important;
+  }
 }
