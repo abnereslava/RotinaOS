@@ -1,5 +1,5 @@
-const CACHE_NAME = 'todo-os-cache-v32';
-const ASSET_VERSION = '20260917-demo-offline-2';
+const CACHE_NAME = 'todo-os-cache-v33';
+const ASSET_VERSION = '20260917-demo-offline-3';
 
 const versionedAsset = (path) => `${path}?v=${ASSET_VERSION}`;
 
@@ -34,6 +34,10 @@ const urlsToCache = [
   versionedAsset('./js/demo-calendar-bridge.js'),
   versionedAsset('./js/occurrence-history.js'),
   versionedAsset('./js/app.js'),
+  // Imports dinâmicos/relativos usam estas URLs sem query string.
+  './js/firebase-init.js',
+  './js/occurrence-history.js',
+  './js/app.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
