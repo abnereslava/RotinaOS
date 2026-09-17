@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todo-os-cache-v36';
+const CACHE_NAME = 'todo-os-cache-v37';
 
 const LOCAL_ASSETS = [
   './',
@@ -41,16 +41,21 @@ const LOCAL_ASSETS = [
   './js/occurrence-history.js'
 ];
 
-// Dependências críticas para abrir o app já visitado quando não houver internet.
-// São armazenadas de forma best-effort para não impedir a instalação do SW caso
-// algum CDN esteja temporariamente indisponível.
+// Dependências necessárias para restaurar uma sessão já usada sem rede.
 const REMOTE_CRITICAL = [
   'https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js',
   'https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js',
   'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js'
 ];
 
-const NETWORK_FIRST_PATHS = new Set(
+// Recursos visuais externos são opcionais. São aquecidos quando possível, mas
+// uma falha neles nunca impede a instalação do PWA.
+const REMOTE_OPTIONAL = [
+  'https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+];
+
+const LOCAL_RUNTIME_PATHS = new Set(
   LOCAL_ASSETS
     .filter(path => path.startsWith('./css/') || path.startsWith('./js/'))
     .map(path => new URL(path, self.registration.scope).pathname)
@@ -60,9 +65,11 @@ self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     await cache.addAll(LOCAL_ASSETS);
+
     await Promise.allSettled(
-      REMOTE_CRITICAL.map(url => cache.add(url))
+      [...REMOTE_CRITICAL, ...REMOTE_OPTIONAL].map(url => cache.add(url))
     );
+
     await self.skipWaiting();
   })());
 });
@@ -79,19 +86,31 @@ self.addEventListener('activate', event => {
   })());
 });
 
-async function networkFirst(request, fallback = null) {
+async function fetchAndCache(request) {
   try {
     const response = await fetch(request, { cache: 'no-store' });
-    if (response && response.ok) {
+    if (response && (response.ok || response.type === 'opaque')) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone()).catch(() => {});
-      return response;
     }
+    return response;
   } catch (_) {
-    // Offline: tenta cache abaixo.
+    return null;
+  }
+}
+
+async function cacheFirst(event, request, fallback = null) {
+  const cached = (await caches.match(request)) || (fallback ? await caches.match(fallback) : null);
+
+  if (cached) {
+    // Mostra imediatamente a cópia local e atualiza silenciosamente para a próxima abertura.
+    event.waitUntil(fetchAndCache(request));
+    return cached;
   }
 
-  return (await caches.match(request)) || (fallback ? await caches.match(fallback) : null);
+  const network = await fetchAndCache(request);
+  if (network) return network;
+  return fallback ? await caches.match(fallback) : null;
 }
 
 self.addEventListener('fetch', event => {
@@ -99,39 +118,33 @@ self.addEventListener('fetch', event => {
 
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      networkFirst(event.request, './index.html')
+      cacheFirst(event, event.request, './index.html')
         .then(response => response || new Response('Offline', { status: 503 }))
     );
     return;
   }
 
   const requestUrl = new URL(event.request.url);
-  const isLocalCodeAsset =
+  const isLocalRuntimeAsset =
     requestUrl.origin === self.location.origin &&
-    NETWORK_FIRST_PATHS.has(requestUrl.pathname);
+    LOCAL_RUNTIME_PATHS.has(requestUrl.pathname);
 
-  if (isLocalCodeAsset) {
+  if (isLocalRuntimeAsset) {
     event.respondWith(
-      networkFirst(event.request)
+      cacheFirst(event, event.request)
         .then(response => response || new Response('Offline', { status: 503 }))
     );
     return;
   }
 
+  // Firebase CDN, fontes e demais sub-recursos: cache-first. Isso é essencial
+  // para que módulos já usados continuem disponíveis sem conexão.
   event.respondWith((async () => {
     const cached = await caches.match(event.request);
     if (cached) return cached;
 
-    try {
-      const response = await fetch(event.request);
-      if (response && (response.ok || response.type === 'opaque')) {
-        const cache = await caches.open(CACHE_NAME);
-        cache.put(event.request, response.clone()).catch(() => {});
-      }
-      return response;
-    } catch (_) {
-      return new Response('Offline', { status: 503 });
-    }
+    const response = await fetchAndCache(event.request);
+    return response || new Response('Offline', { status: 503 });
   })());
 });
 
