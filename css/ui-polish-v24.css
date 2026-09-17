@@ -1,0 +1,183 @@
+/* ====================================================
+   ROTINA OS — UI polish v24
+   Pink Ball inspirado nas referências fornecidas + estados do calendário.
+==================================================== */
+
+/* ---------- PINK BALL: rosa sólido + listras diagonais ---------- */
+body[data-theme="pinkball"] {
+  --bg-color:         #df4d83;
+  --bg-surface:       #f7c9da;
+  --bg-surface-2:     #ed9bb8;
+  --bg-surface-hover: #e789aa;
+
+  --text-primary:     #3b2030;
+  --text-secondary:   #765062;
+  --text-accent:      #a91f50;
+
+  --primary-color:    #e33f7b;
+  --primary-hover:    #c92d65;
+  --primary-light:    rgba(227,63,123,.17);
+
+  --accent-color:     #ffd54a;
+  --accent-light:     rgba(255,213,74,.22);
+  --danger-color:     #d92345;
+
+  --border-color:     #d9789c;
+  --border-bright:    #c95e88;
+}
+
+body[data-theme="pinkball"],
+body[data-theme="pinkball"] .auth-wrapper,
+body[data-theme="pinkball"] .full-view-columns {
+  background-color: var(--bg-color) !important;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255,255,255,.055) 0 13px,
+    rgba(181,38,91,.045) 13px 26px
+  ) !important;
+  background-size: auto !important;
+}
+
+/* Remove o brilho/degradê branco→rosa dos painéis e usa dois rosas da mesma família. */
+body[data-theme="pinkball"] #main-header,
+body[data-theme="pinkball"] .calendar-header,
+body[data-theme="pinkball"] .modal-header-slant,
+body[data-theme="pinkball"] .category-column-header,
+body[data-theme="pinkball"] .full-view-footer-mobile {
+  background-color: var(--bg-surface-2) !important;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255,255,255,.06) 0 11px,
+    rgba(199,67,115,.055) 11px 22px
+  ) !important;
+}
+
+body[data-theme="pinkball"] .modal-content,
+body[data-theme="pinkball"] .auth-card,
+body[data-theme="pinkball"] .calendar-card,
+body[data-theme="pinkball"] .calendar-day-details,
+body[data-theme="pinkball"] .calendar-control-card,
+body[data-theme="pinkball"] .category-column,
+body[data-theme="pinkball"] .form-section,
+body[data-theme="pinkball"] .checklist-editor,
+body[data-theme="pinkball"] .activity-block,
+body[data-theme="pinkball"] .pending-item,
+body[data-theme="pinkball"] .full-view-columns .pending-item {
+  background-color: var(--bg-surface) !important;
+  background-image: none !important;
+}
+
+body[data-theme="pinkball"] input,
+body[data-theme="pinkball"] select,
+body[data-theme="pinkball"] textarea,
+body[data-theme="pinkball"] #full-view-search,
+body[data-theme="pinkball"] #full-view-sort {
+  background: #f9dce7 !important;
+}
+
+body[data-theme="pinkball"] .btn-primary {
+  background: var(--primary-color) !important;
+}
+
+body[data-theme="pinkball"] .btn-primary:hover {
+  background: var(--primary-hover) !important;
+}
+
+/* O amarelo fica como acento pontual, próximo da estrela da paleta do personagem. */
+body[data-theme="pinkball"] .header-accent,
+body[data-theme="pinkball"] #current-time-indicator::before {
+  background-color: var(--accent-color) !important;
+}
+
+body[data-theme="pinkball"] .cat-count {
+  background: var(--accent-color) !important;
+  color: #6d4700 !important;
+  border-color: #e5b727 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body[data-theme="pinkball"] {
+    --bg-color:         #371827;
+    --bg-surface:       #4a2435;
+    --bg-surface-2:     #5b2b40;
+    --bg-surface-hover: #6d344c;
+    --text-primary:     #fae8ef;
+    --text-secondary:   #d0a9b9;
+    --text-accent:      #f39ab9;
+    --primary-color:    #e86898;
+    --primary-hover:    #f07faa;
+    --primary-light:    rgba(232,104,152,.20);
+    --accent-color:     #edc44c;
+    --accent-light:     rgba(237,196,76,.18);
+    --danger-color:     #e85367;
+    --border-color:     #744058;
+    --border-bright:    #94516c;
+  }
+
+  body[data-theme="pinkball"],
+  body[data-theme="pinkball"] .auth-wrapper,
+  body[data-theme="pinkball"] .full-view-columns {
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgba(255,255,255,.025) 0 13px,
+      rgba(222,72,130,.035) 13px 26px
+    ) !important;
+  }
+
+  body[data-theme="pinkball"] #main-header,
+  body[data-theme="pinkball"] .calendar-header,
+  body[data-theme="pinkball"] .modal-header-slant,
+  body[data-theme="pinkball"] .category-column-header,
+  body[data-theme="pinkball"] .full-view-footer-mobile {
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgba(255,255,255,.025) 0 11px,
+      rgba(232,104,152,.035) 11px 22px
+    ) !important;
+  }
+
+  body[data-theme="pinkball"] input,
+  body[data-theme="pinkball"] select,
+  body[data-theme="pinkball"] textarea,
+  body[data-theme="pinkball"] #full-view-search,
+  body[data-theme="pinkball"] #full-view-sort {
+    background: #54283c !important;
+  }
+}
+
+/* ---------- CALENDÁRIO: HOJE ≠ SELECIONADO ----------
+   Hoje: o número do dia recebe um círculo na cor de acento.
+   Selecionado: a célula inteira recebe preenchimento + contorno da cor primária.
+   Se hoje estiver selecionado, os dois sinais coexistem.
+------------------------------------------------------ */
+.calendar-day.is-today {
+  box-shadow: none !important;
+}
+
+.calendar-day.is-today .calendar-day-number {
+  min-width: 25px;
+  height: 25px;
+  padding: 0 5px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--accent-color, #d97b3a);
+  color: color-mix(in srgb, var(--accent-color, #d97b3a) 12%, #111 88%) !important;
+  font-weight: 800;
+}
+
+.calendar-day.is-selected {
+  background: color-mix(in srgb, var(--primary-color, #3b6fd4) 16%, var(--bg-surface, #111827)) !important;
+  box-shadow: inset 0 0 0 2px var(--primary-color, #3b6fd4) !important;
+}
+
+.calendar-day.is-selected:not(.is-today) .calendar-day-number {
+  color: var(--primary-color, #3b6fd4) !important;
+  font-weight: 800;
+}
+
+.calendar-day.is-today.is-selected {
+  box-shadow:
+    inset 0 0 0 2px var(--primary-color, #3b6fd4),
+    inset 0 0 0 4px color-mix(in srgb, var(--bg-surface, #111827) 75%, transparent) !important;
+}
