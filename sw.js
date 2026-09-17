@@ -1,5 +1,5 @@
-const CACHE_NAME = 'todo-os-cache-v33';
-const ASSET_VERSION = '20260917-demo-offline-3';
+const CACHE_NAME = 'todo-os-cache-v34';
+const ASSET_VERSION = '20260917-demo-offline-4';
 
 const versionedAsset = (path) => `${path}?v=${ASSET_VERSION}`;
 
@@ -34,10 +34,12 @@ const urlsToCache = [
   versionedAsset('./js/demo-calendar-bridge.js'),
   versionedAsset('./js/occurrence-history.js'),
   versionedAsset('./js/app.js'),
+  versionedAsset('./js/app-core.js'),
   // Imports dinâmicos/relativos usam estas URLs sem query string.
   './js/firebase-init.js',
   './js/occurrence-history.js',
   './js/app.js',
+  './js/app-core.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
@@ -71,7 +73,8 @@ const NETWORK_FIRST_PATHS = new Set([
   '/RotinaOS/js/calendar-view-v3.js',
   '/RotinaOS/js/demo-calendar-bridge.js',
   '/RotinaOS/js/occurrence-history.js',
-  '/RotinaOS/js/app.js'
+  '/RotinaOS/js/app.js',
+  '/RotinaOS/js/app-core.js'
 ]);
 
 self.addEventListener('install', event => {
