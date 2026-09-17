@@ -1,4 +1,5 @@
-import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import "./firebase-init.js";
+import { getApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 import {
   getFirestore,
@@ -9,16 +10,7 @@ import {
   writeBatch
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC-iFjByyV-QLGP253kdlJYVqvryw1BI2E",
-  authDomain: "planejamentosemanal-6d1dc.firebaseapp.com",
-  projectId: "planejamentosemanal-6d1dc",
-  storageBucket: "planejamentosemanal-6d1dc.firebasestorage.app",
-  messagingSenderId: "537704966796",
-  appId: "1:537704966796:web:74b8c137790698f7f8a9a9"
-};
-
-const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const firebaseApp = getApp();
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 
@@ -26,6 +18,7 @@ const LONG_PRESS_MS = 560;
 const MOVE_TOLERANCE = 12;
 const MAX_BATCH_SIZE = 400;
 const CALENDAR_FILTER_KEY = 'rotinaos.calendar.categoryFilter.v1';
+const DEMO_CALENDAR_FILTER_KEY = 'rotinaos.demo.calendar.categoryFilter.v1';
 
 let currentUser = auth.currentUser;
 let pressTimer = null;
@@ -36,6 +29,7 @@ let suppressClicksUntil = 0;
 let activeEditor = null;
 
 onAuthStateChanged(auth, user => {
+  if (window.__ROTINAOS_DEMO__) return;
   currentUser = user;
 });
 
@@ -84,6 +78,18 @@ async function commitCategoryUpdates(refs, newName) {
   }
 }
 
+function migrateFilterKey(key, oldName, newName) {
+  try {
+    const calendarFilter = JSON.parse(localStorage.getItem(key) || 'null');
+    if (calendarFilter?.mode === 'selected' && Array.isArray(calendarFilter.categories)) {
+      const categories = [...new Set(
+        calendarFilter.categories.map(item => item === oldName ? newName : item)
+      )].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+      localStorage.setItem(key, JSON.stringify({ ...calendarFilter, categories }));
+    }
+  } catch (_) {}
+}
+
 function migrateLocalCategoryPreferences(oldName, newName) {
   try {
     const collapsed = JSON.parse(localStorage.getItem('collapsedCategories') || '[]');
@@ -97,18 +103,18 @@ function migrateLocalCategoryPreferences(oldName, newName) {
     localStorage.setItem('sidebarFilterCategory', newName);
   }
 
-  try {
-    const calendarFilter = JSON.parse(localStorage.getItem(CALENDAR_FILTER_KEY) || 'null');
-    if (calendarFilter?.mode === 'selected' && Array.isArray(calendarFilter.categories)) {
-      const categories = [...new Set(
-        calendarFilter.categories.map(item => item === oldName ? newName : item)
-      )].sort((a, b) => a.localeCompare(b, 'pt-BR'));
-      localStorage.setItem(CALENDAR_FILTER_KEY, JSON.stringify({ ...calendarFilter, categories }));
-    }
-  } catch (_) {}
+  migrateFilterKey(CALENDAR_FILTER_KEY, oldName, newName);
+  migrateFilterKey(DEMO_CALENDAR_FILTER_KEY, oldName, newName);
 }
 
 async function renameCategory(oldName, newName) {
+  if (window.__ROTINAOS_DEMO__) {
+    const changed = await window.RotinaDemoCore?.renameCategory?.(oldName, newName);
+    if (typeof changed !== 'number') throw new Error('Núcleo da demonstração indisponível.');
+    migrateLocalCategoryPreferences(oldName, newName);
+    return changed;
+  }
+
   if (!currentUser) throw new Error('Usuário não autenticado.');
 
   const userId = currentUser.uid;
@@ -125,8 +131,6 @@ async function renameCategory(oldName, newName) {
   if (activityRefs.length === 0) return 0;
   await commitCategoryUpdates(activityRefs, newName);
 
-  // O histórico acompanha a renomeação quando a coleção estiver disponível,
-  // mas uma eventual regra mais restritiva nele não bloqueia a edição das atividades.
   try {
     const occurrencesSnapshot = await getDocs(userQuery('activity_occurrences'));
     const occurrenceRefs = occurrencesSnapshot.docs
@@ -197,9 +201,6 @@ function startEditor(heading) {
   heading.appendChild(editor);
   activeEditor = { heading, input, save, cancel, oldName, busy: false };
 
-  // Impede o cabeçalho da coluna de interpretar os toques do editor como
-  // expandir/recolher. Diferente do listener antigo, isto roda depois que o
-  // evento chega aos botões, então ✓ e ✕ continuam clicáveis.
   ['click', 'dblclick', 'pointerdown', 'pointerup'].forEach(type => {
     editor.addEventListener(type, event => event.stopPropagation());
   });
@@ -277,8 +278,6 @@ function cancelPress() {
   pressTarget = null;
 }
 
-// Mobile/tablet: segurar o nome. Cancela se o dedo se mover para não brigar
-// com o scroll horizontal entre as categorias.
 document.addEventListener('pointerdown', event => {
   if (!isTouchLikeEvent(event) || activeEditor || event.target.closest?.('.category-rename-editor')) return;
   const heading = getCategoryHeading(event.target);
@@ -315,8 +314,6 @@ document.addEventListener('pointermove', event => {
 document.addEventListener('pointerup', cancelPress, { passive: true });
 document.addEventListener('pointercancel', cancelPress, { passive: true });
 
-// Captura somente cliques no título fora do editor. O editor em si é deixado
-// seguir até o alvo para que seus botões recebam o click normalmente.
 document.addEventListener('click', event => {
   if (event.target.closest?.('.category-rename-editor')) return;
 
@@ -338,7 +335,6 @@ document.addEventListener('click', event => {
   }
 }, true);
 
-// Desktop: duplo clique no nome da categoria.
 document.addEventListener('dblclick', event => {
   if (event.target.closest?.('.category-rename-editor')) return;
   const heading = getCategoryHeading(event.target);
