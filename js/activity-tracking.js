@@ -29,6 +29,14 @@ function normalize(value) {
   return String(value ?? '').replace(/\s+/g, ' ').trim();
 }
 
+function setActivities(nextActivities) {
+  activities = Array.isArray(nextActivities)
+    ? nextActivities.map(item => ({ ...item }))
+    : [];
+  activityById = new Map(activities.map(activity => [activity.id, activity]));
+  scheduleApply();
+}
+
 function activityKey(activity) {
   return `${normalize(activity.category || 'Sem categoria')}\u0000${normalize(activity.title)}`;
 }
@@ -114,7 +122,12 @@ async function toggleTracking(card) {
   } catch (_) {}
 
   try {
-    await updateDoc(doc(db, 'activities', id), { isTracked: next });
+    if (window.__ROTINAOS_DEMO__) {
+      const handled = await window.RotinaDemoCore?.updateActivity?.(id, { isTracked: next });
+      if (!handled) throw new Error('Núcleo da demonstração indisponível.');
+    } else {
+      await updateDoc(doc(db, 'activities', id), { isTracked: next });
+    }
   } catch (error) {
     console.error('Não foi possível atualizar o destaque da atividade:', error);
     activity.isTracked = previous;
@@ -198,24 +211,35 @@ const observer = new MutationObserver(mutations => {
 });
 observer.observe(document.body, { childList: true, subtree: true });
 
+// O modo visitante mantém a mesma API visual, mas recebe a coleção do núcleo local.
+document.addEventListener('rotinaos:demo-activities', event => {
+  if (!window.__ROTINAOS_DEMO__) return;
+  setActivities(event.detail?.activities || []);
+});
+
 onAuthStateChanged(auth, user => {
   unsubscribeActivities?.();
   unsubscribeActivities = null;
-  activities = [];
-  activityById = new Map();
-  scheduleApply();
 
+  if (window.__ROTINAOS_DEMO__) {
+    setActivities(window.__ROTINAOS_DEMO_ACTIVITIES__ || []);
+    return;
+  }
+
+  setActivities([]);
   if (!user) return;
 
   unsubscribeActivities = onSnapshot(
     query(collection(db, 'activities'), where('userId', '==', user.uid)),
     snapshot => {
-      activities = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-      activityById = new Map(activities.map(activity => [activity.id, activity]));
-      scheduleApply();
+      setActivities(snapshot.docs.map(item => ({ id: item.id, ...item.data() })));
     },
     error => console.error('Falha ao carregar atividades acompanhadas:', error)
   );
 });
 
-scheduleApply();
+if (window.__ROTINAOS_DEMO__ && Array.isArray(window.__ROTINAOS_DEMO_ACTIVITIES__)) {
+  setActivities(window.__ROTINAOS_DEMO_ACTIVITIES__);
+} else {
+  scheduleApply();
+}
