@@ -1,0 +1,148 @@
+/* ====================================================
+   ROTINA OS — POLLYANA HUD TUNE
+   Ajustes inspirados no HUD de EarthBound:
+   - planeta no header
+   - quadriculado retrô no lugar das listras
+   - fundo limpo atrás das colunas do Banco
+   - botões principais dourados/amarelos
+==================================================== */
+
+/* ---------- QUADRICULADO ---------- */
+body[data-theme="pollyana"],
+body[data-theme="pollyana"] .auth-wrapper {
+  background-color: var(--bg-color) !important;
+  background-image:
+    linear-gradient(45deg, rgba(244,237,217,.045) 25%, transparent 25%, transparent 75%, rgba(244,237,217,.045) 75%),
+    linear-gradient(45deg, rgba(244,237,217,.045) 25%, transparent 25%, transparent 75%, rgba(244,237,217,.045) 75%) !important;
+  background-size: 20px 20px !important;
+  background-position: 0 0, 10px 10px !important;
+}
+
+body[data-theme="pollyana"] #main-header,
+body[data-theme="pollyana"] .calendar-header,
+body[data-theme="pollyana"] .modal-header-slant,
+body[data-theme="pollyana"] .category-column-header,
+body[data-theme="pollyana"] .full-view-footer-mobile {
+  background-color: #36556f !important;
+  background-image:
+    linear-gradient(45deg, rgba(243,234,214,.055) 25%, transparent 25%, transparent 75%, rgba(243,234,214,.055) 75%),
+    linear-gradient(45deg, rgba(243,234,214,.055) 25%, transparent 25%, transparent 75%, rgba(243,234,214,.055) 75%) !important;
+  background-size: 16px 16px !important;
+  background-position: 0 0, 8px 8px !important;
+}
+
+/* O espaço atrás das colunas do Banco fica liso. O padrão continua nos headers. */
+body[data-theme="pollyana"] .full-view-columns {
+  background-color: var(--bg-color) !important;
+  background-image: none !important;
+}
+
+/* ---------- PLANETA NO HEADER ---------- */
+body[data-theme="pollyana"] .header-accent {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  margin-right: 6px;
+  flex: 0 0 22px;
+  clip-path: none !important;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 30%, #e1c98c 0 17%, transparent 18%),
+    radial-gradient(circle at 50% 50%, var(--accent-color) 0 58%, #aa8744 59% 100%) !important;
+  box-shadow: inset -3px -3px 5px rgba(73,58,30,.16);
+  overflow: visible;
+}
+
+body[data-theme="pollyana"] .header-accent::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 6px;
+  width: 32px;
+  height: 10px;
+  border: 2px solid #ead9a9;
+  border-radius: 50%;
+  transform: rotate(-22deg);
+  box-sizing: border-box;
+  opacity: .95;
+  pointer-events: none;
+}
+
+body[data-theme="pollyana"] .header-accent::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 9px;
+  width: 18px;
+  height: 7px;
+  border-radius: 50%;
+  border-top: 2px solid var(--accent-color);
+  transform: rotate(-22deg);
+  pointer-events: none;
+}
+
+/* ---------- BOTÕES PRINCIPAIS EM DOURADO ---------- */
+body[data-theme="pollyana"] .btn-primary,
+body[data-theme="pollyana"] .detail-link-btn,
+body[data-theme="pollyana"] .calendar-new-day-activity {
+  background: var(--accent-color) !important;
+  border-color: #9e7d3e !important;
+  color: #3e3423 !important;
+  box-shadow: 0 4px 0 rgba(126,96,43,.20), 0 7px 16px rgba(31,47,62,.10) !important;
+}
+
+body[data-theme="pollyana"] .btn-primary:hover,
+body[data-theme="pollyana"] .detail-link-btn:hover,
+body[data-theme="pollyana"] .calendar-new-day-activity:hover {
+  background: #b9954f !important;
+  border-color: #896a33 !important;
+}
+
+body[data-theme="pollyana"] .btn-primary:active,
+body[data-theme="pollyana"] .detail-link-btn:active,
+body[data-theme="pollyana"] .calendar-new-day-activity:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(126,96,43,.18) !important;
+}
+
+body[data-theme="pollyana"] .btn-mode-toggle.active,
+body[data-theme="pollyana"] .calendar-picker-month.is-selected {
+  background: var(--accent-color) !important;
+  border-color: #9e7d3e !important;
+  color: #3e3423 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body[data-theme="pollyana"],
+  body[data-theme="pollyana"] .auth-wrapper {
+    background-image:
+      linear-gradient(45deg, rgba(237,230,212,.025) 25%, transparent 25%, transparent 75%, rgba(237,230,212,.025) 75%),
+      linear-gradient(45deg, rgba(237,230,212,.025) 25%, transparent 25%, transparent 75%, rgba(237,230,212,.025) 75%) !important;
+  }
+
+  body[data-theme="pollyana"] #main-header,
+  body[data-theme="pollyana"] .calendar-header,
+  body[data-theme="pollyana"] .modal-header-slant,
+  body[data-theme="pollyana"] .category-column-header,
+  body[data-theme="pollyana"] .full-view-footer-mobile {
+    background-color: #253d4f !important;
+    background-image:
+      linear-gradient(45deg, rgba(237,230,212,.028) 25%, transparent 25%, transparent 75%, rgba(237,230,212,.028) 75%),
+      linear-gradient(45deg, rgba(237,230,212,.028) 25%, transparent 25%, transparent 75%, rgba(237,230,212,.028) 75%) !important;
+  }
+
+  body[data-theme="pollyana"] .full-view-columns {
+    background-color: var(--bg-color) !important;
+    background-image: none !important;
+  }
+
+  body[data-theme="pollyana"] .btn-primary,
+  body[data-theme="pollyana"] .detail-link-btn,
+  body[data-theme="pollyana"] .calendar-new-day-activity,
+  body[data-theme="pollyana"] .btn-mode-toggle.active,
+  body[data-theme="pollyana"] .calendar-picker-month.is-selected {
+    background: var(--accent-color) !important;
+    border-color: #a1844e !important;
+    color: #2f281b !important;
+  }
+}
