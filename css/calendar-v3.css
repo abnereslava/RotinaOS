@@ -18,12 +18,19 @@ button.calendar-unprogrammed {
   touch-action: manipulation;
 }
 
-/* O feedback de toque é controlado por uma classe temporária para evitar :active/:hover preso no mobile. */
+/*
+ * No touch, navegadores móveis podem manter :hover após o primeiro toque.
+ * Neutralizamos hover/active/focus por padrão e usamos uma classe curta para
+ * o feedback real do toque. Em dispositivos com mouse, o hover volta abaixo.
+ */
+button.calendar-unprogrammed:hover,
 button.calendar-unprogrammed:active,
+button.calendar-unprogrammed:focus,
 button.calendar-unprogrammed:focus:not(:focus-visible) {
   color: var(--text-secondary, #6b8cad);
   border-color: var(--border-color, #1e3050);
   background: color-mix(in srgb, var(--bg-surface, #111827) 82%, transparent);
+  outline: none;
 }
 
 button.calendar-unprogrammed.is-pressing {
