@@ -1,0 +1,58 @@
+/* Banco de Atividades — destaque/acompanhamento e títulos compactos */
+
+.full-view-columns .pending-item {
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: pan-y;
+}
+
+.full-view-columns .pending-item h3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.22;
+  max-height: 2.44em;
+}
+
+.full-view-columns .pending-item.is-tracked {
+  background-color: color-mix(in srgb, var(--bg-surface, #111827) 84%, var(--accent-color, #d97b3a) 16%) !important;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent-color, #d97b3a) 62%, transparent),
+    var(--shadow-card, 0 3px 12px rgba(0,0,0,.18)) !important;
+}
+
+.full-view-columns .pending-item.tracking-pulse {
+  transform: scale(.985);
+  transition: transform .12s ease, background-color .16s ease;
+}
+
+/* Pollyana: destaque acompanhado usa o amarelo da camiseta do Ness de forma suave. */
+body[data-theme="pollyana"] .full-view-columns .pending-item.is-tracked {
+  background-color: color-mix(in srgb, var(--bg-surface) 78%, var(--accent-color) 22%) !important;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 74%, transparent),
+    0 3px 10px rgba(20, 42, 58, .15) !important;
+}
+
+/* Pollyana: a busca ganha o amarelo da paleta sem perder legibilidade. */
+body[data-theme="pollyana"] #full-view-search {
+  border-color: color-mix(in srgb, var(--accent-color) 76%, var(--border-bright)) !important;
+  caret-color: var(--accent-color);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 24%, transparent);
+}
+
+body[data-theme="pollyana"] #full-view-search::placeholder {
+  color: color-mix(in srgb, var(--accent-color) 62%, var(--text-secondary));
+  opacity: .82;
+}
+
+body[data-theme="pollyana"] #full-view-search:focus {
+  border-color: var(--accent-color) !important;
+  outline: none;
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--accent-color) 30%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 40%, transparent);
+}
