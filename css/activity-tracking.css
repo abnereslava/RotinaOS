@@ -3,7 +3,10 @@
 .full-view-columns .pending-item {
   -webkit-user-select: none;
   user-select: none;
-  touch-action: pan-y;
+  /* Permite que o gesto iniciado sobre o card seja entregue ao scroll horizontal
+     do Banco ou ao scroll vertical interno. O long-press é cancelado via JS assim
+     que há movimento suficiente do dedo. */
+  touch-action: pan-x pan-y;
 }
 
 .full-view-columns .pending-item h3 {
