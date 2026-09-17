@@ -25,6 +25,7 @@ const AUTHORIZED_EMAIL_HASHES = new Set([
 let appLoaded = false;
 let authActionInProgress = false;
 let demoBootstrapping = false;
+let occurrenceHistoryStarted = false;
 
 setPersistence(auth, browserLocalPersistence).catch((error) => {
   console.warn("Não foi possível configurar persistência local do Firebase Auth:", error);
@@ -168,6 +169,16 @@ function publishDemoActivities() {
   }));
 }
 
+function startOccurrenceHistoryInBackground() {
+  if (occurrenceHistoryStarted || window.__ROTINAOS_DEMO__) return;
+  occurrenceHistoryStarted = true;
+
+  import("./occurrence-history.js").catch((error) => {
+    occurrenceHistoryStarted = false;
+    console.warn("Histórico de ocorrências não pôde ser iniciado em segundo plano:", error);
+  });
+}
+
 async function handleGoogleLogin() {
   if (authActionInProgress || window.__ROTINAOS_DEMO__) return;
   authActionInProgress = true;
@@ -246,6 +257,7 @@ async function prepareAuthorizedUser(user) {
     return;
   }
 
+  setLoginStatus(navigator.onLine ? "Abrindo sua agenda..." : "Abrindo dados salvos no aparelho...");
   await loadOriginalApplication();
 }
 
@@ -253,16 +265,17 @@ async function loadOriginalApplication({ demo = false } = {}) {
   if (appLoaded) return;
   appLoaded = true;
 
-  const authContainer = document.getElementById("auth-container");
-  if (authContainer) authContainer.classList.add("hidden");
+  try {
+    // O núcleo da interface deve abrir primeiro. Histórico/sincronizações não podem
+    // bloquear a renderização, especialmente quando o aparelho está offline.
+    const coreLoader = await import("./core-loader.js");
+    await coreLoader.loadCore();
 
-  if (!demo) {
-    const occurrenceModule = await import("./occurrence-history.js");
-    await occurrenceModule.occurrenceHistoryReady;
+    if (!demo) startOccurrenceHistoryInBackground();
+  } catch (error) {
+    appLoaded = false;
+    throw error;
   }
-
-  const coreLoader = await import("./core-loader.js");
-  await coreLoader.loadCore();
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -270,7 +283,9 @@ onAuthStateChanged(auth, async (user) => {
 
   try {
     if (!user) {
-      renderGoogleLogin();
+      renderGoogleLogin(
+        navigator.onLine ? "" : "Sem internet. Entre quando estiver online ou use a demonstração local."
+      );
       return;
     }
 
@@ -283,11 +298,16 @@ onAuthStateChanged(auth, async (user) => {
     await prepareAuthorizedUser(user);
   } catch (error) {
     console.error("Erro no gate de autenticação:", error);
-    renderGoogleLogin("Ocorreu um erro ao preparar o acesso. Tente novamente.", true);
+    renderGoogleLogin(
+      navigator.onLine
+        ? "Ocorreu um erro ao preparar o acesso. Tente novamente."
+        : "Não foi possível abrir os dados offline. Conecte-se uma vez para atualizar o cache.",
+      true
+    );
   }
 });
 
-renderGoogleLogin();
+renderGoogleLogin(navigator.onLine ? "" : "Abrindo modo offline...");
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch((error) => {
