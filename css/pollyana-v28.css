@@ -1,0 +1,4 @@
+/* Pollyana — pequeno ajuste de alinhamento do planeta no header. */
+body[data-theme="pollyana"] .header-accent {
+  margin-left: 6px;
+}
