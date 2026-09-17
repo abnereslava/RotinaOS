@@ -207,20 +207,21 @@ async function handleDemoMode() {
   setLoginStatus("Preparando demonstração local...");
 
   try {
-    // Publica os dados antes de carregar o núcleo. Assim todos os módulos usam
-    // exatamente a mesma coleção local desde o primeiro render.
     publishDemoActivities();
     await loadOriginalApplication({ demo: true });
 
-    await new Promise(resolve => window.setTimeout(resolve, 120));
-    setDemoButtonBusy(false);
-    document.getElementById('btn-demo-mode')?.click();
+    const activated = window.RotinaDemoCore?.activate?.();
+    if (!activated) {
+      throw new Error('O núcleo da demonstração não foi ativado.');
+    }
   } catch (error) {
     console.error('Falha ao iniciar modo demonstração:', error);
     window.__ROTINAOS_DEMO__ = false;
+    appLoaded = false;
     renderGoogleLogin('Não foi possível iniciar a demonstração.', true);
   } finally {
     demoBootstrapping = false;
+    setDemoButtonBusy(false);
   }
 }
 
