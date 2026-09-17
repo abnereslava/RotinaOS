@@ -1,5 +1,5 @@
-const CACHE_NAME = 'todo-os-cache-v24';
-const ASSET_VERSION = '20260916-pink-filters-calendar';
+const CACHE_NAME = 'todo-os-cache-v25';
+const ASSET_VERSION = '20260916-pollyana';
 
 const versionedAsset = (path) => `${path}?v=${ASSET_VERSION}`;
 
@@ -14,6 +14,7 @@ const urlsToCache = [
   versionedAsset('./css/new-themes.css'),
   versionedAsset('./css/theme-polish.css'),
   versionedAsset('./css/pink-ball.css'),
+  versionedAsset('./css/pollyana.css'),
   versionedAsset('./css/ui-polish-v24.css'),
   versionedAsset('./css/optional-date-fix.css'),
   versionedAsset('./css/category-rename.css'),
@@ -42,6 +43,7 @@ const NETWORK_FIRST_PATHS = new Set([
   '/RotinaOS/css/new-themes.css',
   '/RotinaOS/css/theme-polish.css',
   '/RotinaOS/css/pink-ball.css',
+  '/RotinaOS/css/pollyana.css',
   '/RotinaOS/css/ui-polish-v24.css',
   '/RotinaOS/css/optional-date-fix.css',
   '/RotinaOS/css/category-rename.css',
@@ -103,7 +105,7 @@ async function serveGoogleAuthEntry(request) {
   const html = await response.text();
   const transformed = html.replace(
     '<script type="module" src="js/app.js"></script>',
-    `<link rel="stylesheet" href="css/mobile-fixes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-view.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-history.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-v3.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/new-themes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/theme-polish.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/pink-ball.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/ui-polish-v24.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/optional-date-fix.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/category-rename.css?v=${ASSET_VERSION}">\n    <script src="js/theme-enhancements.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/filter-persistence.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/ui-fixes.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/main-swipe.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/mobile-back-nav.js?v=${ASSET_VERSION}" defer></script>\n    <script type="module" src="js/optional-date-fix.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/bootstrap.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/category-rename.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/calendar-view-v3.js?v=${ASSET_VERSION}"></script>`
+    `<link rel="stylesheet" href="css/mobile-fixes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-view.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-history.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-v3.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/new-themes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/theme-polish.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/pink-ball.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/pollyana.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/ui-polish-v24.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/optional-date-fix.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/category-rename.css?v=${ASSET_VERSION}">\n    <script src="js/theme-enhancements.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/filter-persistence.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/ui-fixes.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/main-swipe.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/mobile-back-nav.js?v=${ASSET_VERSION}" defer></script>\n    <script type="module" src="js/optional-date-fix.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/bootstrap.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/category-rename.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/calendar-view-v3.js?v=${ASSET_VERSION}"></script>`
   );
 
   const headers = new Headers(response.headers);
