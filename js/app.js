@@ -18,6 +18,14 @@ const STYLE_ASSETS = [
   'css/activity-tracking.css'
 ];
 
+const CLASSIC_SCRIPTS = [
+  'js/theme-enhancements.js',
+  'js/filter-persistence.js',
+  'js/ui-fixes.js',
+  'js/main-swipe.js',
+  'js/mobile-back-nav.js'
+];
+
 function ensureStyles() {
   STYLE_ASSETS.forEach(href => {
     if (document.querySelector(`link[data-rotinaos-style="${href}"]`)) return;
@@ -29,14 +37,29 @@ function ensureStyles() {
   });
 }
 
+function loadClassicScript(src) {
+  const existing = document.querySelector(`script[data-rotinaos-script="${src}"]`);
+  if (existing) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = false;
+    script.dataset.rotinaosScript = src;
+    script.addEventListener('load', resolve, { once: true });
+    script.addEventListener('error', () => reject(new Error(`Falha ao carregar ${src}`)), { once: true });
+    document.head.appendChild(script);
+  });
+}
+
 ensureStyles();
 
-// Scripts sem dependência de autenticação.
-await import('./theme-enhancements.js');
-await import('./filter-persistence.js');
-await import('./ui-fixes.js');
-await import('./main-swipe.js');
-await import('./mobile-back-nav.js');
+// Estes arquivos nasceram como scripts clássicos; mantemos essa semântica para
+// não alterar globals/strict mode ao unificar a primeira visita com o PWA.
+for (const src of CLASSIC_SCRIPTS) {
+  await loadClassicScript(src);
+}
+
 await import('./optional-date-fix.js');
 
 // Bootstrap cria Firebase/Auth e decide entre conta real e demonstração.
