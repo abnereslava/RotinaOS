@@ -143,25 +143,20 @@ function getTodayString() {
 
 function buildDemoActivities() {
   const today = getTodayString();
-  const todayDate = new Date(`${today}T12:00:00`);
-  const weekday = todayDate.getDay();
-  const monthDay = todayDate.getDate();
-  const createdAt = Date.now() - (10 * 24 * 60 * 60 * 1000);
+  const createdAt = Date.now();
 
   return [
     { id: 'demo1', title: '🚀 Explorar o To-doOS', category: 'Tutorial', priority: '3', recurrence: 'single', status: 'pending', createdAt },
-    { id: 'demo2', title: '🍔 Almoçar com a equipe', category: 'Social', priority: '2', recurrence: 'daily', scheduledTime: '12:00', status: 'pending', createdAt },
-    { id: 'demo3', title: '💻 Finalizar Projeto X', category: 'Trabalho', priority: '3', recurrence: 'single', deadline: today, status: 'pending', createdAt },
+    { id: 'demo2', title: '🍔 Almoçar com a equipe', category: 'Social', priority: '2', recurrence: 'daily', scheduledDate: today, scheduledTime: '12:00', status: 'pending', createdAt },
+    { id: 'demo3', title: '💻 Finalizar Projeto X', category: 'Trabalho', priority: '3', recurrence: 'single', deadline: '2026-05-15', status: 'pending', createdAt },
     { id: 'demo4', title: '🎸 Praticar Violão', category: 'Hobby', priority: '1', recurrence: 'weekly', fixedDays: [1, 3, 5], status: 'pending', createdAt },
-    { id: 'demo5', title: '🧹 Limpar a sala', category: 'Casa', priority: '1', recurrence: 'weekly', fixedDays: [6], status: 'pending', createdAt },
+    { id: 'demo5', title: '🧹 Limpar a sala', category: 'Casa', priority: '1', recurrence: 'weekly', fixedDays: [6], status: 'completed', createdAt },
     { id: 'demo6', title: '📚 Ler 20 páginas', category: 'Estudos', priority: '2', recurrence: 'single', status: 'pending', createdAt },
     { id: 'demo7', title: '🛒 Fazer compras', category: 'Casa', priority: '1', recurrence: 'single', status: 'pending', createdAt },
     { id: 'demo8', title: '🎧 Podcast Semanal', category: 'Hobby', priority: '2', recurrence: 'weekly', fixedDays: [2, 4], status: 'pending', createdAt },
-    { id: 'demo9', title: '☕ Café da manhã', category: 'Rotina', priority: '1', recurrence: 'daily', scheduledTime: '08:30', status: 'pending', createdAt },
+    { id: 'demo9', title: '☕ Café da manhã', category: 'Rotina', priority: '1', recurrence: 'daily', scheduledDate: today, scheduledTime: '08:30', status: 'pending', createdAt },
     { id: 'demo10', title: '📞 Reunião de Alinhamento', category: 'Trabalho', priority: '3', recurrence: 'single', scheduledDate: today, scheduledTime: '10:00', status: 'pending', createdAt },
-    { id: 'demo11', title: '🏋️ Treino na Academia', category: 'Saúde', priority: '2', recurrence: 'daily', scheduledTime: '18:00', status: 'pending', createdAt },
-    { id: 'demo12', title: '🗓️ Revisão mensal', category: 'Planejamento', priority: '2', recurrence: 'monthly', monthlyDays: String(monthDay), status: 'pending', createdAt },
-    { id: 'demo13', title: '✅ Exemplo concluído', category: 'Tutorial', priority: '1', recurrence: 'weekly', fixedDays: [weekday], status: 'completed', completionDate: today, createdAt }
+    { id: 'demo11', title: '🏋️ Treino na Academia', category: 'Saúde', priority: '2', recurrence: 'daily', scheduledDate: today, scheduledTime: '18:00', status: 'pending', createdAt }
   ];
 }
 
