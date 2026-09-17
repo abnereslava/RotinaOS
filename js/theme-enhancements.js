@@ -6,7 +6,8 @@
     ['sage', 'Sage / Graphite'],
     ['japanese', 'Japanese Stationery'],
     ['xuan', 'Xuan Paper / Cinnabar'],
-    ['pinkball', 'Pink Ball']
+    ['pinkball', 'Pink Ball'],
+    ['pollyana', 'Pollyana']
   ];
 
   themes.forEach(([value, label]) => {
