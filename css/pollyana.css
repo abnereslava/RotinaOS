@@ -1,0 +1,392 @@
+/* ====================================================
+   ROTINA OS — POLLYANA
+   Tema inspirado na atmosfera visual de EarthBound:
+   azul profundo, creme quente, vermelho queimado e dourado suave.
+   Mantém a linguagem comfy do Pink Ball: listras, cápsulas e cantos macios.
+==================================================== */
+
+body[data-theme="pollyana"] {
+  color-scheme: light;
+
+  --bg-color:         #486783;
+  --bg-surface:       #f2ead7;
+  --bg-surface-2:     #d8e0df;
+  --bg-surface-hover: #c9d4d6;
+
+  --text-primary:     #26384a;
+  --text-secondary:   #66717a;
+  --text-accent:      #874d4d;
+
+  --primary-color:    #557a9c;
+  --primary-hover:    #426786;
+  --primary-light:    rgba(85,122,156,.16);
+
+  --accent-color:     #c5a45d;
+  --accent-light:     rgba(197,164,93,.20);
+
+  --success-color:    #68866f;
+  --success-light:    rgba(104,134,111,.16);
+  --warning-color:    #b47c4f;
+  --danger-color:     #a85555;
+
+  --border-color:     #b7c2c5;
+  --border-bright:    #879aa6;
+
+  --shadow-hard:      0 10px 28px rgba(31,47,62,.24);
+  --shadow-card:      0 5px 16px rgba(31,47,62,.15);
+  --shadow-inset:     inset 0 1px 3px rgba(31,47,62,.09);
+
+  font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+/* Fundo listrado discreto, lembrando interfaces retrô sem ficar chamativo. */
+body[data-theme="pollyana"],
+body[data-theme="pollyana"] .auth-wrapper,
+body[data-theme="pollyana"] .full-view-columns {
+  background-color: var(--bg-color) !important;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255,255,255,.035) 0 14px,
+    rgba(24,48,70,.035) 14px 28px
+  ) !important;
+}
+
+/* Cabeçalhos com azul mais fechado e uma listra muito suave. */
+body[data-theme="pollyana"] #main-header,
+body[data-theme="pollyana"] .calendar-header,
+body[data-theme="pollyana"] .modal-header-slant,
+body[data-theme="pollyana"] .category-column-header,
+body[data-theme="pollyana"] .full-view-footer-mobile {
+  clip-path: none !important;
+  background-color: #36556f !important;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255,255,255,.035) 0 10px,
+    rgba(16,38,58,.045) 10px 20px
+  ) !important;
+  border-color: rgba(231,224,203,.24);
+  box-shadow: none;
+}
+
+body[data-theme="pollyana"] #main-header {
+  border-bottom: 2px solid rgba(197,164,93,.56);
+  border-radius: 0 0 18px 18px;
+  box-shadow: 0 7px 20px rgba(28,44,59,.18);
+}
+
+/* Pequeno detalhe dourado; mantém o elemento existente do header. */
+body[data-theme="pollyana"] .header-accent {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  flex: 0 0 20px;
+  clip-path: polygon(50% 0%, 61% 34%, 98% 35%, 68% 56%, 79% 92%, 50% 70%, 21% 92%, 32% 56%, 2% 35%, 39% 34%) !important;
+  background: var(--accent-color);
+  box-shadow: none;
+}
+
+body[data-theme="pollyana"] #current-date-title,
+body[data-theme="pollyana"] .calendar-header h2,
+body[data-theme="pollyana"] .modal-header-slant h2,
+body[data-theme="pollyana"] .category-column-header h3,
+body[data-theme="pollyana"] #calendar-month-title,
+body[data-theme="pollyana"] #calendar-selected-date,
+body[data-theme="pollyana"] .full-view-header-content h2 {
+  font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  letter-spacing: .015em;
+}
+
+body[data-theme="pollyana"] #main-header #current-date-title,
+body[data-theme="pollyana"] .calendar-header h2,
+body[data-theme="pollyana"] .modal-header-slant h2,
+body[data-theme="pollyana"] .category-column-header h3,
+body[data-theme="pollyana"] .full-view-header-content h2 {
+  color: #f3ead6;
+  text-shadow: 0 1px 2px rgba(18,36,52,.22);
+}
+
+body[data-theme="pollyana"] #current-date-title i,
+body[data-theme="pollyana"] .calendar-header h2 i,
+body[data-theme="pollyana"] .modal-header-slant h2 i,
+body[data-theme="pollyana"] .full-view-header-content h2 i {
+  color: var(--accent-color);
+}
+
+/* Botões: cápsulas arredondadas, porém menos doces que Pink Ball. */
+body[data-theme="pollyana"] .btn-primary,
+body[data-theme="pollyana"] .btn-secondary,
+body[data-theme="pollyana"] .btn-mode-toggle,
+body[data-theme="pollyana"] .btn-toggle-filter,
+body[data-theme="pollyana"] .calendar-filter-button,
+body[data-theme="pollyana"] .calendar-picker-month,
+body[data-theme="pollyana"] .detail-link-btn {
+  clip-path: none !important;
+  border-radius: 999px;
+  text-shadow: none;
+}
+
+body[data-theme="pollyana"] .btn-primary {
+  background: var(--primary-color);
+  border: 2px solid #3f6380;
+  color: #f8f1df;
+  box-shadow: 0 4px 0 rgba(31,62,84,.18), 0 7px 16px rgba(31,47,62,.10);
+}
+
+body[data-theme="pollyana"] .btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+body[data-theme="pollyana"] .btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(31,62,84,.16);
+}
+
+body[data-theme="pollyana"] .btn-secondary,
+body[data-theme="pollyana"] .btn-toggle-filter,
+body[data-theme="pollyana"] .calendar-filter-button {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-bright);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+body[data-theme="pollyana"] .btn-toggle-filter.active,
+body[data-theme="pollyana"] .calendar-filter-button.active,
+body[data-theme="pollyana"] .filter-active {
+  color: var(--danger-color) !important;
+  border-color: var(--danger-color) !important;
+  background: color-mix(in srgb, var(--danger-color) 7%, var(--bg-surface));
+}
+
+body[data-theme="pollyana"] .btn-icon {
+  border-radius: 50%;
+  color: inherit;
+}
+
+body[data-theme="pollyana"] .btn-icon:hover {
+  color: var(--accent-color) !important;
+  background: rgba(197,164,93,.13);
+}
+
+/* Inputs e selects com creme quente e contornos azulados. */
+body[data-theme="pollyana"] input,
+body[data-theme="pollyana"] select,
+body[data-theme="pollyana"] textarea,
+body[data-theme="pollyana"] #full-view-search,
+body[data-theme="pollyana"] #full-view-sort {
+  clip-path: none !important;
+  border-radius: 14px !important;
+  border: 1px solid var(--border-color);
+  background: #f7f0df;
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+body[data-theme="pollyana"] input:focus,
+body[data-theme="pollyana"] select:focus,
+body[data-theme="pollyana"] textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* Cards e painéis claros sobre o fundo azul. */
+body[data-theme="pollyana"] .modal-content,
+body[data-theme="pollyana"] .auth-card,
+body[data-theme="pollyana"] .calendar-card,
+body[data-theme="pollyana"] .calendar-day-details,
+body[data-theme="pollyana"] .calendar-control-card,
+body[data-theme="pollyana"] .category-column,
+body[data-theme="pollyana"] .form-section,
+body[data-theme="pollyana"] .checklist-editor {
+  clip-path: none !important;
+  border-radius: 18px;
+  border-color: var(--border-color);
+  background-color: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+body[data-theme="pollyana"] .category-column {
+  overflow: hidden;
+  border: 2px solid #aebbc0;
+  border-top-color: var(--accent-color);
+}
+
+body[data-theme="pollyana"] .category-column-header {
+  border-radius: 0 !important;
+  border-bottom: 1px solid rgba(231,224,203,.18);
+}
+
+body[data-theme="pollyana"] .cat-count {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--accent-color);
+  color: #4f4024;
+  border: 1px solid #aa8744;
+}
+
+body[data-theme="pollyana"] .activity-block,
+body[data-theme="pollyana"] .pending-item,
+body[data-theme="pollyana"] .full-view-columns .pending-item {
+  clip-path: none !important;
+  border-radius: 14px;
+  background-color: #f5eddb;
+  box-shadow: 0 3px 10px rgba(31,47,62,.10);
+  overflow: hidden;
+}
+
+body[data-theme="pollyana"] .pending-item {
+  border-color: #c7cecb;
+  border-left-color: var(--primary-color);
+}
+
+body[data-theme="pollyana"] .pending-item:hover,
+body[data-theme="pollyana"] .activity-block:hover {
+  box-shadow: 0 6px 16px rgba(31,47,62,.15);
+}
+
+/* Agenda: linhas muito discretas, com vermelho queimado só como detalhe. */
+body[data-theme="pollyana"] #agenda-grid {
+  border-left-color: #aebbc0;
+  background-color: rgba(242,234,215,.92);
+  background-image:
+    linear-gradient(to bottom, rgba(85,122,156,.10) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(197,164,93,.045) 1px, transparent 1px);
+  background-size: 100% 120px, 100% 30px;
+}
+
+body[data-theme="pollyana"] #current-time-indicator {
+  background: var(--danger-color);
+  box-shadow: 0 0 8px rgba(168,85,85,.18);
+  clip-path: none !important;
+}
+
+body[data-theme="pollyana"] #current-time-indicator::before {
+  background: var(--accent-color);
+  border: 2px solid var(--danger-color);
+  border-radius: 50%;
+  clip-path: none !important;
+}
+
+body[data-theme="pollyana"] .calendar-day {
+  border-radius: 12px;
+}
+
+body[data-theme="pollyana"] .calendar-day:hover {
+  background: color-mix(in srgb, var(--primary-color) 8%, var(--bg-surface));
+}
+
+body[data-theme="pollyana"] .calendar-kicker,
+body[data-theme="pollyana"] .calendar-detail-kicker,
+body[data-theme="pollyana"] .settings-label {
+  color: var(--danger-color);
+}
+
+body[data-theme="pollyana"] .full-view-columns::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 999px;
+}
+
+body[data-theme="pollyana"] .full-view-columns::-webkit-scrollbar-track {
+  background: rgba(242,234,215,.30);
+}
+
+body[data-theme="pollyana"] .activity-block.priority-1 { border-color: var(--success-color); border-left-color: var(--success-color); }
+body[data-theme="pollyana"] .activity-block.priority-2 { border-color: var(--accent-color); border-left-color: var(--accent-color); }
+body[data-theme="pollyana"] .activity-block.priority-3 { border-color: var(--danger-color); border-left-color: var(--danger-color); }
+
+/* Modo escuro automático: azul-noturno, creme menos luminoso, acentos abafados. */
+@media (prefers-color-scheme: dark) {
+  body[data-theme="pollyana"] {
+    color-scheme: dark;
+
+    --bg-color:         #1f3242;
+    --bg-surface:       #2c4152;
+    --bg-surface-2:     #365064;
+    --bg-surface-hover: #415d71;
+
+    --text-primary:     #ede6d4;
+    --text-secondary:   #b9bdba;
+    --text-accent:      #d1908b;
+
+    --primary-color:    #7396b3;
+    --primary-hover:    #86a6c0;
+    --primary-light:    rgba(115,150,179,.18);
+
+    --accent-color:     #c9aa68;
+    --accent-light:     rgba(201,170,104,.18);
+
+    --success-color:    #83a18a;
+    --success-light:    rgba(131,161,138,.18);
+    --warning-color:    #c18d63;
+    --danger-color:     #c97d79;
+
+    --border-color:     #526a79;
+    --border-bright:    #6d8593;
+
+    --shadow-hard:      0 12px 30px rgba(0,0,0,.34);
+    --shadow-card:      0 5px 16px rgba(0,0,0,.24);
+    --shadow-inset:     inset 0 1px 3px rgba(0,0,0,.24);
+  }
+
+  body[data-theme="pollyana"],
+  body[data-theme="pollyana"] .auth-wrapper,
+  body[data-theme="pollyana"] .full-view-columns {
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgba(255,255,255,.018) 0 14px,
+      rgba(5,18,28,.045) 14px 28px
+    ) !important;
+  }
+
+  body[data-theme="pollyana"] #main-header,
+  body[data-theme="pollyana"] .calendar-header,
+  body[data-theme="pollyana"] .modal-header-slant,
+  body[data-theme="pollyana"] .category-column-header,
+  body[data-theme="pollyana"] .full-view-footer-mobile {
+    background-color: #253d4f !important;
+  }
+
+  body[data-theme="pollyana"] input,
+  body[data-theme="pollyana"] select,
+  body[data-theme="pollyana"] textarea,
+  body[data-theme="pollyana"] #full-view-search,
+  body[data-theme="pollyana"] #full-view-sort {
+    background: #344b5d;
+  }
+
+  body[data-theme="pollyana"] .modal-content,
+  body[data-theme="pollyana"] .auth-card,
+  body[data-theme="pollyana"] .calendar-card,
+  body[data-theme="pollyana"] .calendar-day-details,
+  body[data-theme="pollyana"] .calendar-control-card,
+  body[data-theme="pollyana"] .category-column,
+  body[data-theme="pollyana"] .form-section,
+  body[data-theme="pollyana"] .checklist-editor,
+  body[data-theme="pollyana"] .activity-block,
+  body[data-theme="pollyana"] .pending-item,
+  body[data-theme="pollyana"] .full-view-columns .pending-item {
+    background-color: var(--bg-surface);
+  }
+
+  body[data-theme="pollyana"] #agenda-grid {
+    background-color: rgba(44,65,82,.92);
+  }
+
+  body[data-theme="pollyana"] .cat-count {
+    color: #332a1b;
+  }
+}
+
+@media (max-width: 700px) {
+  body[data-theme="pollyana"] .modal-content,
+  body[data-theme="pollyana"] .calendar-control-card {
+    border-radius: 18px 18px 0 0;
+  }
+}
