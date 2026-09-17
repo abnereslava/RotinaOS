@@ -37,6 +37,13 @@ body[data-theme="pollyana"] .full-view-columns {
   background-image: none !important;
 }
 
+/* A régua de horários precisa acompanhar a altura das 24h, não apenas a viewport.
+   Assim o quadriculado só reaparece depois do fim real da agenda. */
+body[data-theme="pollyana"] #time-grid-labels {
+  min-height: calc(24 * var(--grid-hour-height));
+  background: var(--bg-color) !important;
+}
+
 /* ---------- PLANETA NO HEADER ---------- */
 body[data-theme="pollyana"] .header-accent {
   position: relative;
@@ -134,6 +141,10 @@ body[data-theme="pollyana"] .calendar-picker-month.is-selected {
   body[data-theme="pollyana"] .full-view-columns {
     background-color: var(--bg-color) !important;
     background-image: none !important;
+  }
+
+  body[data-theme="pollyana"] #time-grid-labels {
+    background: var(--bg-color) !important;
   }
 
   body[data-theme="pollyana"] .btn-primary,
