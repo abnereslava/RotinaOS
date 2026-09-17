@@ -199,8 +199,8 @@ async function handleGoogleLogin() {
 }
 
 async function handleDemoMode() {
-  // Quando o app legado já foi carregado, deixamos o segundo clique seguir para
-  // o listener original de modo demonstração registrado em app.js.
+  // Quando o núcleo do app já foi carregado, deixamos o segundo clique seguir
+  // para o listener original de modo demonstração registrado no app-core.js.
   if (appLoaded || demoBootstrapping) return;
 
   demoBootstrapping = true;
@@ -211,9 +211,6 @@ async function handleDemoMode() {
   try {
     await loadOriginalApplication({ demo: true });
 
-    // O app legado registra um listener próprio no mesmo botão. Esperamos o
-    // callback inicial de autenticação dele terminar e então reutilizamos esse
-    // listener para ativar o modo demo já existente.
     await new Promise(resolve => window.setTimeout(resolve, 120));
     setDemoButtonBusy(false);
     document.getElementById('btn-demo-mode')?.click();
@@ -258,14 +255,12 @@ async function loadOriginalApplication({ demo = false } = {}) {
   const authContainer = document.getElementById("auth-container");
   if (authContainer) authContainer.classList.add("hidden");
 
-  // O histórico persistido pertence apenas ao usuário autenticado. A demo usa
-  // dados locais e não executa manutenção nem gravações no Firestore.
   if (!demo) {
     const occurrenceModule = await import("./occurrence-history.js");
     await occurrenceModule.occurrenceHistoryReady;
   }
 
-  await import("./app.js");
+  await import("./app-core.js");
 }
 
 onAuthStateChanged(auth, async (user) => {
