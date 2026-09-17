@@ -1,17 +1,23 @@
 rules_version = '2';
 
+// TEMPLATE PÚBLICO.
+// Antes de usar em um projeto Firebase, substitua OWNER_EMAIL pelo e-mail
+// verificado da conta proprietária. Não publique dados pessoais aqui.
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
-      return request.auth != null;
+    function isOwner() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == 'OWNER_EMAIL'
+        && request.auth.token.firebase.sign_in_provider == 'google.com';
     }
 
     function ownsExistingDocument() {
-      return signedIn() && resource.data.userId == request.auth.uid;
+      return isOwner() && resource.data.userId == request.auth.uid;
     }
 
     function ownsIncomingDocument() {
-      return signedIn() && request.resource.data.userId == request.auth.uid;
+      return isOwner() && request.resource.data.userId == request.auth.uid;
     }
 
     match /activities/{activityId} {
