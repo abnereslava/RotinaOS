@@ -1,5 +1,5 @@
-const CACHE_NAME = 'todo-os-cache-v26';
-const ASSET_VERSION = '20260916-pollyana-hud';
+const CACHE_NAME = 'todo-os-cache-v27';
+const ASSET_VERSION = '20260916-pollyana-calendar-fixes';
 
 const versionedAsset = (path) => `${path}?v=${ASSET_VERSION}`;
 
