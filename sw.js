@@ -1,192 +1,138 @@
-const CACHE_NAME = 'todo-os-cache-v34';
-const ASSET_VERSION = '20260917-demo-offline-4';
+const CACHE_NAME = 'todo-os-cache-v35';
 
-const versionedAsset = (path) => `${path}?v=${ASSET_VERSION}`;
-
-const urlsToCache = [
+const LOCAL_ASSETS = [
   './',
   './index.html',
-  './css/style.css',
-  versionedAsset('./css/mobile-fixes.css'),
-  versionedAsset('./css/calendar-view.css'),
-  versionedAsset('./css/calendar-history.css'),
-  versionedAsset('./css/calendar-v3.css'),
-  versionedAsset('./css/theme-polish.css'),
-  versionedAsset('./css/pink-ball.css'),
-  versionedAsset('./css/pollyana.css'),
-  versionedAsset('./css/pollyana-hud.css'),
-  versionedAsset('./css/pollyana-v28.css'),
-  versionedAsset('./css/ui-polish-v24.css'),
-  versionedAsset('./css/optional-date-fix.css'),
-  versionedAsset('./css/category-rename.css'),
-  versionedAsset('./css/activity-tracking.css'),
-  versionedAsset('./js/firebase-init.js'),
-  versionedAsset('./js/theme-enhancements.js'),
-  versionedAsset('./js/filter-persistence.js'),
-  versionedAsset('./js/optional-date-fix.js'),
-  versionedAsset('./js/category-rename.js'),
-  versionedAsset('./js/activity-tracking.js'),
-  versionedAsset('./js/mobile-back-nav.js'),
-  versionedAsset('./js/bootstrap.js'),
-  versionedAsset('./js/ui-fixes.js'),
-  versionedAsset('./js/main-swipe.js'),
-  versionedAsset('./js/calendar-view-v3.js'),
-  versionedAsset('./js/demo-calendar-bridge.js'),
-  versionedAsset('./js/occurrence-history.js'),
-  versionedAsset('./js/app.js'),
-  versionedAsset('./js/app-core.js'),
-  // Imports dinâmicos/relativos usam estas URLs sem query string.
-  './js/firebase-init.js',
-  './js/occurrence-history.js',
-  './js/app.js',
-  './js/app-core.js',
   './manifest.json',
+  './favicon.png',
   './icon-192.png',
   './icon-512.png',
-  './favicon.png'
+
+  './css/style.css',
+  './css/mobile-fixes.css',
+  './css/calendar-view.css',
+  './css/calendar-history.css',
+  './css/calendar-v3.css',
+  './css/theme-polish.css',
+  './css/pink-ball.css',
+  './css/pollyana.css',
+  './css/pollyana-hud.css',
+  './css/pollyana-v28.css',
+  './css/ui-polish-v24.css',
+  './css/optional-date-fix.css',
+  './css/category-rename.css',
+  './css/activity-tracking.css',
+
+  './js/app.js',
+  './js/app-core.js',
+  './js/core-loader.js',
+  './js/firebase-init.js',
+  './js/bootstrap.js',
+  './js/theme-enhancements.js',
+  './js/filter-persistence.js',
+  './js/ui-fixes.js',
+  './js/main-swipe.js',
+  './js/mobile-back-nav.js',
+  './js/optional-date-fix.js',
+  './js/category-rename.js',
+  './js/activity-tracking.js',
+  './js/calendar-view-v3.js',
+  './js/demo-calendar-bridge.js',
+  './js/occurrence-history.js'
 ];
 
-const NETWORK_FIRST_PATHS = new Set([
-  '/RotinaOS/css/mobile-fixes.css',
-  '/RotinaOS/css/calendar-view.css',
-  '/RotinaOS/css/calendar-history.css',
-  '/RotinaOS/css/calendar-v3.css',
-  '/RotinaOS/css/theme-polish.css',
-  '/RotinaOS/css/pink-ball.css',
-  '/RotinaOS/css/pollyana.css',
-  '/RotinaOS/css/pollyana-hud.css',
-  '/RotinaOS/css/pollyana-v28.css',
-  '/RotinaOS/css/ui-polish-v24.css',
-  '/RotinaOS/css/optional-date-fix.css',
-  '/RotinaOS/css/category-rename.css',
-  '/RotinaOS/css/activity-tracking.css',
-  '/RotinaOS/js/firebase-init.js',
-  '/RotinaOS/js/theme-enhancements.js',
-  '/RotinaOS/js/filter-persistence.js',
-  '/RotinaOS/js/optional-date-fix.js',
-  '/RotinaOS/js/category-rename.js',
-  '/RotinaOS/js/activity-tracking.js',
-  '/RotinaOS/js/mobile-back-nav.js',
-  '/RotinaOS/js/bootstrap.js',
-  '/RotinaOS/js/ui-fixes.js',
-  '/RotinaOS/js/main-swipe.js',
-  '/RotinaOS/js/calendar-view-v3.js',
-  '/RotinaOS/js/demo-calendar-bridge.js',
-  '/RotinaOS/js/occurrence-history.js',
-  '/RotinaOS/js/app.js',
-  '/RotinaOS/js/app-core.js'
-]);
+// Dependências críticas para abrir o app já visitado quando não houver internet.
+// São armazenadas de forma best-effort para não impedir a instalação do SW caso
+// algum CDN esteja temporariamente indisponível.
+const REMOTE_CRITICAL = [
+  'https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js',
+  'https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js',
+  'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js'
+];
+
+const NETWORK_FIRST_PATHS = new Set(
+  LOCAL_ASSETS
+    .filter(path => path.startsWith('./css/') || path.startsWith('./js/'))
+    .map(path => new URL(path, self.registration.scope).pathname)
+);
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.addAll(LOCAL_ASSETS);
+    await Promise.allSettled(
+      REMOTE_CRITICAL.map(url => cache.add(url))
+    );
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames =>
-      Promise.all(
-        cacheNames
-          .filter(name => name !== CACHE_NAME)
-          .map(name => caches.delete(name))
-      )
-    ).then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const cacheNames = await caches.keys();
+    await Promise.all(
+      cacheNames
+        .filter(name => name !== CACHE_NAME)
+        .map(name => caches.delete(name))
+    );
+    await self.clients.claim();
+  })());
 });
 
-async function getBaseNavigationResponse(request) {
+async function networkFirst(request, fallback = null) {
   try {
-    const networkResponse = await fetch(request, { cache: 'no-store' });
-    if (networkResponse && networkResponse.ok) {
+    const response = await fetch(request, { cache: 'no-store' });
+    if (response && response.ok) {
       const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone()).catch(() => {});
-      return networkResponse;
+      cache.put(request, response.clone()).catch(() => {});
+      return response;
     }
-  } catch (error) {
-    // Se estiver offline, cai para o cache abaixo.
+  } catch (_) {
+    // Offline: tenta cache abaixo.
   }
 
-  return (await caches.match(request)) || (await caches.match('./index.html'));
-}
-
-async function serveGoogleAuthEntry(request) {
-  const response = await getBaseNavigationResponse(request);
-  if (!response) return new Response('Offline', { status: 503 });
-
-  const contentType = response.headers.get('content-type') || '';
-  if (!contentType.includes('text/html')) return response;
-
-  const html = await response.text();
-  const transformed = html.replace(
-    '<script type="module" src="js/app.js"></script>',
-    `<link rel="stylesheet" href="css/mobile-fixes.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-view.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-history.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/calendar-v3.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/theme-polish.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/pink-ball.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/pollyana.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/pollyana-hud.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/pollyana-v28.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/ui-polish-v24.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/optional-date-fix.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/category-rename.css?v=${ASSET_VERSION}">\n    <link rel="stylesheet" href="css/activity-tracking.css?v=${ASSET_VERSION}">\n    <script src="js/theme-enhancements.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/filter-persistence.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/ui-fixes.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/main-swipe.js?v=${ASSET_VERSION}" defer></script>\n    <script src="js/mobile-back-nav.js?v=${ASSET_VERSION}" defer></script>\n    <script type="module" src="js/optional-date-fix.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/bootstrap.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/category-rename.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/activity-tracking.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/calendar-view-v3.js?v=${ASSET_VERSION}"></script>\n    <script type="module" src="js/demo-calendar-bridge.js?v=${ASSET_VERSION}"></script>`
-  );
-
-  const headers = new Headers(response.headers);
-  headers.set('content-type', 'text/html; charset=utf-8');
-  headers.set('cache-control', 'no-store, max-age=0');
-
-  return new Response(transformed, {
-    status: response.status,
-    statusText: response.statusText,
-    headers
-  });
-}
-
-async function networkFirst(request) {
-  try {
-    const networkResponse = await fetch(request, { cache: 'no-store' });
-    if (networkResponse && networkResponse.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone()).catch(() => {});
-      return networkResponse;
-    }
-  } catch (error) {
-    // Offline: usa a cópia armazenada abaixo.
-  }
-
-  return caches.match(request);
+  return (await caches.match(request)) || (fallback ? await caches.match(fallback) : null);
 }
 
 self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+
   if (event.request.mode === 'navigate') {
-    event.respondWith(serveGoogleAuthEntry(event.request));
-    return;
-  }
-
-  const requestUrl = new URL(event.request.url);
-  const isLocalVersionedAsset =
-    requestUrl.origin === self.location.origin &&
-    NETWORK_FIRST_PATHS.has(requestUrl.pathname);
-
-  if (isLocalVersionedAsset) {
     event.respondWith(
-      networkFirst(event.request).then(response => response || new Response('Offline', { status: 503 }))
+      networkFirst(event.request, './index.html')
+        .then(response => response || new Response('Offline', { status: 503 }))
     );
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      if (response) return response;
+  const requestUrl = new URL(event.request.url);
+  const isLocalCodeAsset =
+    requestUrl.origin === self.location.origin &&
+    NETWORK_FIRST_PATHS.has(requestUrl.pathname);
 
-      return fetch(event.request).then(networkResponse => {
-        if (!networkResponse || !networkResponse.ok || event.request.method !== 'GET') {
-          return networkResponse;
-        }
+  if (isLocalCodeAsset) {
+    event.respondWith(
+      networkFirst(event.request)
+        .then(response => response || new Response('Offline', { status: 503 }))
+    );
+    return;
+  }
 
-        const copy = networkResponse.clone();
-        caches.open(CACHE_NAME)
-          .then(cache => cache.put(event.request, copy))
-          .catch(() => {});
+  event.respondWith((async () => {
+    const cached = await caches.match(event.request);
+    if (cached) return cached;
 
-        return networkResponse;
-      });
-    })
-  );
+    try {
+      const response = await fetch(event.request);
+      if (response && (response.ok || response.type === 'opaque')) {
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(event.request, response.clone()).catch(() => {});
+      }
+      return response;
+    } catch (_) {
+      return new Response('Offline', { status: 503 });
+    }
+  })());
 });
 
 self.addEventListener('notificationclick', event => {
