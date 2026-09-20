@@ -27,6 +27,58 @@ function patchCoreSource(source) {
     'data opcional na edição'
   );
 
+  // Atividade única pendente que ficou para trás volta ao Banco sem carregar
+  // o agendamento antigo para o dia seguinte.
+  patched = replaceRequired(
+    patched,
+    "promises.push(safeUpdate(a.id, { scheduledDate: todayString }));",
+    "promises.push(safeUpdate(a.id, { scheduledDate: null, scheduledTime: null, duration: null }));",
+    'atividade única vencida volta ao banco'
+  );
+
+  // No agendamento rápido pelo detalhe, término é opcional. Sem término,
+  // duration fica null e a agenda renderiza o card aberto/tracejado.
+  patched = replaceRequired(
+    patched,
+    '<label style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 4px;">Término</label>\\n                        <input type="time" id="detail-sched-end" value="${endVal}" style="padding: 8px; font-size: 0.95rem; border: 2px solid var(--border-color); background: var(--bg-color); color: var(--text-primary); width: 100%; font-family: \'Rajdhani\', sans-serif;" required>',
+    '<label style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 4px;">Término (Opcional)</label>\\n                        <input type="time" id="detail-sched-end" value="${endVal}" style="padding: 8px; font-size: 0.95rem; border: 2px solid var(--border-color); background: var(--bg-color); color: var(--text-primary); width: 100%; font-family: \'Rajdhani\', sans-serif;">',
+    'término opcional no detalhe'
+  );
+
+  patched = replaceRequired(
+    patched,
+    `    if (!startTime || !endTime) {
+      await showAlert('Por favor, preencha os horários de início e término.', 'Campos Obrigatórios');
+      return;
+    }
+
+    const [hStart, mStart] = startTime.split(':').map(Number);
+    const [hEnd, mEnd] = endTime.split(':').map(Number);
+    const duration = (hEnd * 60 + mEnd) - (hStart * 60 + mStart);
+
+    if (duration <= 0) {
+      await showAlert('O horário de término deve ser posterior ao horário de início.', 'Horário Inválido');
+      return;
+    }`,
+    `    if (!startTime) {
+      await showAlert('Por favor, preencha o horário de início.', 'Campo Obrigatório');
+      return;
+    }
+
+    let duration = null;
+    if (endTime) {
+      const [hStart, mStart] = startTime.split(':').map(Number);
+      const [hEnd, mEnd] = endTime.split(':').map(Number);
+      duration = (hEnd * 60 + mEnd) - (hStart * 60 + mStart);
+
+      if (duration <= 0) {
+        await showAlert('O horário de término deve ser posterior ao horário de início.', 'Horário Inválido');
+        return;
+      }
+    }`,
+    'salvar agendamento sem término'
+  );
+
   // Durante a demo o Auth real não pode esconder o app por não existir sessão Firebase.
   patched = replaceRequired(
     patched,
