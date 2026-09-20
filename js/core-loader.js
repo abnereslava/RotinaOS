@@ -40,8 +40,8 @@ function patchCoreSource(source) {
   // duration fica null e a agenda renderiza o card aberto/tracejado.
   patched = replaceRequired(
     patched,
-    '<label style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 4px;">Término</label>\\n                        <input type="time" id="detail-sched-end" value="${endVal}" style="padding: 8px; font-size: 0.95rem; border: 2px solid var(--border-color); background: var(--bg-color); color: var(--text-primary); width: 100%; font-family: \'Rajdhani\', sans-serif;" required>',
-    '<label style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 4px;">Término (Opcional)</label>\\n                        <input type="time" id="detail-sched-end" value="${endVal}" style="padding: 8px; font-size: 0.95rem; border: 2px solid var(--border-color); background: var(--bg-color); color: var(--text-primary); width: 100%; font-family: \'Rajdhani\', sans-serif;">',
+    '<label style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 4px;">Término</label>\n                        <input type="time" id="detail-sched-end" value="${endVal}" style="padding: 8px; font-size: 0.95rem; border: 2px solid var(--border-color); background: var(--bg-color); color: var(--text-primary); width: 100%; font-family: \'Rajdhani\', sans-serif;" required>',
+    '<label style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 4px;">Término (Opcional)</label>\n                        <input type="time" id="detail-sched-end" value="${endVal}" style="padding: 8px; font-size: 0.95rem; border: 2px solid var(--border-color); background: var(--bg-color); color: var(--text-primary); width: 100%; font-family: \'Rajdhani\', sans-serif;">',
     'término opcional no detalhe'
   );
 
