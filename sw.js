@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todo-os-cache-v38';
+const CACHE_NAME = 'todo-os-cache-v39';
 
 const LOCAL_ASSETS = [
   './',
