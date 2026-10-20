@@ -674,8 +674,20 @@ function renderAgenda() {
       // Exibe a tachinha caso o horário exista na base
       const isFixedTime = act.scheduledTime ? '<i class="fas fa-thumbtack" title="Horário Fixado" style="color: var(--accent-color); margin-right: 5px;"></i>' : '';
 
+      // Lucide "ListChecks": indica que a atividade possui etapas/checklist.
+      const checklistIcon = act.useChecklist && Array.isArray(act.checklist) && act.checklist.length > 0
+        ? `<svg class="agenda-checklist-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Possui etapas" role="img">
+            <path d="m3 5 2 2 4-4"></path>
+            <path d="m3 12 2 2 4-4"></path>
+            <path d="m3 19 2 2 4-4"></path>
+            <path d="M13 6h8"></path>
+            <path d="M13 12h8"></path>
+            <path d="M13 18h8"></path>
+          </svg>`
+        : '';
+
       block.innerHTML = `
-                <div class="block-title" title="${act.title}">${isFixedTime}${act.title}</div>
+                <div class="block-title" title="${act.title}">${isFixedTime}${checklistIcon}${act.title}</div>
                 <div class="block-time">${act.scheduledTime} ${duration ? `(${duration}m)` : '(aberto)'}</div>
                 <div class="block-meta" style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; font-family: 'Chakra Petch', monospace; font-size: 0.65rem; color: var(--text-primary);">
                     <span style="background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 2px;">${recurText}</span>
