@@ -1379,6 +1379,17 @@ body {
     border-color: var(--text-secondary);
 }
 
+/* Indicador Lucide de checklist/etapas na visualização principal */
+.agenda-checklist-icon {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    vertical-align: -2px;
+    margin-right: 5px;
+    color: var(--primary-color);
+    flex: 0 0 auto;
+}
+
 /* Cards Abertos (Sem horário de término) */
 .activity-block.open-card {
     /* 2px por minuto na grade: 90px ≈ 45 minutos visuais.
