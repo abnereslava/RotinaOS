@@ -221,10 +221,14 @@ async function performMutation(action) {
     if (action.type === 'track') return [{ id: action.activityId, data: { isTracked: action.tracked } }];
     if (action.type === 'remove') {
       const item = current.items.find(entry => entry.id === action.id);
-      return item?.activityId ? [{ id: item.activityId, data: { isTracked: false } }] : [];
+      return item?.activityId && sourceActivities.some(activity => activity.id === item.activityId)
+        ? [{ id: item.activityId, data: { isTracked: false } }] : [];
     }
     if (action.type === 'rollover' && next !== current) {
-      return current.items.filter(item => item.done && item.activityId)
+      // As regras de activities não permitem ler documentos inexistentes.
+      // Uma tarefa já removida do banco não deve impedir a renovação da semana.
+      return current.items.filter(item => item.done && item.activityId
+        && sourceActivities.some(activity => activity.id === item.activityId))
         .map(item => ({ id: item.activityId, data: { isTracked: false } }));
     }
     if (action.type === 'complete-task') return [{ id: action.activityId, complete: true }];

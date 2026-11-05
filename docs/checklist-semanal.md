@@ -17,18 +17,21 @@
 
 A conta real usa o documento `weekly_checklists/{uid}` no Firestore. A demonstração usa armazenamento local separado (`rotinaos.weekly.demo.v1`) e não escreve no Firebase.
 
-**Antes de publicar o aplicativo, publique a regra da nova coleção no projeto Firebase.** O arquivo `firestore.rules` continua sendo um template com `OWNER_EMAIL`; não deve substituir as regras reais sem preservar a configuração da conta proprietária. O bloco novo usa as mesmas funções de autorização já declaradas nesse template:
+**Antes de publicar o aplicativo, publique a regra da nova coleção no projeto Firebase.** O arquivo `firestore.rules` foi alinhado às regras atuais fornecidas pelo proprietário em 05/11/2026. Preserva as regras de `activities`, `activity_occurrences` e o bloqueio padrão, acrescentando este bloco:
 
 ```text
 match /weekly_checklists/{userId} {
   allow create: if ownsIncomingDocument() && userId == request.auth.uid;
-  allow read, delete: if ownsExistingDocument() && userId == request.auth.uid;
+  allow read: if signedIn() && userId == request.auth.uid;
+  allow delete: if ownsExistingDocument() && userId == request.auth.uid;
   allow update: if ownsExistingDocument() && ownsIncomingDocument()
     && userId == request.auth.uid;
 }
 ```
 
-Mantenha as permissões das coleções existentes e o bloqueio de acesso a outros usuários. As regras publicadas no projeto não foram consultadas ou alteradas nesta implementação.
+A leitura da checklist usa o UID no caminho, inclusive quando o documento ainda não existe. Isso permite a leitura inicial usada pela transação que cria a primeira semana. Criação e atualização também conferem o campo `userId`.
+
+As regras fornecidas pelo proprietário foram usadas como referência; a publicação no projeto Firebase não foi realizada nesta implementação.
 
 As gravações da checklist na conta real exigem conexão: usam transações para ler a semana atual antes de alterar itens, renovar a lista ou atualizar a tarefa vinculada. Sem conexão, documentos já armazenados pelo Firestore permanecem consultáveis e a interface informa que é necessário reconectar para editar. A demonstração pode editar localmente sem rede.
 

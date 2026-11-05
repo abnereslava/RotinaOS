@@ -55,7 +55,13 @@ async function setup({ demo = false, saved = null, tasks = [] } = {}) {
     runTransaction: async (_, callback) => {
       const writes = [];
       const result = await callback({
-        get: async ref => { assert.equal(writes.length, 0, 'leituras devem vir antes das escritas'); return snapshot(ref); },
+        get: async ref => {
+          assert.equal(writes.length, 0, 'leituras devem vir antes das escritas');
+          if (ref.path.startsWith('activities/') && !data.has(ref.path)) {
+            throw Object.assign(new Error('Atividade inexistente: leitura negada pelas regras.'), { code: 'permission-denied' });
+          }
+          return snapshot(ref);
+        },
         set: (ref, value) => writes.push(() => data.set(ref.path, structuredClone(value))),
         update: (ref, patch) => writes.push(() => data.set(ref.path, { ...data.get(ref.path), ...structuredClone(patch) }))
       });
@@ -99,6 +105,7 @@ async function setup({ demo = false, saved = null, tasks = [] } = {}) {
   await flush();
   return {
     window, document, context, data, errors, dialog, tasks,
+    removeTask: async id => { data.delete(`activities/${id}`); notify(); await flush(); },
     state: () => demo ? JSON.parse(storage.get('rotinaos.weekly.demo.v1')) : structuredClone(data.get('weekly_checklists/u')),
     rows: () => [...document.querySelectorAll('#weekly-items input[data-weekly-id]')],
     tick,
@@ -238,5 +245,21 @@ test('toque longo usa o ID de cada tarefa mesmo com títulos iguais e cancela no
   assert.equal(tasks[1].isTracked, true);
   pointer(card('a'), 'pointerdown'); pointer(card('a'), 'pointermove', 60); await app.tick(550);
   assert.deepEqual(app.state().items.map(item => item.activityId), ['b']);
+  assert.equal(app.errors.length, 0);
+});
+
+test('regras atuais: renovar ou remover não lê tarefas já excluídas do banco', async () => {
+  const tasks = ['a', 'b'].map(id => ({ id, title: id, status: 'pending', isTracked: true }));
+  const app = await setup({ tasks });
+  await app.check('task_a', true);
+  app.dialog.close('no'); await flush();
+  await app.removeTask('a');
+  await app.removeTask('b');
+  app.document.querySelector('[data-remove-weekly="task_b"]').click(); await flush();
+  assert.deepEqual(app.state().items.map(item => item.activityId), ['a']);
+  await app.changeDay('2026-11-09');
+  app.document.getElementById('weekly-new-week').click(); await flush();
+  assert.equal(app.state().items.length, 0);
+  assert.equal(app.state().weekStart, '2026-11-09');
   assert.equal(app.errors.length, 0);
 });
