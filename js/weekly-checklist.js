@@ -218,14 +218,12 @@ function render() {
     return `<tr class="${item.done ? 'is-done' : ''}">
       <td><input type="checkbox" data-weekly-id="${escapeHtml(item.id)}" ${item.done ? 'checked' : ''} ${disabled ? 'disabled' : ''}
         aria-label="Concluir ${escapeHtml(title)}"></td>
-      <td><div class="weekly-item-heading">
-        <span class="weekly-origin-icon" data-weekly-origin="${item.activityId ? 'bank' : 'manual'}" role="img" aria-label="${origin}" title="${origin}"><i class="fas ${item.activityId ? 'fa-database' : 'fa-pen'}" aria-hidden="true"></i></span>
-        <div class="weekly-item-copy">${titleMarkup}<small class="weekly-item-meta">
+      <td><div class="weekly-item-copy">${titleMarkup}<small class="weekly-item-meta">
           <span class="weekly-category" title="Categoria: ${escapeHtml(category)}"><i class="fas fa-folder" aria-hidden="true"></i> ${escapeHtml(category)}</span>
           ${priorityLabel ? `<span class="weekly-priority weekly-priority-${priority}" aria-label="Prioridade: ${priorityLabel}">${priorityLabel}</span>` : ''}
+          <span class="weekly-origin-icon" data-weekly-origin="${item.activityId ? 'bank' : 'manual'}" role="img" aria-label="${origin}" title="${origin}"><i class="fas ${item.activityId ? 'fa-database' : 'fa-pen'}" aria-hidden="true"></i></span>
           ${item.activityId && !source ? '<span>Tarefa removida do banco</span>' : ''}
-        </small></div>
-      </div></td>
+        </small></div></td>
       <td><button type="button" class="btn-icon" data-remove-weekly="${escapeHtml(item.id)}" ${disabled ? 'disabled' : ''}
         aria-label="Remover ${escapeHtml(title)} da semana" title="Remover da semana">×</button></td></tr>`;
   }).join('') : '<tr><td colspan="3" class="weekly-empty">Sua semana está livre. Adicione o primeiro item para começar.</td></tr>';
