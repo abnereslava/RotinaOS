@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todo-os-cache-v41';
+const CACHE_NAME = 'todo-os-cache-v42';
 
 const LOCAL_ASSETS = [
   './',
@@ -22,6 +22,7 @@ const LOCAL_ASSETS = [
   './css/optional-date-fix.css',
   './css/category-rename.css',
   './css/activity-tracking.css',
+  './css/weekly-checklist.css',
 
   './js/app.js',
   './js/app-core.js',
@@ -36,6 +37,8 @@ const LOCAL_ASSETS = [
   './js/optional-date-fix.js',
   './js/category-rename.js',
   './js/activity-tracking.js',
+  './js/weekly-checklist.js',
+  './js/weekly-checklist-model.js',
   './js/calendar-view-v3.js',
   './js/demo-calendar-bridge.js',
   './js/occurrence-history.js'

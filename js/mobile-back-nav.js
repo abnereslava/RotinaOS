@@ -51,6 +51,7 @@
   }
 
   function closeTopLayer() {
+    if (window.RotinaWeeklyChecklist?.cancelConfirmation?.()) return true;
     // Edição inline da categoria é a camada mais interna do Banco.
     if (window.RotinaCategoryRename?.cancelActiveEditor?.()) return true;
 
@@ -79,6 +80,12 @@
     const calendar = document.getElementById('calendar-view');
     if (isVisible(calendar)) {
       document.dispatchEvent(new CustomEvent('rotinaos:calendar-close-request'));
+      return true;
+    }
+
+    const weekly = document.getElementById('weekly-checklist-view');
+    if (isVisible(weekly)) {
+      document.dispatchEvent(new CustomEvent('rotinaos:weekly-close-request'));
       return true;
     }
 

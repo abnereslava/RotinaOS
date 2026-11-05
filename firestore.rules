@@ -1,35 +1,47 @@
 rules_version = '2';
 
-// TEMPLATE PÚBLICO.
-// Antes de usar em um projeto Firebase, substitua OWNER_EMAIL pelo e-mail
-// verificado da conta proprietária. Não publique dados pessoais aqui.
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isOwner() {
-      return request.auth != null
-        && request.auth.token.email_verified == true
-        && request.auth.token.email == 'OWNER_EMAIL'
-        && request.auth.token.firebase.sign_in_provider == 'google.com';
+
+    function signedIn() {
+      return request.auth != null;
     }
 
     function ownsExistingDocument() {
-      return isOwner() && resource.data.userId == request.auth.uid;
+      return signedIn()
+        && resource.data.userId == request.auth.uid;
     }
 
     function ownsIncomingDocument() {
-      return isOwner() && request.resource.data.userId == request.auth.uid;
+      return signedIn()
+        && request.resource.data.userId == request.auth.uid;
     }
 
     match /activities/{activityId} {
-      allow create: if ownsIncomingDocument();
       allow read, delete: if ownsExistingDocument();
-      allow update: if ownsExistingDocument() && ownsIncomingDocument();
+      allow create: if ownsIncomingDocument();
+
+      allow update: if ownsExistingDocument()
+                    && ownsIncomingDocument();
     }
 
     match /activity_occurrences/{occurrenceId} {
-      allow create: if ownsIncomingDocument();
       allow read, delete: if ownsExistingDocument();
-      allow update: if ownsExistingDocument() && ownsIncomingDocument();
+      allow create: if ownsIncomingDocument();
+
+      allow update: if ownsExistingDocument()
+                    && ownsIncomingDocument();
+    }
+
+    match /weekly_checklists/{userId} {
+      // A leitura pelo UID também permite consultar a primeira semana,
+      // antes de o documento existir, para criá-lo na transação.
+      allow read: if signedIn() && userId == request.auth.uid;
+      allow create: if ownsIncomingDocument() && userId == request.auth.uid;
+      allow delete: if ownsExistingDocument() && userId == request.auth.uid;
+      allow update: if ownsExistingDocument()
+                    && ownsIncomingDocument()
+                    && userId == request.auth.uid;
     }
 
     match /{document=**} {

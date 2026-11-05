@@ -1,438 +1,177 @@
 (() => {
-  const OPEN_THRESHOLD = 70;
-  const CLOSE_THRESHOLD = 70;
-  const SCROLL_LEFT_TOLERANCE = 2;
+  const THRESHOLD = 70;
   const START_DRAG_DISTANCE = 12;
   const HORIZONTAL_DOMINANCE = 1.15;
   const ANIMATION_MS = 280;
-
-  let mode = null;
-  let startX = 0;
-  let startY = 0;
-  let dragging = false;
-  let previewOpened = false;
-
   const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  let gesture = null;
+  let animating = false;
 
-  function isInteractiveTarget(target) {
+  const element = id => document.getElementById(id);
+  const visible = id => Boolean(element(id) && !element(id).classList.contains('hidden'));
+  const screenId = screen => ({ weekly: 'weekly-checklist-view', calendar: 'calendar-view', bank: 'modal-full-view' }[screen]);
+  function interactive(target) {
     return Boolean(target?.closest?.('button, a, input, select, textarea, label, [contenteditable="true"]'));
   }
-
-  function getApp() {
-    return document.getElementById('app');
+  function modalOpen() {
+    return Boolean(document.querySelector(
+      '.modal:not(.hidden):not(#modal-full-view), .calendar-control-modal:not(.hidden), dialog[open]'
+    ));
   }
-
-  function getFullView() {
-    return document.getElementById('modal-full-view');
-  }
-
-  function getFullViewContainer() {
-    return document.getElementById('full-view-container');
-  }
-
-  function getCalendarView() {
-    return document.getElementById('calendar-view');
-  }
-
-  function isFullViewActive() {
-    const fullView = getFullView();
-    return Boolean(fullView && !fullView.classList.contains('hidden'));
-  }
-
-  function isCalendarActive() {
-    const calendar = getCalendarView();
-    return Boolean(calendar && !calendar.classList.contains('hidden'));
-  }
-
-  function isMainScreenActive() {
-    const app = getApp();
-    const fullView = getFullView();
-    const calendar = getCalendarView();
-    return Boolean(
-      app &&
-      !app.classList.contains('hidden') &&
-      fullView &&
-      fullView.classList.contains('hidden') &&
-      (!calendar || calendar.classList.contains('hidden'))
-    );
-  }
-
-  function isActivityBankAtLeftmostList() {
-    const container = getFullViewContainer();
-    return Boolean(container && container.scrollLeft <= SCROLL_LEFT_TOLERANCE);
-  }
-
-  function clearInlineAnimationStyles(element) {
-    if (!element) return;
-    element.style.transition = '';
-    element.style.transform = '';
-    element.style.willChange = '';
-  }
-
-  function transitionElementTo(element, x, onDone) {
-    if (!element) {
-      onDone?.();
-      return;
+  function currentScreen() {
+    if (!visible('app') || modalOpen()) return null;
+    if (visible('calendar-view')) return 'calendar';
+    if (visible('weekly-checklist-view')) return 'weekly';
+    if (visible('modal-full-view')) {
+      return element('full-view-container')?.scrollLeft <= 2 ? 'bank' : null;
     }
-
+    return 'main';
+  }
+  function clearStyles(view) {
+    if (!view) return;
+    view.style.transition = '';
+    view.style.transform = '';
+    view.style.willChange = '';
+  }
+  function show(screen) {
+    const view = element(screenId(screen));
+    if (!view) return false;
+    if (screen === 'bank') element('btn-full-view')?.click();
+    else {
+      view.classList.remove('hidden');
+      view.dispatchEvent(new CustomEvent(`rotinaos:${screen}-open`));
+    }
+    return !view.classList.contains('hidden');
+  }
+  function hide(screen) {
+    const view = element(screenId(screen));
+    if (!view) return;
+    if (screen === 'bank') element('btn-close-full-view')?.click();
+    else {
+      view.classList.add('hidden');
+      view.dispatchEvent(new CustomEvent(`rotinaos:${screen}-close`));
+    }
+    clearStyles(view);
+  }
+  function transition(view, x, done) {
+    animating = true;
     const duration = reducedMotion ? 0 : ANIMATION_MS;
-    element.style.willChange = 'transform';
-    element.style.transition = `transform ${duration}ms cubic-bezier(0.22, 1, 0.36, 1)`;
-    element.style.transform = `translate3d(${x}px, 0, 0)`;
-
-    if (duration === 0) {
-      requestAnimationFrame(() => onDone?.());
-      return;
-    }
-
+    view.style.willChange = 'transform';
+    view.style.transition = `transform ${duration}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    view.style.transform = `translate3d(${x}px, 0, 0)`;
     let finished = false;
     const finish = () => {
       if (finished) return;
       finished = true;
-      element.removeEventListener('transitionend', finish);
-      onDone?.();
+      view.removeEventListener('transitionend', finish);
+      clearStyles(view);
+      animating = false;
+      gesture = null;
+      done?.();
     };
-
-    element.addEventListener('transitionend', finish, { once: true });
+    view.addEventListener('transitionend', finish, { once: true });
     window.setTimeout(finish, duration + 80);
   }
-
-  function showCalendarPreview() {
-    const calendar = getCalendarView();
-    if (!calendar) return false;
-
-    if (calendar.classList.contains('hidden')) {
-      calendar.style.transition = 'none';
-      calendar.style.willChange = 'transform';
-      calendar.style.transform = `translate3d(${-window.innerWidth}px, 0, 0)`;
-      calendar.classList.remove('hidden');
-      calendar.dispatchEvent(new CustomEvent('rotinaos:calendar-open'));
-    }
-
-    return isCalendarActive();
+  function decide(origin, deltaX) {
+    if (origin === 'main') return deltaX < 0
+      ? { screen: 'bank', sign: 1, opening: true }
+      : { screen: 'weekly', sign: -1, opening: true };
+    if (origin === 'weekly') return deltaX > 0
+      ? { screen: 'calendar', sign: -1, opening: true }
+      : { screen: 'weekly', sign: -1, opening: false };
+    if (origin === 'calendar' && deltaX < 0) return { screen: 'calendar', sign: -1, opening: false };
+    if (origin === 'bank' && deltaX > 0) return { screen: 'bank', sign: 1, opening: false };
+    return null;
   }
-
-  function openBankPreviewAt(deltaX) {
-    const fullView = getFullView();
-    if (!fullView) return;
-
-    if (!previewOpened) {
-      fullView.style.transition = 'none';
-      fullView.style.willChange = 'transform';
-      fullView.style.transform = `translate3d(${window.innerWidth}px, 0, 0)`;
-      document.getElementById('btn-full-view')?.click();
-      previewOpened = isFullViewActive();
+  function preview(deltaX) {
+    const g = gesture;
+    const view = element(screenId(g.screen));
+    if (!view) return;
+    if (g.opening && !g.previewOpened) {
+      view.style.transition = 'none';
+      view.style.transform = `translate3d(${g.sign * innerWidth}px, 0, 0)`;
+      g.previewOpened = show(g.screen);
+      if (!g.previewOpened) return;
     }
-
-    if (!previewOpened) return;
-
-    const offset = Math.max(0, Math.min(window.innerWidth, window.innerWidth + deltaX));
-    fullView.style.transition = 'none';
-    fullView.style.transform = `translate3d(${offset}px, 0, 0)`;
+    const raw = g.opening ? g.sign * innerWidth + deltaX : deltaX;
+    const offset = g.sign < 0 ? Math.max(-innerWidth, Math.min(0, raw)) : Math.max(0, Math.min(innerWidth, raw));
+    view.style.willChange = 'transform';
+    view.style.transition = 'none';
+    view.style.transform = `translate3d(${offset}px, 0, 0)`;
   }
-
-  function openCalendarPreviewAt(deltaX) {
-    const calendar = getCalendarView();
-    if (!calendar) return;
-
-    if (!previewOpened) {
-      previewOpened = showCalendarPreview();
-    }
-
-    if (!previewOpened) return;
-
-    const offset = Math.min(0, Math.max(-window.innerWidth, -window.innerWidth + deltaX));
-    calendar.style.transition = 'none';
-    calendar.style.willChange = 'transform';
-    calendar.style.transform = `translate3d(${offset}px, 0, 0)`;
-  }
-
-  function settleBankOpen(shouldOpen) {
-    const fullView = getFullView();
-    if (!fullView || !previewOpened) {
-      resetGesture();
-      return;
-    }
-
-    if (shouldOpen) {
-      transitionElementTo(fullView, 0, () => {
-        clearInlineAnimationStyles(fullView);
-        resetGesture();
-      });
-    } else {
-      transitionElementTo(fullView, window.innerWidth, () => {
-        document.getElementById('btn-close-full-view')?.click();
-        clearInlineAnimationStyles(fullView);
-        resetGesture();
-      });
-    }
-  }
-
-  function settleBankClose(shouldClose) {
-    const fullView = getFullView();
-    if (!fullView) {
-      resetGesture();
-      return;
-    }
-
-    if (shouldClose) {
-      transitionElementTo(fullView, window.innerWidth, () => {
-        document.getElementById('btn-close-full-view')?.click();
-        clearInlineAnimationStyles(fullView);
-        resetGesture();
-      });
-    } else {
-      transitionElementTo(fullView, 0, () => {
-        clearInlineAnimationStyles(fullView);
-        resetGesture();
-      });
-    }
-  }
-
-  function settleCalendarOpen(shouldOpen) {
-    const calendar = getCalendarView();
-    if (!calendar || !previewOpened) {
-      resetGesture();
-      return;
-    }
-
-    if (shouldOpen) {
-      transitionElementTo(calendar, 0, () => {
-        clearInlineAnimationStyles(calendar);
-        resetGesture();
-      });
-    } else {
-      transitionElementTo(calendar, -window.innerWidth, () => {
-        calendar.classList.add('hidden');
-        clearInlineAnimationStyles(calendar);
-        resetGesture();
-      });
-    }
-  }
-
-  function settleCalendarClose(shouldClose) {
-    const calendar = getCalendarView();
-    if (!calendar) {
-      resetGesture();
-      return;
-    }
-
-    if (shouldClose) {
-      transitionElementTo(calendar, -window.innerWidth, () => {
-        calendar.classList.add('hidden');
-        calendar.dispatchEvent(new CustomEvent('rotinaos:calendar-close'));
-        clearInlineAnimationStyles(calendar);
-        resetGesture();
-      });
-    } else {
-      transitionElementTo(calendar, 0, () => {
-        clearInlineAnimationStyles(calendar);
-        resetGesture();
-      });
-    }
-  }
-
-  function closeCalendarAnimated() {
-    const calendar = getCalendarView();
-    if (!calendar || calendar.classList.contains('hidden')) return;
-    transitionElementTo(calendar, -window.innerWidth, () => {
-      calendar.classList.add('hidden');
-      calendar.dispatchEvent(new CustomEvent('rotinaos:calendar-close'));
-      clearInlineAnimationStyles(calendar);
-      resetGesture();
+  function settle(commit) {
+    const g = gesture;
+    if (!g?.dragging || (g.opening && !g.previewOpened)) { gesture = null; return; }
+    const view = element(screenId(g.screen));
+    if (!view) { gesture = null; return; }
+    const shouldHide = g.opening ? !commit : commit;
+    transition(view, shouldHide ? g.sign * innerWidth : 0, () => {
+      if (shouldHide) hide(g.screen);
     });
   }
-
-  function resetGesture() {
-    mode = null;
-    dragging = false;
-    previewOpened = false;
+  function openAnimated(screen) {
+    const view = element(screenId(screen));
+    if (!view || visible(screenId(screen)) || animating || gesture || modalOpen() || !visible('app')) return;
+    view.style.transition = 'none';
+    view.style.transform = `translate3d(${-innerWidth}px, 0, 0)`;
+    if (!show(screen)) return;
+    // Consolida a posição inicial antes de iniciar a transição por botão.
+    view.getBoundingClientRect();
+    transition(view, 0);
+  }
+  function closeAnimated(screen) {
+    const view = element(screenId(screen));
+    if (!view || !visible(screenId(screen)) || animating || gesture) return;
+    transition(view, -innerWidth, () => hide(screen));
   }
 
-  document.addEventListener('rotinaos:calendar-close-request', closeCalendarAnimated);
-
-  document.addEventListener('touchstart', (event) => {
-    if (event.touches.length !== 1 || isInteractiveTarget(event.target)) {
-      resetGesture();
-      return;
-    }
-
+  document.addEventListener('rotinaos:calendar-close-request', () => closeAnimated('calendar'));
+  document.addEventListener('rotinaos:weekly-close-request', () => closeAnimated('weekly'));
+  document.addEventListener('touchstart', event => {
+    if (animating) return;
+    if (gesture?.dragging) { settle(false); return; }
+    gesture = null;
+    if (event.touches.length !== 1 || interactive(event.target)) return;
+    const origin = currentScreen();
+    if (!origin) return;
     const touch = event.touches[0];
-    startX = touch.clientX;
-    startY = touch.clientY;
-
-    if (isMainScreenActive()) {
-      mode = 'main';
-      dragging = false;
-      previewOpened = false;
-      return;
-    }
-
-    if (isCalendarActive()) {
-      mode = 'close-calendar';
-      dragging = false;
-      previewOpened = false;
-      return;
-    }
-
-    // O retorno do Banco depende da posição das listas, não da posição do dedo.
-    if (isFullViewActive() && isActivityBankAtLeftmostList()) {
-      mode = 'close-bank';
-      dragging = false;
-      previewOpened = false;
-      return;
-    }
-
-    resetGesture();
+    gesture = { origin, startX: touch.clientX, startY: touch.clientY, dragging: false, previewOpened: false };
   }, { passive: true });
-
-  document.addEventListener('touchmove', (event) => {
-    if (!mode || event.touches.length !== 1) return;
-
-    const touch = event.touches[0];
-    const deltaX = touch.clientX - startX;
-    const deltaY = touch.clientY - startY;
-    const horizontalEnough = Math.abs(deltaX) >= Math.abs(deltaY) * HORIZONTAL_DOMINANCE;
-
-    if (!dragging) {
-      if (Math.abs(deltaX) < START_DRAG_DISTANCE) return;
-      if (!horizontalEnough) {
-        resetGesture();
+  document.addEventListener('touchmove', event => {
+    if (!gesture || animating) return;
+    if (event.touches.length !== 1) { settle(false); return; }
+    const deltaX = event.touches[0].clientX - gesture.startX;
+    const deltaY = event.touches[0].clientY - gesture.startY;
+    const horizontal = Math.abs(deltaX) >= Math.abs(deltaY) * HORIZONTAL_DOMINANCE;
+    if (!gesture.dragging) {
+      if (Math.abs(deltaX) < START_DRAG_DISTANCE) {
+        if (Math.abs(deltaY) >= START_DRAG_DISTANCE) gesture = null;
         return;
       }
-
-      if (mode === 'main') {
-        mode = deltaX < 0 ? 'open-bank' : 'open-calendar';
-      }
-
-      if (mode === 'close-bank' && deltaX <= 0) {
-        // Swipe para a esquerda continua navegando pelas listas do Banco.
-        resetGesture();
-        return;
-      }
-
-      if (mode === 'close-calendar' && deltaX >= 0) {
-        resetGesture();
-        return;
-      }
-
-      dragging = true;
+      if (!horizontal) { gesture = null; return; }
+      const route = decide(gesture.origin, deltaX);
+      if (!route) { gesture = null; return; }
+      Object.assign(gesture, route, { dragging: true });
     }
-
-    if (!horizontalEnough) return;
-
     event.preventDefault();
-
-    if (mode === 'open-bank') {
-      openBankPreviewAt(deltaX);
-      return;
-    }
-
-    if (mode === 'open-calendar') {
-      openCalendarPreviewAt(deltaX);
-      return;
-    }
-
-    if (mode === 'close-bank') {
-      const fullView = getFullView();
-      if (!fullView) return;
-      const offset = Math.max(0, Math.min(window.innerWidth, deltaX));
-      fullView.style.willChange = 'transform';
-      fullView.style.transition = 'none';
-      fullView.style.transform = `translate3d(${offset}px, 0, 0)`;
-      return;
-    }
-
-    if (mode === 'close-calendar') {
-      const calendar = getCalendarView();
-      if (!calendar) return;
-      const offset = Math.max(-window.innerWidth, Math.min(0, deltaX));
-      calendar.style.willChange = 'transform';
-      calendar.style.transition = 'none';
-      calendar.style.transform = `translate3d(${offset}px, 0, 0)`;
-    }
+    preview(deltaX);
   }, { passive: false });
-
-  document.addEventListener('touchend', (event) => {
-    if (!mode || event.changedTouches.length !== 1) {
-      resetGesture();
-      return;
-    }
-
-    const touch = event.changedTouches[0];
-    const deltaX = touch.clientX - startX;
-    const deltaY = touch.clientY - startY;
-    const horizontalEnough = Math.abs(deltaX) >= Math.abs(deltaY) * HORIZONTAL_DOMINANCE;
-
-    if (mode === 'main') {
-      // Movimento curto demais para iniciar uma navegação.
-      resetGesture();
-      return;
-    }
-
-    if (mode === 'open-bank') {
-      if (!previewOpened && deltaX <= -OPEN_THRESHOLD && horizontalEnough && isMainScreenActive()) {
-        const fullView = getFullView();
-        if (fullView) {
-          fullView.style.transition = 'none';
-          fullView.style.willChange = 'transform';
-          fullView.style.transform = `translate3d(${window.innerWidth}px, 0, 0)`;
-        }
-        document.getElementById('btn-full-view')?.click();
-        previewOpened = isFullViewActive();
-      }
-
-      settleBankOpen(Boolean(previewOpened && deltaX <= -OPEN_THRESHOLD && horizontalEnough));
-      return;
-    }
-
-    if (mode === 'open-calendar') {
-      if (!previewOpened && deltaX >= OPEN_THRESHOLD && horizontalEnough && isMainScreenActive()) {
-        previewOpened = showCalendarPreview();
-      }
-
-      settleCalendarOpen(Boolean(previewOpened && deltaX >= OPEN_THRESHOLD && horizontalEnough));
-      return;
-    }
-
-    if (mode === 'close-bank') {
-      settleBankClose(Boolean(dragging && deltaX >= CLOSE_THRESHOLD && horizontalEnough));
-      return;
-    }
-
-    if (mode === 'close-calendar') {
-      settleCalendarClose(Boolean(dragging && deltaX <= -CLOSE_THRESHOLD && horizontalEnough));
-      return;
-    }
-
-    resetGesture();
+  document.addEventListener('touchend', event => {
+    if (!gesture || animating) return;
+    if (!gesture.dragging || event.changedTouches.length !== 1) { settle(false); return; }
+    const deltaX = event.changedTouches[0].clientX - gesture.startX;
+    const deltaY = event.changedTouches[0].clientY - gesture.startY;
+    const horizontal = Math.abs(deltaX) >= Math.abs(deltaY) * HORIZONTAL_DOMINANCE;
+    const progress = gesture.opening ? -deltaX * gesture.sign : deltaX * gesture.sign;
+    settle(horizontal && progress >= THRESHOLD);
   }, { passive: true });
-
-  document.addEventListener('touchcancel', () => {
-    if (mode === 'open-bank' && previewOpened) {
-      settleBankOpen(false);
-      return;
-    }
-
-    if (mode === 'open-calendar' && previewOpened) {
-      settleCalendarOpen(false);
-      return;
-    }
-
-    if (mode === 'close-bank' && isFullViewActive()) {
-      settleBankClose(false);
-      return;
-    }
-
-    if (mode === 'close-calendar' && isCalendarActive()) {
-      settleCalendarClose(false);
-      return;
-    }
-
-    resetGesture();
-  }, { passive: true });
+  document.addEventListener('touchcancel', () => { if (!animating) settle(false); }, { passive: true });
 
   window.RotinaSwipeNavigation = {
-    closeCalendar: closeCalendarAnimated
+    closeCalendar: () => closeAnimated('calendar'),
+    openCalendar: () => openAnimated('calendar'),
+    openWeekly: () => openAnimated('weekly'),
+    closeWeekly: () => closeAnimated('weekly'),
+    hideWeekly: () => hide('weekly')
   };
 })();

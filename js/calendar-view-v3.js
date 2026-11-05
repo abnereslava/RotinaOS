@@ -697,6 +697,7 @@ function openActivityBankFromCalendar() {
 
   const calendar = document.getElementById('calendar-view');
   const openBank = () => {
+    window.RotinaSwipeNavigation?.hideWeekly?.();
     const fullView = document.getElementById('modal-full-view');
     const button = document.getElementById('btn-full-view');
     if (!fullView || !button) return;
@@ -742,6 +743,7 @@ function openNewActivityForDate(dateKey) {
 
   const calendar = document.getElementById('calendar-view');
   const openForm = () => {
+    window.RotinaSwipeNavigation?.hideWeekly?.();
     const button = document.getElementById('btn-new-activity');
     if (!button) return;
 

@@ -15,7 +15,8 @@ const STYLE_ASSETS = [
   'css/ui-polish-v24.css',
   'css/optional-date-fix.css',
   'css/category-rename.css',
-  'css/activity-tracking.css'
+  'css/activity-tracking.css',
+  'css/weekly-checklist.css'
 ];
 
 const CLASSIC_SCRIPTS = [
@@ -29,6 +30,7 @@ const CLASSIC_SCRIPTS = [
 const MODERN_FEATURES = [
   './category-rename.js',
   './activity-tracking.js',
+  './weekly-checklist.js',
   './calendar-view-v3.js',
   './demo-calendar-bridge.js'
 ];

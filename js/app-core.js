@@ -1110,6 +1110,7 @@ function createActivityCard(act, options = {}) {
   const prio = parseInt(act.priority) || 0;
   const div = document.createElement('div');
   div.className = `pending-item priority-item-${prio}`;
+  div.dataset.activityId = act.id;
 
   let warningIcon = '';
   if (act.recurrence === 'daily' && !act.scheduledTime) {
