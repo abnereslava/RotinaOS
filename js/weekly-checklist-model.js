@@ -66,3 +66,33 @@ export function beginNewWeek(state, key = todayKey()) {
     omittedActivityIds: [...omitted]
   };
 }
+
+export function sortWeekItems(items, activities, mode) {
+  if (mode === 'none') return items;
+  const byId = new Map(activities.map(activity => [activity.id, activity]));
+  const info = item => {
+    const activity = byId.get(item.activityId);
+    return {
+      title: String(activity?.title || item.title),
+      category: String(activity?.category || '').trim() || 'Sem categoria',
+      priority: [1, 2, 3].includes(Number(activity?.priority)) ? Number(activity.priority) : 0
+    };
+  };
+  const compare = (a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base', numeric: true });
+  return [...items].sort((left, right) => {
+    const a = info(left), b = info(right);
+    if (mode.startsWith('priority-')) {
+      // Itens sem prioridade ficam ao final nos dois sentidos.
+      if (!a.priority && b.priority) return 1;
+      if (a.priority && !b.priority) return -1;
+      const difference = mode === 'priority-desc' ? b.priority - a.priority : a.priority - b.priority;
+      return difference || compare(a.title, b.title);
+    }
+    if (mode.startsWith('category-')) {
+      const difference = compare(a.category, b.category);
+      return (mode === 'category-desc' ? -difference : difference) || compare(a.title, b.title);
+    }
+    const difference = compare(a.title, b.title);
+    return mode === 'name-desc' ? -difference : difference;
+  });
+}

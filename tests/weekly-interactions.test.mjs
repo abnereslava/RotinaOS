@@ -221,7 +221,9 @@ test('gestos passam por Hoje → checklist → calendário e voltam sem pular te
   await swipe('app', 140, { dy: 300 });
   assert.equal(shown('weekly-checklist-view'), false, 'rolagem vertical não abre tela');
   window.RotinaSwipeNavigation.openWeekly(); await app.tick();
-  document.getElementById('weekly-go-calendar').click(); await app.tick();
+  assert.equal(document.getElementById('weekly-go-calendar'), null);
+  assert.equal(document.getElementById('weekly-go-home'), null);
+  await swipe('weekly-checklist-view', 140);
   assert.equal(shown('calendar-view'), true);
   document.dispatchEvent(new window.CustomEvent('rotinaos:calendar-close-request')); await app.tick();
   assert.equal(shown('weekly-checklist-view'), true);
@@ -262,4 +264,73 @@ test('regras atuais: renovar ou remover não lê tarefas já excluídas do banco
   assert.equal(app.state().items.length, 0);
   assert.equal(app.state().weekStart, '2026-11-09');
   assert.equal(app.errors.length, 0);
+});
+
+test('ícones de origem e toque no título reutilizam o modal original pelo ID', async () => {
+  const tasks = [
+    { id: 'a', title: 'Mesmo nome', details: 'Detalhes da tarefa A', category: 'Casa', priority: '1', recurrence: 'single', status: 'pending', isTracked: true },
+    { id: 'b', title: 'Mesmo nome', details: 'Detalhes da tarefa B', category: 'Trabalho', priority: '3', recurrence: 'single', status: 'pending', isTracked: true }
+  ];
+  const app = await setup({ demo: true, tasks });
+  const coreSource = await read('app-core.js');
+  const detailSource = coreSource.slice(coreSource.indexOf('function showDetailModal('), coreSource.indexOf('function wasCompletedThisWeek('));
+  // Executa o modal e sua API reais, com a mesma coleção usada pela checklist.
+  app.context.fixtureTasks = tasks;
+  vm.runInContext(`(() => {
+    const activities = fixtureTasks;
+    let todayString = '2026-11-05';
+    const getTodayString = () => '2026-11-05';
+    const isActivityActiveToday = () => false;
+    ${detailSource}
+  })()`, app.context);
+  await app.submit('Item manual');
+  const manual = app.state().items.find(item => !item.activityId);
+  assert.equal(app.document.querySelectorAll('[data-weekly-origin="bank"]').length, 2);
+  assert.equal(app.document.querySelectorAll('[data-weekly-origin="manual"]').length, 1);
+  assert.match(app.document.querySelector('[data-weekly-origin="bank"]').getAttribute('aria-label'), /Banco/);
+  assert.match(app.document.querySelector('[data-weekly-origin="manual"]').getAttribute('aria-label'), /manual/);
+  assert.equal(app.document.querySelector(`[data-open-weekly="${manual.id}"]`), null);
+  assert.match(app.document.querySelector('[data-open-weekly="task_b"]').closest('td').textContent, /Trabalho/);
+  app.document.getElementById('weekly-checklist-view').classList.remove('hidden');
+  app.document.querySelector('[data-open-weekly="task_b"]').click();
+  let detail = app.document.getElementById('modal-detail-overlay');
+  assert.ok(detail);
+  assert.match(detail.textContent, /Detalhes da tarefa B/);
+  assert.doesNotMatch(detail.textContent, /Detalhes da tarefa A/);
+  assert.ok(detail.querySelector('#detail-btn-edit'));
+  assert.ok(detail.querySelector('#detail-btn-full'));
+  assert.equal(app.state().items.find(item => item.activityId === 'b').done, false);
+  detail.querySelector('#btn-close-detail').click();
+  assert.equal(app.document.getElementById('modal-detail-overlay'), null);
+  assert.equal(app.document.getElementById('weekly-checklist-view').classList.contains('hidden'), false);
+  await app.check('task_b', true);
+  assert.equal(app.document.getElementById('modal-detail-overlay'), null, 'checkbox mantém sua ação de conclusão');
+  app.dialog.close('no'); await flush();
+  app.document.dispatchEvent(new app.window.CustomEvent('rotinaos:demo-activities', { detail: { activities: [tasks[0]] } }));
+  await flush();
+  assert.equal(app.document.querySelector('[data-open-weekly="task_b"]'), null);
+  assert.match(app.document.getElementById('weekly-items').textContent, /Tarefa removida do banco/);
+});
+
+test('ordenar muda só a apresentação e mantém os checks vinculados aos IDs', async () => {
+  const tasks = [
+    { id: 'a', title: 'Zelar', category: 'Casa', priority: '1', isTracked: true },
+    { id: 'b', title: 'Anotar', category: 'Trabalho', priority: '3', isTracked: true }
+  ];
+  const app = await setup({ demo: true, tasks });
+  const control = app.document.getElementById('weekly-sort');
+  for (const option of control.querySelectorAll('option')) option.removeAttribute('selected');
+  control.querySelector('[value="priority-desc"]').setAttribute('selected', '');
+  control.dispatchEvent(new app.window.Event('change'));
+  assert.deepEqual(app.rows().map(input => input.dataset.weeklyId), ['task_b', 'task_a']);
+  assert.deepEqual(app.state().items.map(item => item.activityId), ['a', 'b']);
+  await app.check('task_b', true);
+  app.dialog.close('no'); await flush();
+  for (const option of control.querySelectorAll('option')) option.removeAttribute('selected');
+  control.querySelector('[value="name-desc"]').setAttribute('selected', '');
+  control.dispatchEvent(new app.window.Event('change'));
+  assert.deepEqual(app.rows().map(input => input.dataset.weeklyId), ['task_a', 'task_b']);
+  assert.equal(app.state().items.find(item => item.activityId === 'b').done, true);
+  assert.equal(app.document.querySelector('#weekly-go-home'), null);
+  assert.equal(app.document.querySelector('#weekly-go-calendar'), null);
 });

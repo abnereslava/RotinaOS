@@ -4,7 +4,10 @@
 
 - A partir de Hoje, arrastar para a direita abre a checklist. Outro gesto para a direita abre o calendário. Os gestos para a esquerda retornam uma tela por vez.
 - Arrastar para a esquerda a partir de Hoje continua abrindo o banco. O retorno do banco continua disponível na primeira coluna.
-- Há também um botão de checklist no cabeçalho e botões Hoje/Calendário na tela semanal.
+- Há também um botão de checklist no cabeçalho. A navegação abaixo da lista usa somente gestos; os botões Hoje/Calendário foram removidos.
+- As linhas compactas mostram ícone de origem (banco ou manual), categoria e prioridade quando definida. Itens manuais aparecem como “Sem categoria”.
+- O seletor “Ordenar por” permite ordem de inclusão, prioridade alta/baixa, nome e categoria em ambos os sentidos. A preferência é salva no aparelho e não altera a ordem armazenada dos itens. Itens sem prioridade ficam ao final na ordenação por prioridade.
+- Tocar no título de uma tarefa vinculada abre o modal original do banco. Fechar o modal retorna à checklist; checkbox e botão de remoção mantêm suas ações próprias.
 - A semana vai de segunda a domingo, pelo fuso America/Sao_Paulo.
 - Itens manuais pertencem somente à checklist. Tarefas com `isTracked` entram vinculadas pelo ID; nomes iguais não são usados para identificar tarefas.
 - Pressionar e segurar continua alternando o destaque no banco e passa a incluir/remover a tarefa na checklist. Destaques existentes são importados.
@@ -35,7 +38,7 @@ As regras fornecidas pelo proprietário foram usadas como referência; a publica
 
 As gravações da checklist na conta real exigem conexão: usam transações para ler a semana atual antes de alterar itens, renovar a lista ou atualizar a tarefa vinculada. Sem conexão, documentos já armazenados pelo Firestore permanecem consultáveis e a interface informa que é necessário reconectar para editar. A demonstração pode editar localmente sem rede.
 
-O Service Worker foi atualizado para `todo-os-cache-v42` com os novos módulos e estilos. Sem a nova regra, a checklist informa o erro de acesso; o recurso não pode ser considerado ativado apenas pela publicação dos arquivos estáticos.
+O Service Worker foi atualizado para `todo-os-cache-v43` com os novos módulos e estilos. Sem a nova regra, a checklist informa o erro de acesso; o recurso não pode ser considerado ativado apenas pela publicação dos arquivos estáticos.
 
 ## Validação
 

@@ -1060,6 +1060,17 @@ function showDetailModal(act, isPendingMode = false) {
   });
 }
 
+// Reutiliza o modal do banco com a versão atual da tarefa, inclusive na checklist.
+window.RotinaActivityDetails = {
+  open(activityId) {
+    const activity = activities.find(item => item.id === activityId);
+    if (!activity) return false;
+    todayString = getTodayString();
+    showDetailModal(activity, !activity.scheduledTime);
+    return true;
+  }
+};
+
 function wasCompletedThisWeek(act) {
   if (!act.completionDate || (act.status !== 'completed' && act.status !== 'partial')) return false;
 

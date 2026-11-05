@@ -4,13 +4,16 @@ import {
   getFirestore, doc, collection, query, where, onSnapshot, runTransaction
 } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js';
 import {
-  todayKey, shiftDate, emptyWeek, isExpired, reconcileTracked, setTracked, beginNewWeek
+  todayKey, shiftDate, emptyWeek, isExpired, reconcileTracked, setTracked, beginNewWeek, sortWeekItems
 } from './weekly-checklist-model.js';
 
 const app = getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 const DEMO_KEY = 'rotinaos.weekly.demo.v1';
+const SORT_KEY = 'rotinaos.weekly.sort.v1';
+const SORT_MODES = new Set(['none', 'priority-desc', 'priority-asc', 'name-asc', 'name-desc', 'category-asc', 'category-desc']);
+let sortMode = loadSortMode();
 let userId = null;
 let state = null;
 let activities = [];
@@ -23,6 +26,13 @@ let activitiesVersion = 0;
 let errorMessage = '';
 let mutationQueue = Promise.resolve();
 let noticeTimer = null;
+
+function loadSortMode() {
+  try {
+    const saved = localStorage.getItem(SORT_KEY);
+    return SORT_MODES.has(saved) ? saved : 'none';
+  } catch (_) { return 'none'; }
+}
 
 function demo() { return Boolean(window.__ROTINAOS_DEMO__); }
 function active() { return Boolean(userId && state && !isExpired(state)); }
@@ -65,6 +75,18 @@ function createScreen() {
           <input id="weekly-new-item" type="text" maxlength="300" placeholder="O que você quer concluir nesta semana?" required autocomplete="off">
           <button type="submit" class="btn-primary">Adicionar</button>
         </form>
+        <div class="weekly-sort-control">
+          <label for="weekly-sort">Ordenar por</label>
+          <select id="weekly-sort">
+            <option value="none">Ordem de inclusão</option>
+            <option value="priority-desc">Prioridade: alta → baixa</option>
+            <option value="priority-asc">Prioridade: baixa → alta</option>
+            <option value="name-asc">Nome: A → Z</option>
+            <option value="name-desc">Nome: Z → A</option>
+            <option value="category-asc">Categoria: A → Z</option>
+            <option value="category-desc">Categoria: Z → A</option>
+          </select>
+        </div>
         <div id="weekly-table-wrap" class="weekly-table-wrap">
           <table class="weekly-table"><caption class="weekly-sr-only">Itens da semana</caption>
             <thead><tr><th scope="col">Feito</th><th scope="col">Item</th><th scope="col"><span class="weekly-sr-only">Ações</span></th></tr></thead>
@@ -72,10 +94,6 @@ function createScreen() {
           </table>
         </div>
         <button id="weekly-new-week" type="button" class="btn-primary hidden">Começar nova semana</button>
-        <nav class="weekly-navigation" aria-label="Telas de planejamento">
-          <button id="weekly-go-home" type="button" class="btn-secondary">Hoje</button>
-          <button id="weekly-go-calendar" type="button" class="btn-secondary">Calendário →</button>
-        </nav>
         <p class="weekly-gesture-hint">Arraste para a direita para abrir o calendário. Para a esquerda, volte para hoje.</p>
       </div>
     </div>`;
@@ -91,8 +109,14 @@ function createScreen() {
   document.body.appendChild(dialog);
 
   document.getElementById('btn-close-weekly').onclick = closeScreen;
-  document.getElementById('weekly-go-home').onclick = closeScreen;
-  document.getElementById('weekly-go-calendar').onclick = () => window.RotinaSwipeNavigation?.openCalendar?.();
+  const sortControl = document.getElementById('weekly-sort');
+  sortControl.value = sortMode;
+  sortControl.addEventListener('change', () => {
+    if (!SORT_MODES.has(sortControl.value)) return;
+    sortMode = sortControl.value;
+    try { localStorage.setItem(SORT_KEY, sortMode); } catch (_) {}
+    render();
+  });
   document.getElementById('btn-weekly-checklist')?.addEventListener('click', () => window.RotinaSwipeNavigation?.openWeekly?.());
   screen.addEventListener('rotinaos:weekly-open', () => { render(); syncTracked(); });
   document.getElementById('weekly-add-form').addEventListener('submit', async event => {
@@ -127,6 +151,15 @@ function createScreen() {
     } catch (error) { reportError(error); }
   });
   document.getElementById('weekly-items').addEventListener('click', async event => {
+    const taskButton = event.target.closest('button[data-open-weekly]');
+    if (taskButton) {
+      const item = state?.items.find(entry => entry.id === taskButton.dataset.openWeekly);
+      if (!item?.activityId || !activities.some(activity => activity.id === item.activityId)) return;
+      if (!window.RotinaActivityDetails?.open?.(item.activityId)) {
+        reportError(new Error('Não foi possível abrir a tarefa. Tente novamente em instantes.'));
+      }
+      return;
+    }
     const button = event.target.closest('button[data-remove-weekly]');
     if (!button || !editable()) return;
     try { await mutate({ type: 'remove', id: button.dataset.removeWeekly, week: state.weekStart }); }
@@ -153,8 +186,9 @@ function render() {
   const disabled = !editable();
   const rows = document.getElementById('weekly-items');
   const focused = document.activeElement;
-  const focusId = focused?.dataset?.weeklyId || focused?.dataset?.removeWeekly;
-  const focusRemove = Boolean(focused?.dataset?.removeWeekly);
+  const focusId = focused?.dataset?.weeklyId || focused?.dataset?.removeWeekly || focused?.dataset?.openWeekly;
+  const focusSelector = focused?.dataset?.openWeekly ? '[data-open-weekly]'
+    : focused?.dataset?.removeWeekly ? '[data-remove-weekly]' : '[data-weekly-id]';
   document.getElementById('weekly-period').textContent = state
     ? `${formatDate(state.weekStart)} – ${formatDate(shiftDate(state.weekStart, 6))}` : 'Carregando sua semana…';
   const items = state?.items || [];
@@ -171,20 +205,33 @@ function render() {
     expired ? 'Semana encerrada. Comece uma nova semana para continuar; os itens pendentes serão mantidos.' :
     (!demo() && !navigator.onLine) ? 'Sem conexão. Conecte-se para alterar a checklist.' : ''
   );
-  rows.innerHTML = items.length ? items.map(item => {
+  rows.innerHTML = items.length ? sortWeekItems(items, activities, sortMode).map(item => {
     const source = activities.find(activity => activity.id === item.activityId);
     const title = source?.title || item.title;
+    const origin = item.activityId ? (source ? 'Banco de tarefas' : 'Tarefa removida do banco') : 'Adicionado manualmente';
+    const category = String(source?.category || '').trim() || 'Sem categoria';
+    const priority = Number(source?.priority);
+    const priorityLabel = { 1: 'Baixa', 2: 'Média', 3: 'Alta' }[priority];
+    const titleMarkup = source
+      ? `<button type="button" class="weekly-item-title weekly-task-open" data-open-weekly="${escapeHtml(item.id)}" aria-label="Abrir tarefa ${escapeHtml(title)}">${escapeHtml(title)}</button>`
+      : `<span class="weekly-item-title">${escapeHtml(title)}</span>`;
     return `<tr class="${item.done ? 'is-done' : ''}">
       <td><input type="checkbox" data-weekly-id="${escapeHtml(item.id)}" ${item.done ? 'checked' : ''} ${disabled ? 'disabled' : ''}
         aria-label="Concluir ${escapeHtml(title)}"></td>
-      <td><span class="weekly-item-title">${escapeHtml(title)}</span><small>${item.activityId ? (source ? 'Banco de tarefas' : 'Tarefa removida do banco') : 'Adicionado manualmente'}</small></td>
+      <td><div class="weekly-item-heading">
+        <span class="weekly-origin-icon" data-weekly-origin="${item.activityId ? 'bank' : 'manual'}" role="img" aria-label="${origin}" title="${origin}"><i class="fas ${item.activityId ? 'fa-database' : 'fa-pen'}" aria-hidden="true"></i></span>
+        <div class="weekly-item-copy">${titleMarkup}<small class="weekly-item-meta">
+          <span class="weekly-category" title="Categoria: ${escapeHtml(category)}"><i class="fas fa-folder" aria-hidden="true"></i> ${escapeHtml(category)}</span>
+          ${priorityLabel ? `<span class="weekly-priority weekly-priority-${priority}" aria-label="Prioridade: ${priorityLabel}">${priorityLabel}</span>` : ''}
+          ${item.activityId && !source ? '<span>Tarefa removida do banco</span>' : ''}
+        </small></div>
+      </div></td>
       <td><button type="button" class="btn-icon" data-remove-weekly="${escapeHtml(item.id)}" ${disabled ? 'disabled' : ''}
         aria-label="Remover ${escapeHtml(title)} da semana" title="Remover da semana">×</button></td></tr>`;
   }).join('') : '<tr><td colspan="3" class="weekly-empty">Sua semana está livre. Adicione o primeiro item para começar.</td></tr>';
   if (focusId) {
-    const selector = focusRemove ? '[data-remove-weekly]' : '[data-weekly-id]';
-    [...rows.querySelectorAll(selector)].find(element =>
-      (element.dataset.weeklyId || element.dataset.removeWeekly) === focusId)?.focus();
+    [...rows.querySelectorAll(focusSelector)].find(element =>
+      (element.dataset.weeklyId || element.dataset.removeWeekly || element.dataset.openWeekly) === focusId)?.focus();
   }
 }
 
