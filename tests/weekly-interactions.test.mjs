@@ -289,6 +289,8 @@ test('ícones de origem e toque no título reutilizam o modal original pelo ID',
   assert.equal(app.document.querySelectorAll('[data-weekly-origin="manual"]').length, 1);
   assert.match(app.document.querySelector('[data-weekly-origin="bank"]').getAttribute('aria-label'), /Banco/);
   assert.match(app.document.querySelector('[data-weekly-origin="manual"]').getAttribute('aria-label'), /manual/);
+  assert.ok(app.document.querySelector('[data-weekly-origin="bank"]').closest('.weekly-item-meta'));
+  assert.ok(app.document.querySelector('[data-weekly-origin="manual"]').closest('.weekly-item-meta'));
   assert.equal(app.document.querySelector(`[data-open-weekly="${manual.id}"]`), null);
   assert.match(app.document.querySelector('[data-open-weekly="task_b"]').closest('td').textContent, /Trabalho/);
   app.document.getElementById('weekly-checklist-view').classList.remove('hidden');
@@ -333,4 +335,79 @@ test('ordenar muda só a apresentação e mantém os checks vinculados aos IDs',
   assert.equal(app.state().items.find(item => item.activityId === 'b').done, true);
   assert.equal(app.document.querySelector('#weekly-go-home'), null);
   assert.equal(app.document.querySelector('#weekly-go-calendar'), null);
+});
+
+test('conclusão pela checklist segue a conclusão geral e permanece no banco durante o dia', async () => {
+  const tasks = ['single', 'daily', 'weekly', 'monthly'].map((recurrence, index) => ({
+    id: `activity_${index}`, title: `Tarefa ${recurrence}`, category: 'Teste', priority: '2',
+    recurrence, status: 'pending', isTracked: true, useChecklist: true,
+    checklist: [{ text: 'Etapa', done: false }]
+  }));
+  tasks.push({ id: 'general', title: 'Conclusão geral', category: 'Teste', priority: '2', recurrence: 'single',
+    status: 'pending', useChecklist: true, checklist: [{ text: 'Etapa', done: false }] });
+  const app = await setup({ demo: true, tasks });
+  const core = await read('app-core.js');
+  const maintenance = core.slice(core.indexOf('async function runDailyMaintenance('), core.indexOf('function populateCategories('));
+  const detail = core.slice(core.indexOf('function showDetailModal('), core.indexOf('function wasCompletedThisWeek('));
+  const card = core.slice(core.indexOf('function createActivityCard('), core.indexOf('function renderPendingList('));
+  const bank = core.slice(core.indexOf('function renderFullView('), core.indexOf('// Listeners para os controles da Visão Geral'));
+  const controls = app.document.createElement('div');
+  controls.innerHTML = '<input id="full-view-search"><select id="full-view-sort"><option value="none" selected>Inclusão</option></select>';
+  app.document.body.appendChild(controls);
+  app.context.fixtureTasks = tasks;
+  vm.runInContext(`(() => {
+    let activities = fixtureTasks;
+    let todayString = '2026-11-05';
+    const getTodayString = () => todayString;
+    const isActivityActiveToday = () => false;
+    const fullViewContainer = document.getElementById('full-view-container');
+    const fullViewHideScheduled = false;
+    const collapsedCategories = new Set();
+    const deleted = [];
+    const safeUpdate = async (id, data) => Object.assign(activities.find(item => item.id === id), data);
+    const safeDelete = async id => { deleted.push(id); };
+    ${maintenance}
+    ${detail}
+    ${card}
+    ${bank}
+    window.CompletionFixture = {
+      completeGenerally: () => {
+        showDetailModal(activities.find(item => item.id === 'general'));
+        document.getElementById('detail-btn-full').click();
+      },
+      maintain: async key => {
+        todayString = key;
+        await runDailyMaintenance(activities);
+        activities = activities.filter(item => !deleted.includes(item.id));
+      },
+      renderBank: renderFullView,
+      getActivities: () => activities,
+      deleted
+    };
+  })()`, app.context);
+  for (let index = 0; index < 4; index++) {
+    await app.check(`task_activity_${index}`, true);
+    app.dialog.close('yes');
+    await flush();
+  }
+  app.window.CompletionFixture.completeGenerally();
+  await flush();
+  const general = tasks.find(item => item.id === 'general');
+  for (const task of tasks) {
+    assert.equal(task.status, general.status);
+    assert.equal(task.completionDate, general.completionDate);
+    assert.equal(task.checklist[0].done, true);
+  }
+  await app.window.CompletionFixture.maintain('2026-11-05');
+  app.window.CompletionFixture.renderBank();
+  assert.equal(app.window.CompletionFixture.deleted.length, 0, 'concluir não exclui imediatamente');
+  assert.equal(app.document.querySelectorAll('#full-view-container .pending-item').length, 5);
+  assert.equal(app.document.querySelectorAll('#full-view-container .completed-today').length, 5);
+  await app.window.CompletionFixture.maintain('2026-11-06');
+  assert.deepEqual(Array.from(app.window.CompletionFixture.deleted).sort(), ['activity_0', 'general']);
+  const recurring = app.window.CompletionFixture.getActivities();
+  assert.equal(recurring.length, 3);
+  assert.equal(recurring.find(item => item.recurrence === 'daily').status, 'pending');
+  assert.equal(recurring.find(item => item.recurrence === 'weekly').status, 'completed');
+  assert.equal(recurring.find(item => item.recurrence === 'monthly').status, 'completed');
 });
