@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { todayKey, weekStart, emptyWeek, isExpired, reconcileTracked, setTracked, beginNewWeek } from '../js/weekly-checklist-model.js';
+import { todayKey, weekStart, emptyWeek, isExpired, reconcileTracked, setTracked, beginNewWeek, sortWeekItems } from '../js/weekly-checklist-model.js';
 
 test('a semana usa segunda a domingo e a virada de São Paulo', () => {
   assert.equal(weekStart('2026-11-08'), '2026-11-02');
@@ -50,4 +50,24 @@ test('tarefas com o mesmo título continuam independentes e sem duplicação', (
   const removed = setTracked(state, activities[0], false);
   assert.deepEqual(removed.items.map(item => item.activityId), ['b']);
   assert.equal(reconcileTracked(removed, activities).items.length, 1);
+});
+
+
+test('ordena por nome, categoria e prioridade sem alterar a semana salva', () => {
+  const tasks = [
+    { id: 'a', title: 'Zelar', category: 'Casa', priority: '1' },
+    { id: 'b', title: 'Anotar', category: 'Trabalho', priority: '3' },
+    { id: 'c', title: 'Ler', category: 'Casa', priority: '2' }
+  ];
+  const items = tasks.map(task => ({ id: `task_${task.id}`, activityId: task.id, title: 'Nome antigo', done: false }));
+  items.push({ id: 'manual', title: 'Manual', activityId: null, done: false });
+  const order = mode => sortWeekItems(items, tasks, mode).map(item => item.id);
+  assert.deepEqual(order('priority-desc'), ['task_b', 'task_c', 'task_a', 'manual']);
+  assert.deepEqual(order('priority-asc'), ['task_a', 'task_c', 'task_b', 'manual']);
+  assert.deepEqual(order('name-asc'), ['task_b', 'task_c', 'manual', 'task_a']);
+  assert.deepEqual(order('name-desc'), ['task_a', 'manual', 'task_c', 'task_b']);
+  assert.deepEqual(order('category-asc'), ['task_c', 'task_a', 'manual', 'task_b']);
+  assert.deepEqual(order('category-desc'), ['task_b', 'manual', 'task_c', 'task_a']);
+  assert.deepEqual(items.map(item => item.id), ['task_a', 'task_b', 'task_c', 'manual']);
+  assert.equal(sortWeekItems(items, tasks, 'none'), items);
 });
