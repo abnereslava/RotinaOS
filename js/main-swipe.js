@@ -6,12 +6,22 @@
   const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   let gesture = null;
   let animating = false;
+  let suppressedRow = null;
+  let suppressClickUntil = 0;
 
   const element = id => document.getElementById(id);
   const visible = id => Boolean(element(id) && !element(id).classList.contains('hidden'));
   const screenId = screen => ({ weekly: 'weekly-checklist-view', calendar: 'calendar-view', bank: 'modal-full-view' }[screen]);
   function interactive(target) {
     return Boolean(target?.closest?.('button, a, input, select, textarea, label, [contenteditable="true"]'));
+  }
+  function weeklyRowKey(target) {
+    return target?.closest?.('#weekly-items tr')?.querySelector('[data-weekly-id]')?.dataset.weeklyId || null;
+  }
+  function suppressRowClick() {
+    if (!gesture?.dragging || !gesture.rowKey) return;
+    suppressedRow = gesture.rowKey;
+    suppressClickUntil = performance.now() + 1000;
   }
   function modalOpen() {
     return Boolean(document.querySelector(
@@ -129,13 +139,19 @@
   document.addEventListener('rotinaos:weekly-close-request', () => closeAnimated('weekly'));
   document.addEventListener('touchstart', event => {
     if (animating) return;
+    suppressedRow = null;
+    suppressClickUntil = 0;
     if (gesture?.dragging) { settle(false); return; }
     gesture = null;
-    if (event.touches.length !== 1 || interactive(event.target)) return;
+    if (event.touches.length !== 1) return;
     const origin = currentScreen();
     if (!origin) return;
+    const rowKey = origin === 'weekly' ? weeklyRowKey(event.target) : null;
+    // Títulos, checks e remoção continuam recebendo toques simples, mas um
+    // arraste sobre a linha também participa da navegação entre telas.
+    if (interactive(event.target) && !rowKey) return;
     const touch = event.touches[0];
-    gesture = { origin, startX: touch.clientX, startY: touch.clientY, dragging: false, previewOpened: false };
+    gesture = { origin, rowKey, startX: touch.clientX, startY: touch.clientY, dragging: false, previewOpened: false };
   }, { passive: true });
   document.addEventListener('touchmove', event => {
     if (!gesture || animating) return;
@@ -154,6 +170,7 @@
       Object.assign(gesture, route, { dragging: true });
     }
     event.preventDefault();
+    suppressRowClick();
     preview(deltaX);
   }, { passive: false });
   document.addEventListener('touchend', event => {
@@ -163,9 +180,20 @@
     const deltaY = event.changedTouches[0].clientY - gesture.startY;
     const horizontal = Math.abs(deltaX) >= Math.abs(deltaY) * HORIZONTAL_DOMINANCE;
     const progress = gesture.opening ? -deltaX * gesture.sign : deltaX * gesture.sign;
+    suppressRowClick();
     settle(horizontal && progress >= THRESHOLD);
   }, { passive: true });
-  document.addEventListener('touchcancel', () => { if (!animating) settle(false); }, { passive: true });
+  document.addEventListener('touchcancel', () => {
+    if (!animating) { suppressRowClick(); settle(false); }
+  }, { passive: true });
+  // Alguns navegadores emitem click ao soltar o dedo mesmo após um arraste.
+  // Intercepta esse click antes das ações de abrir, concluir ou remover o item.
+  document.addEventListener('click', event => {
+    if (!suppressedRow || performance.now() >= suppressClickUntil || weeklyRowKey(event.target) !== suppressedRow) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    suppressedRow = null;
+  }, true);
 
   window.RotinaSwipeNavigation = {
     closeCalendar: () => closeAnimated('calendar'),

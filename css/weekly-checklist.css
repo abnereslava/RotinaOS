@@ -30,7 +30,7 @@
 .weekly-sort-control label { margin: 0; color: var(--text-secondary); font-size: .8rem; white-space: nowrap; }
 #weekly-sort { width: auto; max-width: 100%; margin: 0; padding: 7px 10px; background: var(--bg-surface, #111827); color: var(--text-primary); border: 1px solid var(--border-bright, #2d4a72); border-radius: 6px; font: inherit; font-size: .85rem; }
 .weekly-table-wrap { border: 1px solid var(--border-bright, #2d4a72); border-radius: 10px; overflow: hidden; }
-.weekly-table { border-collapse: collapse; width: 100%; table-layout: fixed; background: var(--bg-surface, #111827); }
+.weekly-table { border-collapse: collapse; width: 100%; table-layout: fixed; background: var(--bg-surface, #111827); touch-action: pan-y; -webkit-user-select: none; user-select: none; }
 .weekly-table th, .weekly-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-color, #2d4a72); }
 .weekly-table th { color: var(--text-secondary); font-size: .85rem; font-weight: 600; }
 .weekly-table th:first-child { width: 56px; text-align: center; }
