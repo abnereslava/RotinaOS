@@ -26,6 +26,13 @@ service cloud.firestore {
       allow update: if ownsExistingDocument() && ownsIncomingDocument();
     }
 
+    match /weekly_checklists/{userId} {
+      allow create: if ownsIncomingDocument() && userId == request.auth.uid;
+      allow read, delete: if ownsExistingDocument() && userId == request.auth.uid;
+      allow update: if ownsExistingDocument() && ownsIncomingDocument()
+        && userId == request.auth.uid;
+    }
+
     match /activity_occurrences/{occurrenceId} {
       allow create: if ownsIncomingDocument();
       allow read, delete: if ownsExistingDocument();

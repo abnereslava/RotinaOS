@@ -1,3 +1,4 @@
+import './weekly-checklist.js';
 import { getApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 import {
@@ -5,9 +6,7 @@ import {
   collection,
   query,
   where,
-  onSnapshot,
-  updateDoc,
-  doc
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
 const firebaseApp = getApp();
@@ -24,6 +23,7 @@ let renderScheduled = false;
 let activePress = null;
 let suppressClickCard = null;
 let suppressClickUntil = 0;
+const trackingBusy = new Set();
 
 function normalize(value) {
   return String(value ?? '').replace(/\s+/g, ' ').trim();
@@ -37,45 +37,15 @@ function setActivities(nextActivities) {
   scheduleApply();
 }
 
-function activityKey(activity) {
-  return `${normalize(activity.category || 'Sem categoria')}\u0000${normalize(activity.title)}`;
-}
-
-function cardKey(card) {
-  const column = card.closest('.category-column');
-  const category = column?.querySelector('.category-column-header h3')?.textContent || 'Sem categoria';
-  const title = card.querySelector('h3')?.textContent || '';
-  return `${normalize(category)}\u0000${normalize(title)}`;
-}
-
-function buildBuckets() {
-  const buckets = new Map();
-  activities.forEach(activity => {
-    const key = activityKey(activity);
-    if (!buckets.has(key)) buckets.set(key, []);
-    buckets.get(key).push(activity);
-  });
-
-  buckets.forEach(list => list.sort((a, b) => String(a.id).localeCompare(String(b.id))));
-  return buckets;
-}
-
 function applyTrackingStateToCards() {
   renderScheduled = false;
   const cards = [...document.querySelectorAll('.full-view-columns .pending-item')];
   if (!cards.length) return;
 
-  const buckets = buildBuckets();
-  const usedByKey = new Map();
-
   cards.forEach(card => {
-    const key = cardKey(card);
-    const index = usedByKey.get(key) || 0;
-    const activity = buckets.get(key)?.[index] || null;
-    usedByKey.set(key, index + 1);
+    const activity = activityById.get(card.dataset.activityId);
 
     if (!activity) {
-      delete card.dataset.activityId;
       card.classList.remove('is-tracked');
       card.removeAttribute('aria-label');
       return;
@@ -104,7 +74,8 @@ function pulse(card) {
 async function toggleTracking(card) {
   const id = card?.dataset.activityId;
   const activity = id ? activityById.get(id) : null;
-  if (!id || !activity) return;
+  if (!id || !activity || trackingBusy.has(id)) return;
+  trackingBusy.add(id);
 
   const previous = Boolean(activity.isTracked);
   const next = !previous;
@@ -122,20 +93,17 @@ async function toggleTracking(card) {
   } catch (_) {}
 
   try {
-    if (window.__ROTINAOS_DEMO__) {
-      const handled = await window.RotinaDemoCore?.updateActivity?.(id, { isTracked: next });
-      if (!handled) throw new Error('Núcleo da demonstração indisponível.');
-    } else {
-      await updateDoc(doc(db, 'activities', id), { isTracked: next });
-    }
+    await window.RotinaWeeklyChecklist.setTrackedActivity(activity, next);
   } catch (error) {
-    console.error('Não foi possível atualizar o destaque da atividade:', error);
+    window.RotinaWeeklyChecklist.showError(error);
     activity.isTracked = previous;
     card.classList.toggle('is-tracked', previous);
     card.setAttribute(
       'aria-label',
       `${normalize(activity.title)}. ${previous ? 'Atividade acompanhada.' : 'Atividade não acompanhada.'}`
     );
+  } finally {
+    trackingBusy.delete(id);
   }
 }
 
