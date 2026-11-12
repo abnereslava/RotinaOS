@@ -390,12 +390,13 @@ async function runDailyMaintenance(loadedActivities) {
         if (a.recurrence === 'daily') {
           if (a.completionDate < todayString) shouldReset = true;
         } else if (a.recurrence === 'weekly') {
-          // Virada de sábado pra domingo
-          const compWeekStart = new Date(compDate);
-          compWeekStart.setDate(compDate.getDate() - compDate.getDay());
-          const todayWeekStart = new Date(todayDate);
-          todayWeekStart.setDate(todayDate.getDate() - todayDate.getDay());
-          if (todayWeekStart > compWeekStart) shouldReset = true;
+          // Cada dia fixo é uma ocorrência: uma conclusão anterior não deve
+          // ocultar a tarefa no próximo dia selecionado da mesma semana.
+          if (a.completionDate < todayString &&
+              Array.isArray(a.fixedDays) &&
+              a.fixedDays.some(day => Number(day) === todayDate.getDay())) {
+            shouldReset = true;
+          }
         } else if (a.recurrence === 'monthly') {
           if (todayDate.getFullYear() > compDate.getFullYear() || todayDate.getMonth() > compDate.getMonth()) {
             shouldReset = true;
