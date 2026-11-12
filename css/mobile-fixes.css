@@ -1,5 +1,11 @@
 /* Mobile UI fixes kept separate from the legacy theme stylesheet. */
 
+@media (max-width: 767px) {
+  #main-header #btn-weekly-checklist {
+    display: none !important;
+  }
+}
+
 @media (max-width: 900px) {
   /*
    * O Banco usa a mesma estrutura responsiva em todos os temas.
